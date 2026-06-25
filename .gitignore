@@ -13,6 +13,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Загруженные файлы (фото/видео/PDF клиентов)
 uploads/
@@ -29,6 +30,10 @@ pnpm-debug.log*
 *.sqlite
 *.db
 *.db-journal
+
+# PGlite — файловое хранилище встроенного Postgres (dev-драйвер)
+.data/
+server/.data/
 
 # Obsidian vault (симлинк наружу — версионируется в WORKSPACE)
 knowledge-vault

@@ -1,0 +1,166 @@
+import { useState } from "react";
+import { Plus, Pencil, Trash2, Dumbbell } from "lucide-react";
+import { api } from "@/lib/api";
+import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { Exercise } from "@/lib/domain";
+
+const FIELDS: { key: keyof Exercise; label: string; area?: boolean }[] = [
+  { key: "name", label: "Название" },
+  { key: "videoUrl", label: "Ссылка на видео" },
+  { key: "muscles", label: "Задействованные мышцы" },
+  { key: "techniqueDescription", label: "Описание техники", area: true },
+  { key: "keyHints", label: "Ключевые подсказки", area: true },
+  { key: "commonMistakes", label: "Типичные ошибки", area: true },
+  { key: "easierVariant", label: "Вариант упрощения" },
+  { key: "harderVariant", label: "Вариант усложнения" },
+];
+
+export function ExercisesPage() {
+  const { data, loading, error, reload } = useAsync<{ exercises: Exercise[] }>(() =>
+    api.get("/exercises"),
+  );
+  const [editing, setEditing] = useState<Exercise | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  return (
+    <div>
+      <PageHeader
+        title="Библиотека упражнений"
+        description="База упражнений тренера с техникой, ошибками и вариантами."
+        action={
+          <Button onClick={() => setCreating(true)}>
+            <Plus className="h-4 w-4" /> Упражнение
+          </Button>
+        }
+      />
+      {loading && <Spinner />}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {data &&
+        (data.exercises.length === 0 ? (
+          <EmptyState text="Упражнений пока нет — добавьте первое." />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {data.exercises.map((ex) => (
+              <Card key={ex.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{ex.name}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setEditing(ex)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={async () => {
+                          await api.delete(`/exercises/${ex.id}`);
+                          reload();
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                  {ex.muscles && (
+                    <p className="mt-1 text-xs text-muted-foreground">{ex.muscles}</p>
+                  )}
+                  {ex.techniqueDescription && (
+                    <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+                      {ex.techniqueDescription}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ))}
+
+      {(creating || editing) && (
+        <ExerciseDialog
+          exercise={editing}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            setCreating(false);
+            setEditing(null);
+            reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ExerciseDialog({
+  exercise,
+  onClose,
+  onSaved,
+}: {
+  exercise: Exercise | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<Record<string, string>>(() => {
+    const f: Record<string, string> = {};
+    for (const { key } of FIELDS) f[key] = (exercise?.[key] as string) ?? "";
+    return f;
+  });
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true);
+    const payload: Record<string, string> = {};
+    for (const { key } of FIELDS) if (form[key]) payload[key] = form[key];
+    if (exercise) await api.patch(`/exercises/${exercise.id}`, payload);
+    else await api.post("/exercises", payload);
+    setBusy(false);
+    onSaved();
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{exercise ? "Редактировать упражнение" : "Новое упражнение"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          {FIELDS.map(({ key, label, area }) => (
+            <div key={key}>
+              <Label>{label}</Label>
+              {area ? (
+                <Textarea
+                  value={form[key] ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                />
+              ) : (
+                <Input
+                  value={form[key] ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                />
+              )}
+            </div>
+          ))}
+          <Button className="w-full" onClick={save} disabled={busy || !form.name}>
+            {busy ? "Сохраняем…" : "Сохранить"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

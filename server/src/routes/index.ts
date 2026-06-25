@@ -1,0 +1,34 @@
+import { Router } from "express";
+import { authRouter } from "./auth.js";
+import { clientsRouter } from "./clients.js";
+import { exercisesRouter } from "./exercises.js";
+import { templatesRouter } from "./templates.js";
+import { workoutsRouter } from "./workouts.js";
+import { measurementsRouter } from "./measurements.js";
+import { dashboardRouter } from "./dashboard.js";
+import { meRouter } from "./me.js";
+import { reportsRouter } from "./reports.js";
+import { tasksRouter } from "./tasks.js";
+import { knowledgeRouter } from "./knowledge.js";
+import { financeRouter } from "./finance.js";
+import { analyticsRouter } from "./analytics.js";
+import { notificationsRouter } from "./notifications.js";
+import { uploadsRouter } from "./uploads.js";
+
+export const apiRouter = Router();
+
+apiRouter.use("/auth", authRouter);
+apiRouter.use("/clients", clientsRouter);
+apiRouter.use("/exercises", exercisesRouter);
+apiRouter.use("/templates", templatesRouter);
+apiRouter.use("/workouts", workoutsRouter);
+apiRouter.use("/measurements", measurementsRouter);
+apiRouter.use("/dashboard", dashboardRouter);
+apiRouter.use("/me", meRouter);
+apiRouter.use("/reports", reportsRouter);
+apiRouter.use("/tasks", tasksRouter);
+apiRouter.use("/knowledge", knowledgeRouter);
+apiRouter.use("/finance", financeRouter);
+apiRouter.use("/analytics", analyticsRouter);
+apiRouter.use("/notifications", notificationsRouter);
+apiRouter.use("/uploads", uploadsRouter);
