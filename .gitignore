@@ -1,0 +1,44 @@
+# Зависимости
+node_modules/
+.pnp
+.pnp.js
+
+# Сборка / артефакты
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# Переменные окружения и секреты
+.env
+.env.*
+!.env.example
+
+# Загруженные файлы (фото/видео/PDF клиентов)
+uploads/
+server/uploads/
+
+# Логи
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Локальная БД (если используется для дев-тулинга)
+*.sqlite
+*.db
+*.db-journal
+
+# Obsidian vault (симлинк наружу — версионируется в WORKSPACE)
+knowledge-vault
+
+# Системное
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# IDE
+.vscode/
+.idea/
