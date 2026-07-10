@@ -16,6 +16,8 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
@@ -124,21 +126,22 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Навигация */}
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+      <header className="glass-header sticky top-0 z-40 border-b border-border/60">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Dumbbell className="h-4 w-4" />
             </div>
-            <span className="text-lg font-bold tracking-tight">FitPro</span>
+            <span className="text-lg font-semibold tracking-tight">FitPro</span>
           </div>
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
-            <a href="#features" className="hover:text-foreground">Возможности</a>
-            <a href="#how" className="hover:text-foreground">Как это работает</a>
-            <a href="#pricing" className="hover:text-foreground">Тарифы</a>
-            <a href="#faq" className="hover:text-foreground">Вопросы</a>
+            <a href="#features" className="transition-colors hover:text-foreground">Возможности</a>
+            <a href="#how" className="transition-colors hover:text-foreground">Как это работает</a>
+            <a href="#pricing" className="transition-colors hover:text-foreground">Тарифы</a>
+            <a href="#faq" className="transition-colors hover:text-foreground">Вопросы</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
             <Button variant="ghost" asChild>
               <Link to="/login">Войти</Link>
             </Button>
@@ -151,15 +154,24 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-background to-background" />
+        {/* page-glow: мягкие свечения в тонах бренда, без внешних ассетов */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px]"
+          style={{
+            background:
+              "radial-gradient(circle at 72% 12%, hsl(var(--primary) / 0.14), transparent 34%), radial-gradient(circle at 22% 22%, hsl(var(--info) / 0.10), transparent 30%)",
+          }}
+          aria-hidden
+        />
         <div className="mx-auto max-w-6xl px-4 py-20 text-center md:py-28">
-          <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Zap className="h-3 w-3 text-primary" /> Операционная система для онлайн-тренера
+          <div className="glass-card mx-auto mb-5 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5">
+            <Zap className="h-3 w-3 text-primary" />
+            <span className="type-eyebrow">Операционная система для онлайн-тренера</span>
           </div>
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="type-display mx-auto max-w-3xl">
             Всё ведение клиентов — <span className="text-primary">в одном месте</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-[1.82] text-muted-foreground">
             FitPro заменяет Telegram, таблицы, заметки, PDF и платёжные ссылки единым пространством:
             CRM, программы тренировок, дневник клиента, отчёты, аналитика и финансы.
           </p>
@@ -181,19 +193,19 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Преимущества-строка */}
-      <section className="border-y bg-muted/30">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4">
+      {/* Преимущества-строка (MetricPill-паттерн) */}
+      <section className="border-y border-border/60">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 px-4 py-10 md:grid-cols-4">
           {[
             { icon: Zap, label: "Назначение программы", value: "в 1 клик" },
             { icon: Smartphone, label: "Кабинет клиента", value: "с телефона" },
             { icon: Bell, label: "Зона риска", value: "автоматически" },
             { icon: ShieldCheck, label: "Две роли", value: "тренер и клиент" },
           ].map((s) => (
-            <div key={s.label} className="text-center">
+            <div key={s.label} className="glass-card rounded-panel px-4 py-5 text-center">
               <s.icon className="mx-auto mb-2 h-6 w-6 text-primary" />
-              <p className="text-lg font-bold">{s.value}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className="text-lg font-medium">{s.value}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
         </div>
@@ -202,8 +214,9 @@ export function LandingPage() {
       {/* Возможности */}
       <section id="features" className="mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Всё, что нужно онлайн-тренеру</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+          <p className="type-eyebrow mb-3">Возможности</p>
+          <h2 className="type-section-title">Всё, что нужно онлайн-тренеру</h2>
+          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
             Восемь модулей вместо десятка разрозненных инструментов. Чисто, быстро, на русском.
           </p>
         </div>
@@ -211,7 +224,7 @@ export function LandingPage() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-xl border bg-card p-5 transition-shadow hover:shadow-md"
+              className="rounded-panel border border-border/70 bg-card p-5 shadow-surface transition-all duration-200 ease-spring hover:-translate-y-1 hover:shadow-panel"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <f.icon className="h-5 w-5 text-primary" />
@@ -224,17 +237,18 @@ export function LandingPage() {
       </section>
 
       {/* Как это работает */}
-      <section id="how" className="border-y bg-muted/30">
+      <section id="how" className="border-y border-border/60 bg-muted/40">
         <div className="mx-auto max-w-6xl px-4 py-20">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Сквозной сценарий тренер ↔ клиент</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            <p className="type-eyebrow mb-3">Как это работает</p>
+            <h2 className="type-section-title">Сквозной сценарий тренер ↔ клиент</h2>
+            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
               От заявки до прогресса на графиках — без переключения между сервисами.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-4">
             {STEPS.map((s) => (
-              <div key={s.n} className="relative rounded-xl border bg-card p-6">
+              <div key={s.n} className="glass-card relative rounded-panel p-6">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                   {s.n}
                 </div>
@@ -249,8 +263,9 @@ export function LandingPage() {
       {/* Тарифы */}
       <section id="pricing" className="mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Простые тарифы</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+          <p className="type-eyebrow mb-3">Тарифы</p>
+          <h2 className="type-section-title">Простые тарифы</h2>
+          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
             Платите за объём клиентов. Все функции — в каждом тарифе.
           </p>
         </div>
@@ -259,8 +274,8 @@ export function LandingPage() {
             <div
               key={p.id}
               className={cn(
-                "relative flex flex-col rounded-xl border bg-card p-6",
-                p.popular && "border-primary shadow-lg ring-1 ring-primary",
+                "relative flex flex-col rounded-panel border border-border/70 bg-card p-6 shadow-surface transition-all duration-200 ease-spring hover:-translate-y-1 hover:shadow-panel",
+                p.popular && "ring-1 ring-primary shadow-glow",
               )}
             >
               {p.popular && (
@@ -296,14 +311,15 @@ export function LandingPage() {
       </section>
 
       {/* Для кого */}
-      <section className="border-y bg-muted/30">
+      <section className="border-y border-border/60 bg-muted/40">
         <div className="mx-auto max-w-6xl px-4 py-20">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Кому подходит FitPro</h2>
+            <p className="type-eyebrow mb-3">Для кого</p>
+            <h2 className="type-section-title">Кому подходит FitPro</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {AUDIENCE.map((a) => (
-              <div key={a.title} className="rounded-xl border bg-card p-6">
+              <div key={a.title} className="glass-card rounded-panel p-6">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <a.icon className="h-5 w-5 text-primary" />
                 </div>
@@ -318,13 +334,14 @@ export function LandingPage() {
       {/* FAQ */}
       <section id="faq" className="mx-auto max-w-3xl px-4 py-20">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Частые вопросы</h2>
+          <p className="type-eyebrow mb-3">FAQ</p>
+          <h2 className="type-section-title">Частые вопросы</h2>
         </div>
         <div className="space-y-3">
           {FAQ.map((item) => (
             <details
               key={item.q}
-              className="group rounded-xl border bg-card px-5 py-4 open:shadow-sm"
+              className="group glass-card rounded-panel px-5 py-4 open:shadow-panel"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden">
                 {item.q}
@@ -338,25 +355,33 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className="overflow-hidden rounded-2xl bg-primary px-6 py-14 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold tracking-tight">Соберите своё пространство тренера</h2>
-          <p className="mx-auto mt-3 max-w-xl text-primary-foreground/90">
-            Зарегистрируйтесь и пригласите первого клиента за пару минут. 14 дней бесплатно.
-          </p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Button size="lg" variant="secondary" asChild>
+      {/* CTA (CtaPanel-паттерн: border-y + alt-фон, текст слева / кнопки справа) */}
+      <section className="border-y border-border/60 bg-muted/40">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 md:flex-row md:items-center">
+          <div>
+            <p className="type-eyebrow mb-3">Начните сегодня</p>
+            <h2 className="type-section-title max-w-xl">
+              Соберите своё пространство тренера
+            </h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
+              Зарегистрируйтесь и пригласите первого клиента за пару минут. 14 дней бесплатно.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <Button size="lg" asChild>
               <Link to="/register">
                 Создать аккаунт тренера <ArrowRight className="h-4 w-4" />
               </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/login">Войти</Link>
             </Button>
           </div>
         </div>
       </section>
 
       {/* Футер */}
-      <footer className="border-t">
+      <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -371,44 +396,48 @@ export function LandingPage() {
   );
 }
 
-/** Декоративный CSS-макет дашборда (без внешних картинок). */
+/** Декоративный CSS-макет дашборда (без внешних картинок), в стеклянной эстетике. */
 function DashboardMock() {
   return (
     <div className="mx-auto mt-14 max-w-4xl">
-      <div className="overflow-hidden rounded-xl border bg-card shadow-2xl">
-        <div className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2.5">
-          <span className="h-3 w-3 rounded-full bg-red-400" />
-          <span className="h-3 w-3 rounded-full bg-amber-400" />
-          <span className="h-3 w-3 rounded-full bg-emerald-400" />
+      <div className="glass-elevated overflow-hidden rounded-hero shadow-panel dark:shadow-glow">
+        <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5">
+          <span className="h-3 w-3 rounded-full bg-destructive/60" />
+          <span className="h-3 w-3 rounded-full bg-warning/60" />
+          <span className="h-3 w-3 rounded-full bg-success/60" />
           <span className="ml-3 text-xs text-muted-foreground">FitPro · Главная тренера</span>
         </div>
         <div className="grid grid-cols-3 gap-3 p-4 text-left md:grid-cols-5">
           {[
             { label: "Всего", value: "24" },
-            { label: "Активные", value: "18" },
+            { label: "Активные", value: "18", accent: "text-success" },
             { label: "Заявки", value: "3" },
-            { label: "Зона риска", value: "2", danger: true },
-            { label: "Заканчивают", value: "1" },
+            { label: "Зона риска", value: "2", accent: "text-destructive" },
+            { label: "Заканчивают", value: "1", accent: "text-warning" },
           ].map((c) => (
-            <div key={c.label} className="rounded-lg border p-3">
-              <p className={cn("text-2xl font-bold", c.danger && "text-red-600")}>{c.value}</p>
+            <div key={c.label} className="rounded-xl border border-border/60 bg-card/60 p-3">
+              <p className={cn("text-2xl font-semibold tabular-nums", c.accent)}>{c.value}</p>
               <p className="text-[11px] text-muted-foreground">{c.label}</p>
             </div>
           ))}
         </div>
         <div className="grid gap-3 px-4 pb-4 md:grid-cols-3">
-          {["Новые заявки", "Зона риска", "Лучший прогресс"].map((t, i) => (
-            <div key={t} className="rounded-lg border p-3">
-              <p className="mb-2 text-xs font-semibold">{t}</p>
+          {[
+            { title: "Новые заявки", badge: "sky" as const },
+            { title: "Зона риска", badge: "warning" as const },
+            { title: "Лучший прогресс", badge: "success" as const },
+          ].map((t) => (
+            <div key={t.title} className="rounded-xl border border-border/60 bg-card/60 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold">{t.title}</p>
+                <Badge variant={t.badge} className="px-1.5 py-0 text-[10px]">
+                  2
+                </Badge>
+              </div>
               {[0, 1].map((r) => (
                 <div key={r} className="mb-1.5 flex items-center justify-between">
                   <div className="h-2 w-20 rounded bg-muted" />
-                  <div
-                    className={cn(
-                      "h-2 w-8 rounded",
-                      i === 1 ? "bg-red-200" : "bg-primary/30",
-                    )}
-                  />
+                  <div className="h-2 w-8 rounded bg-primary/30" />
                 </div>
               ))}
             </div>
