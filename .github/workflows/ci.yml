@@ -1,0 +1,22 @@
+# CI без секретов и SSH: только проверка качества на push/PR.
+# Деплой остаётся локальным (git push server main) — прод-ключей в облаке нет.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run prod:build

@@ -1,0 +1,6 @@
+[Unit]
+Description=FitPro healthcheck (рестарт при недоступности /health)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'curl -sf -m 10 http://127.0.0.1:3000/health >/dev/null || { echo "health FAIL — рестарт fitpro"; systemctl restart fitpro; }'

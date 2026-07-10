@@ -1,0 +1,6 @@
+[Unit]
+Description=FitPro backup (pg_dump + uploads + secrets)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/fitpro/deploy-scripts/backup.sh

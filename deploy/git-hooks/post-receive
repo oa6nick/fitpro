@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Хук bare-репозитория /opt/fitpro/repo.git/hooks/post-receive.
+# Деплоит только push в main.
+set -euo pipefail
+while read -r _old new ref; do
+  if [ "$ref" = "refs/heads/main" ]; then
+    echo "post-receive: деплой $new"
+    /opt/fitpro/deploy.sh "$new"
+  else
+    echo "post-receive: $ref пропущен (деплой только из main)"
+  fi
+done
