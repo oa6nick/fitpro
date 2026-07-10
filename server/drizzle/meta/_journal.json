@@ -8,6 +8,13 @@
       "when": 1782359232029,
       "tag": "0000_greedy_sentinels",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783659721538,
+      "tag": "0001_bitter_avengers",
+      "breakpoints": true
     }
   ]
 }

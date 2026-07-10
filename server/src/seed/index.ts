@@ -40,6 +40,9 @@ async function clearAll() {
     s.payments,
     s.notifications,
     s.exercises,
+    s.clientInvites,
+    s.trainerSubscriptions,
+    s.authEmailCodes,
     s.clients,
     s.users,
   ]) {

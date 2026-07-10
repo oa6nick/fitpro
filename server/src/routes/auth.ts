@@ -7,6 +7,8 @@ import { hashPassword, verifyPassword } from "../auth/password.js";
 import { signToken, AUTH_COOKIE, cookieOptions } from "../auth/jwt.js";
 import { requireAuth } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
+import { emailHtml, sendEmail } from "../services/email.js";
+import { consumeEmailCode, createEmailCode, hourlyLimited } from "../services/emailCodes.js";
 
 export const authRouter = Router();
 
@@ -92,6 +94,110 @@ authRouter.get(
   requireAuth,
   asyncH(async (req, res) => {
     const u = req.user!;
-    res.json({ user: { id: u.sub, email: u.email, name: u.name, role: u.role } });
+    // emailVerified читаем из БД, а не из JWT — иначе флаг протухает до перелогина.
+    const [row] = await db
+      .select({ emailVerifiedAt: users.emailVerifiedAt })
+      .from(users)
+      .where(eq(users.id, u.sub));
+    res.json({
+      user: {
+        id: u.sub,
+        email: u.email,
+        name: u.name,
+        role: u.role,
+        emailVerified: Boolean(row?.emailVerifiedAt),
+      },
+    });
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* Подтверждение email и сброс пароля одноразовыми кодами              */
+/* ------------------------------------------------------------------ */
+
+authRouter.post(
+  "/verify/request",
+  requireAuth,
+  asyncH(async (req, res) => {
+    const email = req.user!.email;
+    if (hourlyLimited(`verify:${email}`, 3)) {
+      throw new HttpError(429, "Слишком много запросов кода. Попробуйте через час.");
+    }
+    const code = await createEmailCode(email, "verify");
+    await sendEmail({
+      to: email,
+      subject: "Подтверждение почты — FitPro",
+      html: emailHtml({
+        title: "Подтвердите адрес почты",
+        intro: "Введите этот код в личном кабинете FitPro:",
+        code,
+      }),
+      text: `Код подтверждения почты FitPro: ${code} (действует 15 минут)`,
+    });
+    res.json({ ok: true });
+  }),
+);
+
+authRouter.post(
+  "/verify/confirm",
+  requireAuth,
+  asyncH(async (req, res) => {
+    const { code } = z.object({ code: z.string().min(4).max(10) }).parse(req.body);
+    const email = req.user!.email;
+    const result = await consumeEmailCode(email, "verify", code);
+    if (!result.ok) throw new HttpError(400, result.error ?? "Неверный код");
+    await db
+      .update(users)
+      .set({ emailVerifiedAt: new Date() })
+      .where(eq(users.id, req.user!.sub));
+    res.json({ ok: true });
+  }),
+);
+
+authRouter.post(
+  "/reset/request",
+  asyncH(async (req, res) => {
+    const { email } = z.object({ email: z.string().email() }).parse(req.body);
+    const normalized = email.toLowerCase();
+    // Ответ всегда ok — не раскрываем, существует ли аккаунт.
+    if (!hourlyLimited(`reset:${normalized}`, 3) && !hourlyLimited(`reset-ip:${req.ip}`, 10)) {
+      const [user] = await db.select().from(users).where(eq(users.email, normalized));
+      if (user) {
+        const code = await createEmailCode(normalized, "reset");
+        await sendEmail({
+          to: normalized,
+          subject: "Сброс пароля — FitPro",
+          html: emailHtml({
+            title: "Сброс пароля",
+            intro:
+              "Вы запросили сброс пароля в FitPro. Введите этот код на странице восстановления:",
+            code,
+          }),
+          text: `Код сброса пароля FitPro: ${code} (действует 15 минут)`,
+        });
+      }
+    }
+    res.json({ ok: true });
+  }),
+);
+
+authRouter.post(
+  "/reset/confirm",
+  asyncH(async (req, res) => {
+    const data = z
+      .object({
+        email: z.string().email(),
+        code: z.string().min(4).max(10),
+        password: z.string().min(6, "Пароль минимум 6 символов"),
+      })
+      .parse(req.body);
+    const normalized = data.email.toLowerCase();
+    const result = await consumeEmailCode(normalized, "reset", data.code);
+    if (!result.ok) throw new HttpError(400, result.error ?? "Неверный код");
+    const [user] = await db.select().from(users).where(eq(users.email, normalized));
+    if (!user) throw new HttpError(400, "Неверный код.");
+    const passwordHash = await hashPassword(data.password);
+    await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+    res.json({ ok: true });
   }),
 );

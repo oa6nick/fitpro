@@ -76,6 +76,11 @@ export function LoginPage() {
               Зарегистрироваться
             </Link>
           </p>
+          <p className="mt-2 text-center text-sm">
+            <Link to="/forgot" className="text-muted-foreground hover:text-primary hover:underline">
+              Забыли пароль?
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>

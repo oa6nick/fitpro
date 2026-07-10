@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { EmailVerifyBanner } from "@/components/EmailVerifyBanner";
 import {
   LayoutDashboard,
   Users,
@@ -135,6 +136,7 @@ export function AppLayout() {
           <NotificationsBell />
         </header>
         <div className="mx-auto max-w-6xl p-4 md:p-8">
+          <EmailVerifyBanner />
           <Outlet />
         </div>
       </main>

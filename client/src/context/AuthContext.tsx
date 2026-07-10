@@ -13,6 +13,8 @@ interface AuthState {
     role: Role;
   }) => Promise<User>;
   logout: () => Promise<void>;
+  /** Перечитать /auth/me (например, после подтверждения почты). */
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -49,8 +51,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const refresh = useCallback(async () => {
+    try {
+      const r = await api.get<{ user: User }>("/auth/me");
+      setUser(r.user);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

@@ -72,6 +72,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: userRole("role").notNull(),
   name: text("name").notNull(),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -475,3 +476,52 @@ export const templateExercisesRelations = relations(templateExercises, ({ one })
     references: [exercises.id],
   }),
 }));
+
+/* ------------------------------------------------------------------ */
+/* Онбординг: коды подтверждения, инвайты клиентов, подписка тренера   */
+/* Статусы здесь — text (не pgEnum), чтобы миграции оставались         */
+/* аддитивными и не требовали ALTER TYPE.                              */
+/* ------------------------------------------------------------------ */
+
+/** Одноразовые коды на email: подтверждение адреса и сброс пароля. */
+export const authEmailCodes = pgTable("auth_email_codes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  purpose: text("purpose").notNull(), // 'verify' | 'reset'
+  codeHash: text("code_hash").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Приглашение клиента в кабинет: привязывает регистрацию к карточке clients. */
+export const clientInvites = pgTable("client_invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  trainerId: uuid("trainer_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: uuid("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  email: text("email"),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Подписка тренера на FitPro (trial при регистрации; оплата — позже, ЮKassa). */
+export const trainerSubscriptions = pgTable("trainer_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  trainerId: uuid("trainer_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  plan: text("plan").notNull().default("trial"), // trial | basic | pro | expert
+  status: text("status").notNull().default("trial"), // trial | active | expired
+  paidUntil: date("paid_until"),
+  clientLimit: integer("client_limit").notNull().default(10),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

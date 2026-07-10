@@ -57,6 +57,8 @@ export interface User {
   email: string;
   name: string;
   role: Role;
+  /** Подтверждена ли почта (из /auth/me; в JWT не хранится). */
+  emailVerified?: boolean;
 }
 
 export interface Client {
