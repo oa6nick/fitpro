@@ -68,11 +68,56 @@ const STEPS = [
   { n: "4", title: "Видите прогресс", text: "Графики, посещаемость и сводка рисков — на одном экране." },
 ];
 
+// Цифры синхронизированы с серверным прайсом (server/src/services/plans.ts).
 const PRICING = [
-  { name: "Базовый", price: "990", clients: "до 10 клиентов", popular: false },
-  { name: "Профессиональный", price: "2 490", clients: "до 50 клиентов", popular: true },
-  { name: "Экспертный", price: "4 990", clients: "до 100 клиентов", popular: false },
-  { name: "Студия", price: "Индивид.", clients: "команда тренеров", popular: false },
+  { id: "basic", name: "Старт", price: "990", clients: "до 10 клиентов", popular: false },
+  { id: "pro", name: "Практик", price: "2 490", clients: "до 50 клиентов", popular: true },
+  { id: "expert", name: "Студия", price: "4 990", clients: "до 100 клиентов", popular: false },
+];
+
+const AUDIENCE = [
+  {
+    icon: Dumbbell,
+    title: "Онлайн-тренер",
+    text: "Ведёте 10–50 клиентов удалённо: программы, дневники и отчёты вместо переписок и таблиц.",
+  },
+  {
+    icon: Users,
+    title: "Тренер в зале с ведением",
+    text: "Очные тренировки + сопровождение между ними: задачи, привычки, замеры — всё под контролем.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Нутрициолог / куратор",
+    text: "Анкеты, еженедельные отчёты, база знаний с поэтапным доступом и метка «зона риска».",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Как клиент попадает в свой кабинет?",
+    a: "Вы создаёте карточку клиента и отправляете ему ссылку-приглашение (или письмо). Клиент придумывает пароль — и сразу видит свои тренировки, дневник и отчёты. Сам зарегистрироваться «мимо тренера» клиент не может.",
+  },
+  {
+    q: "Что входит в бесплатный период?",
+    a: "14 дней полного функционала и до 10 клиентов. Банковская карта не нужна.",
+  },
+  {
+    q: "Как оплачивать после пробного периода?",
+    a: "Онлайн-оплата сейчас подключается. До её запуска тариф активируется вручную — напишите нам, это занимает пару минут.",
+  },
+  {
+    q: "Клиенту нужно ставить приложение?",
+    a: "Нет. FitPro работает в браузере и полностью адаптирован под телефон — кабинет клиента открывается по ссылке.",
+  },
+  {
+    q: "Что с моими данными и данными клиентов?",
+    a: "Данные хранятся в изолированной базе, доступ к клиенту есть только у его тренера. Пароли хранятся в виде хэшей, доступ к кабинету — по защищённой сессии.",
+  },
+  {
+    q: "Можно ли перенести клиентов из таблиц?",
+    a: "Да: карточки клиентов заводятся быстро, а анкету каждый клиент заполняет сам при первом входе — вам не придётся перепечатывать данные.",
+  },
 ];
 
 export function LandingPage() {
@@ -91,6 +136,7 @@ export function LandingPage() {
             <a href="#features" className="hover:text-foreground">Возможности</a>
             <a href="#how" className="hover:text-foreground">Как это работает</a>
             <a href="#pricing" className="hover:text-foreground">Тарифы</a>
+            <a href="#faq" className="hover:text-foreground">Вопросы</a>
           </nav>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
@@ -128,7 +174,7 @@ export function LandingPage() {
             </Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Демо: trainer@fitpro.ru / password123
+            14 дней бесплатно · банковская карта не нужна
           </p>
 
           <DashboardMock />
@@ -208,10 +254,10 @@ export function LandingPage() {
             Платите за объём клиентов. Все функции — в каждом тарифе.
           </p>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-3">
           {PRICING.map((p) => (
             <div
-              key={p.name}
+              key={p.id}
               className={cn(
                 "relative flex flex-col rounded-xl border bg-card p-6",
                 p.popular && "border-primary shadow-lg ring-1 ring-primary",
@@ -225,7 +271,7 @@ export function LandingPage() {
               <h3 className="font-semibold">{p.name}</h3>
               <div className="mt-3">
                 <span className="text-3xl font-bold">{p.price}</span>
-                {p.price !== "Индивид." && <span className="text-muted-foreground"> ₽/мес</span>}
+                <span className="text-muted-foreground"> ₽/мес</span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{p.clients}</p>
               <ul className="mt-4 flex-1 space-y-2 text-sm">
@@ -238,14 +284,58 @@ export function LandingPage() {
                 )}
               </ul>
               <Button className="mt-6 w-full" variant={p.popular ? "default" : "outline"} asChild>
-                <Link to="/register">Выбрать</Link>
+                <Link to={`/register?plan=${p.id}`}>Начать бесплатно</Link>
               </Button>
             </div>
           ))}
         </div>
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          В MVP оплата не подключена — тарифы информационные.
+          Каждый тариф начинается с 14 дней бесплатно. Онлайн-оплата подключается — до её запуска
+          тариф активируется вручную.
         </p>
+      </section>
+
+      {/* Для кого */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-6xl px-4 py-20">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Кому подходит FitPro</h2>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {AUDIENCE.map((a) => (
+              <div key={a.title} className="rounded-xl border bg-card p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <a.icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="font-semibold">{a.title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">{a.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="mx-auto max-w-3xl px-4 py-20">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Частые вопросы</h2>
+        </div>
+        <div className="space-y-3">
+          {FAQ.map((item) => (
+            <details
+              key={item.q}
+              className="group rounded-xl border bg-card px-5 py-4 open:shadow-sm"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden">
+                {item.q}
+                <span className="text-muted-foreground transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+            </details>
+          ))}
+        </div>
       </section>
 
       {/* CTA */}
@@ -253,12 +343,12 @@ export function LandingPage() {
         <div className="overflow-hidden rounded-2xl bg-primary px-6 py-14 text-center text-primary-foreground">
           <h2 className="text-3xl font-bold tracking-tight">Соберите своё пространство тренера</h2>
           <p className="mx-auto mt-3 max-w-xl text-primary-foreground/90">
-            Зарегистрируйтесь как тренер или клиент и пройдите весь сценарий за пару минут.
+            Зарегистрируйтесь и пригласите первого клиента за пару минут. 14 дней бесплатно.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button size="lg" variant="secondary" asChild>
               <Link to="/register">
-                Создать аккаунт <ArrowRight className="h-4 w-4" />
+                Создать аккаунт тренера <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>

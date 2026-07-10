@@ -1,33 +1,73 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Spinner } from "@/components/common";
 
+// Публичные страницы — статически: лендинг и вход открываются без ожидания чанков.
 import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { JoinPage } from "@/pages/JoinPage";
 
-import { TrainerDashboard } from "@/pages/trainer/TrainerDashboard";
-import { ClientsPage } from "@/pages/trainer/ClientsPage";
-import { ClientCardPage } from "@/pages/trainer/ClientCardPage";
-import { ExercisesPage } from "@/pages/trainer/ExercisesPage";
-import { TemplatesPage } from "@/pages/trainer/TemplatesPage";
-import { AnalyticsPage } from "@/pages/trainer/AnalyticsPage";
-import { ReportsPage } from "@/pages/trainer/ReportsPage";
-import { TasksPage } from "@/pages/trainer/TasksPage";
-import { KnowledgePage } from "@/pages/trainer/KnowledgePage";
-import { FinancePage } from "@/pages/trainer/FinancePage";
+// Кабинеты — лениво: recharts и тяжёлые экраны не попадают в бандл лендинга.
+const TrainerDashboard = lazy(() =>
+  import("@/pages/trainer/TrainerDashboard").then((m) => ({ default: m.TrainerDashboard })),
+);
+const ClientsPage = lazy(() =>
+  import("@/pages/trainer/ClientsPage").then((m) => ({ default: m.ClientsPage })),
+);
+const ClientCardPage = lazy(() =>
+  import("@/pages/trainer/ClientCardPage").then((m) => ({ default: m.ClientCardPage })),
+);
+const ExercisesPage = lazy(() =>
+  import("@/pages/trainer/ExercisesPage").then((m) => ({ default: m.ExercisesPage })),
+);
+const TemplatesPage = lazy(() =>
+  import("@/pages/trainer/TemplatesPage").then((m) => ({ default: m.TemplatesPage })),
+);
+const AnalyticsPage = lazy(() =>
+  import("@/pages/trainer/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })),
+);
+const ReportsPage = lazy(() =>
+  import("@/pages/trainer/ReportsPage").then((m) => ({ default: m.ReportsPage })),
+);
+const TasksPage = lazy(() =>
+  import("@/pages/trainer/TasksPage").then((m) => ({ default: m.TasksPage })),
+);
+const KnowledgePage = lazy(() =>
+  import("@/pages/trainer/KnowledgePage").then((m) => ({ default: m.KnowledgePage })),
+);
+const FinancePage = lazy(() =>
+  import("@/pages/trainer/FinancePage").then((m) => ({ default: m.FinancePage })),
+);
 
-import { ClientHome } from "@/pages/client/ClientHome";
-import { ClientWorkouts } from "@/pages/client/ClientWorkouts";
-import { WorkoutDiary } from "@/pages/client/WorkoutDiary";
-import { ClientProgress } from "@/pages/client/ClientProgress";
-import { ClientProfilePage } from "@/pages/client/ClientProfilePage";
-import { ClientReports } from "@/pages/client/ClientReports";
-import { ClientTasks } from "@/pages/client/ClientTasks";
-import { ClientKnowledge } from "@/pages/client/ClientKnowledge";
+const ClientHome = lazy(() =>
+  import("@/pages/client/ClientHome").then((m) => ({ default: m.ClientHome })),
+);
+const ClientWorkouts = lazy(() =>
+  import("@/pages/client/ClientWorkouts").then((m) => ({ default: m.ClientWorkouts })),
+);
+const WorkoutDiary = lazy(() =>
+  import("@/pages/client/WorkoutDiary").then((m) => ({ default: m.WorkoutDiary })),
+);
+const ClientProgress = lazy(() =>
+  import("@/pages/client/ClientProgress").then((m) => ({ default: m.ClientProgress })),
+);
+const ClientProfilePage = lazy(() =>
+  import("@/pages/client/ClientProfilePage").then((m) => ({ default: m.ClientProfilePage })),
+);
+const ClientReports = lazy(() =>
+  import("@/pages/client/ClientReports").then((m) => ({ default: m.ClientReports })),
+);
+const ClientTasks = lazy(() =>
+  import("@/pages/client/ClientTasks").then((m) => ({ default: m.ClientTasks })),
+);
+const ClientKnowledge = lazy(() =>
+  import("@/pages/client/ClientKnowledge").then((m) => ({ default: m.ClientKnowledge })),
+);
 
 function RootRoute() {
   const { user, loading } = useAuth();
@@ -39,44 +79,46 @@ function RootRoute() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<RootRoute />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot" element={<ForgotPasswordPage />} />
-      <Route path="/join/:token" element={<JoinPage />} />
+    <Suspense fallback={<Spinner />}>
+      <Routes>
+        <Route path="/" element={<RootRoute />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot" element={<ForgotPasswordPage />} />
+        <Route path="/join/:token" element={<JoinPage />} />
 
-      {/* Тренер */}
-      <Route element={<ProtectedRoute role="trainer" />}>
-        <Route path="/t" element={<AppLayout />}>
-          <Route index element={<TrainerDashboard />} />
-          <Route path="clients" element={<ClientsPage />} />
-          <Route path="clients/:id" element={<ClientCardPage />} />
-          <Route path="exercises" element={<ExercisesPage />} />
-          <Route path="templates" element={<TemplatesPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="tasks" element={<TasksPage />} />
-          <Route path="knowledge" element={<KnowledgePage />} />
-          <Route path="finance" element={<FinancePage />} />
+        {/* Тренер */}
+        <Route element={<ProtectedRoute role="trainer" />}>
+          <Route path="/t" element={<AppLayout />}>
+            <Route index element={<TrainerDashboard />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="clients/:id" element={<ClientCardPage />} />
+            <Route path="exercises" element={<ExercisesPage />} />
+            <Route path="templates" element={<TemplatesPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="tasks" element={<TasksPage />} />
+            <Route path="knowledge" element={<KnowledgePage />} />
+            <Route path="finance" element={<FinancePage />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Клиент */}
-      <Route element={<ProtectedRoute role="client" />}>
-        <Route path="/c" element={<AppLayout />}>
-          <Route index element={<ClientHome />} />
-          <Route path="workouts" element={<ClientWorkouts />} />
-          <Route path="workouts/:id" element={<WorkoutDiary />} />
-          <Route path="progress" element={<ClientProgress />} />
-          <Route path="profile" element={<ClientProfilePage />} />
-          <Route path="reports" element={<ClientReports />} />
-          <Route path="tasks" element={<ClientTasks />} />
-          <Route path="knowledge" element={<ClientKnowledge />} />
+        {/* Клиент */}
+        <Route element={<ProtectedRoute role="client" />}>
+          <Route path="/c" element={<AppLayout />}>
+            <Route index element={<ClientHome />} />
+            <Route path="workouts" element={<ClientWorkouts />} />
+            <Route path="workouts/:id" element={<WorkoutDiary />} />
+            <Route path="progress" element={<ClientProgress />} />
+            <Route path="profile" element={<ClientProfilePage />} />
+            <Route path="reports" element={<ClientReports />} />
+            <Route path="tasks" element={<ClientTasks />} />
+            <Route path="knowledge" element={<ClientKnowledge />} />
+          </Route>
         </Route>
-      </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
