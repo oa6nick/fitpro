@@ -1,0 +1,14 @@
+[Unit]
+Description=FitPro: напоминания об окончании оплаченного периода
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=oneshot
+User=fitpro
+Group=fitpro
+WorkingDirectory=/opt/fitpro/current
+ExecStart=/usr/bin/npm run job:reminders --workspace server
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fitpro-reminders
