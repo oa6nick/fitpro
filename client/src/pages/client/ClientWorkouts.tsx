@@ -6,10 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Workout } from "@/lib/domain";
 
-const STATUS: Record<string, { label: string; variant: "secondary" | "success" | "destructive" }> = {
-  assigned: { label: "Назначена", variant: "secondary" },
+const STATUS: Record<string, { label: string; variant: "info" | "success" | "neutral" }> = {
+  assigned: { label: "Назначена", variant: "info" },
   completed: { label: "Выполнена", variant: "success" },
-  skipped: { label: "Пропущена", variant: "destructive" },
+  skipped: { label: "Пропущена", variant: "neutral" },
 };
 
 export function ClientWorkouts() {

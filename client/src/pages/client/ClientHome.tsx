@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Dumbbell, Flame, ClipboardCheck, ChevronRight, Award } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import { PageHeader, Spinner, StatCard, useAsync } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,24 +74,18 @@ export function ClientHome() {
         </Card>
 
         <div className="space-y-4">
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <Flame className="h-8 w-8 text-warning" />
-              <div>
-                <p className="text-2xl font-bold">{client?.streakWeeks ?? 0}</p>
-                <p className="text-xs text-muted-foreground">недель серии</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
-              <ClipboardCheck className="h-8 w-8 text-success" />
-              <div>
-                <p className="text-2xl font-bold">{completed}</p>
-                <p className="text-xs text-muted-foreground">тренировок выполнено</p>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            label="недель серии"
+            value={client?.streakWeeks ?? 0}
+            icon={Flame}
+            tone="warning"
+          />
+          <StatCard
+            label="тренировок выполнено"
+            value={completed}
+            icon={ClipboardCheck}
+            tone="success"
+          />
         </div>
       </div>
 

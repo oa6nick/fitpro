@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthShell } from "@/components/AuthShell";
 
 /** Саморегистрация — только для тренеров. Клиенты подключаются по приглашению (/join/:token). */
 export function RegisterPage() {
@@ -36,8 +37,8 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-sm">
+    <AuthShell>
+      <Card className="glass-elevated w-full max-w-sm rounded-hero border-0 shadow-panel">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Dumbbell className="h-6 w-6" />
@@ -91,6 +92,6 @@ export function RegisterPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }
