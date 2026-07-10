@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, LayoutGrid, List as ListIcon, AlertTriangle } from "lucide-react";
+import { Plus, LayoutGrid, List as ListIcon, AlertTriangle, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import { PageHeader, Spinner, useAsync, useIsMobile } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,9 @@ import {
 } from "@/lib/domain";
 
 export function ClientsPage() {
-  const [view, setView] = useState<"board" | "list">("board");
+  // На узком экране канбан режется — по умолчанию показываем список.
+  const isMobile = useIsMobile();
+  const [view, setView] = useState<"board" | "list">(isMobile ? "list" : "board");
   const { data, loading, error, reload } = useAsync<{ clients: Client[] }>(() =>
     api.get("/clients"),
   );
@@ -39,7 +41,8 @@ export function ClientsPage() {
   return (
     <div>
       <PageHeader
-        title="Клиенты (CRM)"
+        eyebrow="CRM"
+        title="Клиенты"
         description="Воронка по статусам — от заявки до архива. Цветом отмечена зона риска."
         action={
           <div className="flex items-center gap-2">
@@ -79,11 +82,11 @@ export function ClientsPage() {
 
 function Board({ clients }: { clients: Client[] }) {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-4">
+    <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
       {FUNNEL_ORDER.map((status) => {
         const list = clients.filter((c) => c.funnelStatus === status);
         return (
-          <div key={status} className="w-64 shrink-0">
+          <div key={status} className="w-[78vw] shrink-0 snap-start sm:w-64">
             <div className="mb-2 flex items-center justify-between px-1">
               <span className="type-caption">{FUNNEL_LABELS[status]}</span>
               <Badge variant={FUNNEL_TONES[status]}>{list.length}</Badge>
@@ -121,11 +124,13 @@ function Board({ clients }: { clients: Client[] }) {
   );
 }
 
+/** Список клиентов: на десктопе таблица, на мобиле — строки-карточки. */
 function ClientList({ clients }: { clients: Client[] }) {
   return (
     <Card>
       <CardContent className="p-0">
-        <table className="w-full text-sm">
+        {/* Десктоп */}
+        <table className="hidden w-full text-sm md:table">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
               <th className="p-3 font-medium">Имя</th>
@@ -159,6 +164,37 @@ function ClientList({ clients }: { clients: Client[] }) {
             ))}
           </tbody>
         </table>
+
+        {/* Мобильный */}
+        <ul className="divide-y divide-border md:hidden">
+          {clients.map((c) => (
+            <li key={c.id}>
+              <Link
+                to={`/t/clients/${c.id}`}
+                className="flex items-start justify-between gap-3 p-4 transition-colors hover:bg-accent/50"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{c.name}</p>
+                  {c.goal && (
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{c.goal}</p>
+                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <Badge variant={FUNNEL_TONES[c.funnelStatus]}>
+                      {FUNNEL_LABELS[c.funnelStatus]}
+                    </Badge>
+                    {c.riskFlag && c.funnelStatus === "active" && (
+                      <Badge variant="destructive">риск</Badge>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              </Link>
+            </li>
+          ))}
+          {clients.length === 0 && (
+            <li className="p-6 text-center text-sm text-muted-foreground">Клиентов пока нет</li>
+          )}
+        </ul>
       </CardContent>
     </Card>
   );

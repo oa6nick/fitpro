@@ -47,6 +47,7 @@ export function WorkoutDiary() {
         <ArrowLeft className="h-4 w-4" /> К тренировкам
       </Link>
       <PageHeader
+        eyebrow="Дневник"
         title={workout.title ?? "Тренировка"}
         description={workout.date ?? undefined}
         action={

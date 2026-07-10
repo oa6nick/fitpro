@@ -31,6 +31,7 @@ export function TrainerDashboard() {
   return (
     <div>
       <PageHeader
+        eyebrow="Обзор"
         title="Главная"
         description="Оперативная сводка по клиентам — за 10 секунд видно, где нужно действие."
       />

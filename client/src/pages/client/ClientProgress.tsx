@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, TableScroll } from "@/components/common";
 import { ChartTooltip } from "@/components/ChartTooltip";
 import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export function ClientProgress() {
   return (
     <div>
       <PageHeader
+        eyebrow="Динамика"
         title="Мой прогресс"
         description="Замеры и динамика. Вносите регулярно — так виден результат."
         action={<AddMeasurement onAdded={reload} />}
@@ -72,7 +73,8 @@ export function ClientProgress() {
             </Card>
             <Card>
               <CardContent className="p-0">
-                <table className="w-full text-sm">
+                <TableScroll>
+                <table className="w-full min-w-[520px] text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
                       <th className="p-3 font-medium">Дата</th>
@@ -94,6 +96,7 @@ export function ClientProgress() {
                     ))}
                   </tbody>
                 </table>
+                </TableScroll>
               </CardContent>
             </Card>
           </div>

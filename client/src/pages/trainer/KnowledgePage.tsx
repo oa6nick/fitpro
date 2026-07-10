@@ -39,6 +39,7 @@ export function KnowledgePage() {
   return (
     <div>
       <PageHeader
+        eyebrow="Материалы"
         title="База знаний"
         description="Материалы по категориям с поэтапным открытием по неделям сопровождения."
         action={
@@ -70,6 +71,7 @@ export function KnowledgePage() {
                           await api.delete(`/knowledge/${it.id}`);
                           reload();
                         }}
+                        aria-label="Удалить"
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground" />
                       </Button>

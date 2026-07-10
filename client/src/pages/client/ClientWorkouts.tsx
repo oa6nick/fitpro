@@ -19,7 +19,11 @@ export function ClientWorkouts() {
 
   return (
     <div>
-      <PageHeader title="Мои тренировки" description="Назначенные программы и их статус." />
+      <PageHeader
+        eyebrow="Программа"
+        title="Мои тренировки"
+        description="Назначенные программы и их статус."
+      />
       {loading && <Spinner />}
       {error && <p className="text-sm text-destructive">{error}</p>}
       {data &&

@@ -34,6 +34,7 @@ export function FinancePage() {
   return (
     <div>
       <PageHeader
+        eyebrow="Деньги"
         title="Финансы"
         description="История оплат, статусы и продления. Без реального эквайринга (учёт вручную)."
         action={
@@ -64,7 +65,42 @@ export function FinancePage() {
           ) : (
             <Card>
               <CardContent className="p-0">
-                <table className="w-full text-sm">
+                {/* Мобильный: строки-карточки вместо обрезанной таблицы */}
+                <ul className="divide-y divide-border md:hidden">
+                  {data.payments.map((p) => (
+                    <li key={p.id} className="space-y-2 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{p.clientName}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {p.date}
+                            {p.nextRenewalDate && ` · продление ${p.nextRenewalDate}`}
+                          </p>
+                        </div>
+                        <p className="shrink-0 font-semibold tabular-nums">
+                          {p.amount.toLocaleString("ru-RU")} ₽
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant={p.status === "paid" ? "success" : "destructive"}>
+                          {p.status === "paid" ? "Оплачено" : "Просрочено"}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            await api.post(`/finance/${p.id}/remind`);
+                          }}
+                        >
+                          <Bell className="h-4 w-4" /> Напомнить
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Десктоп */}
+                <table className="hidden w-full text-sm md:table">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
                       <th className="p-3 font-medium">Клиент</th>
@@ -79,7 +115,7 @@ export function FinancePage() {
                     {data.payments.map((p) => (
                       <tr key={p.id} className="border-b last:border-0">
                         <td className="p-3 font-medium">{p.clientName}</td>
-                        <td className="p-3">{p.amount.toLocaleString("ru-RU")} ₽</td>
+                        <td className="p-3 tabular-nums">{p.amount.toLocaleString("ru-RU")} ₽</td>
                         <td className="p-3 text-muted-foreground">{p.date}</td>
                         <td className="p-3">
                           <Badge variant={p.status === "paid" ? "success" : "destructive"}>

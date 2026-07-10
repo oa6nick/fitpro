@@ -35,6 +35,7 @@ export function ReportsPage() {
   return (
     <div>
       <PageHeader
+        eyebrow="Обратная связь"
         title="Отчёты"
         description="Конструктор еженедельной формы и проверка заполнений клиентов."
       />
@@ -189,6 +190,7 @@ function Forms() {
                         await api.delete(`/reports/forms/${f.id}`);
                         reload();
                       }}
+                      aria-label="Удалить"
                     >
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>

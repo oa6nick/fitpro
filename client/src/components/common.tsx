@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Sparkles, type LucideIcon } from "lucide-react";
+import { Inbox, Sparkles, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -17,13 +17,13 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-      <div>
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+      <div className="min-w-0">
         {eyebrow && <p className="type-eyebrow mb-1.5">{eyebrow}</p>}
         <h1 className="type-page-title">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
-      {action}
+      {action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}
     </div>
   );
 }
@@ -52,10 +52,11 @@ export function Spinner({ label = "Загрузка…" }: { label?: string }) {
   );
 }
 
+/** Единый вид пустоты: пунктирное стекло + иконка в пилюле (по умолчанию Inbox). */
 export function EmptyState({
   text,
   hint,
-  icon: Icon,
+  icon: Icon = Inbox,
   action,
 }: {
   text: string;
@@ -64,12 +65,10 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="glass-card flex flex-col items-center gap-3 rounded-hero border-dashed py-16 text-center">
-      {Icon && (
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <Icon className="h-6 w-6 text-muted-foreground" />
-        </div>
-      )}
+    <div className="glass-card flex flex-col items-center gap-3 rounded-hero border-dashed px-6 py-12 text-center sm:py-16">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <Icon className="h-6 w-6 text-muted-foreground" />
+      </div>
       <p className="text-sm text-muted-foreground">{text}</p>
       {hint && <p className="max-w-sm text-xs text-muted-foreground/70">{hint}</p>}
       {action}
@@ -114,25 +113,46 @@ export function StatCard({
         className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/[0.08]"
         aria-hidden
       />
-      <CardContent className="flex items-start justify-between gap-3 p-5">
-        <div>
-          <p className="text-2xl font-semibold tabular-nums leading-tight">{value}</p>
+      <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-5">
+        <div className="min-w-0">
+          <p className="truncate text-xl font-semibold leading-tight tabular-nums sm:text-2xl">
+            {value}
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">{label}</p>
           {hint && <p className="mt-0.5 text-[11px] text-muted-foreground/70">{hint}</p>}
         </div>
         {Icon && (
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10",
               STAT_TONES[tone],
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
         )}
       </CardContent>
     </Card>
   );
+}
+
+/** Узкий экран (< md). Для выбора мобильных раскладок вместо обрезанных таблиц. */
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return isMobile;
+}
+
+/** Горизонтальный скролл для таблиц — вместо обрезания колонок на узких экранах. */
+export function TableScroll({ children }: { children: React.ReactNode }) {
+  return <div className="w-full overflow-x-auto">{children}</div>;
 }
 
 /** Простой загрузчик данных с состояниями. */

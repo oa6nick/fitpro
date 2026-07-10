@@ -28,6 +28,7 @@ export function ClientTasks() {
   return (
     <div>
       <PageHeader
+        eyebrow="Сопровождение"
         title="Привычки недели"
         description="Отмечайте выполнение по дням — тренер видит ваш % соблюдения."
       />

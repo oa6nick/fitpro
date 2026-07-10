@@ -11,7 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, TableScroll } from "@/components/common";
 import { ChartTooltip } from "@/components/ChartTooltip";
 import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,7 @@ export function ClientCardPage() {
         <ArrowLeft className="h-4 w-4" /> К списку клиентов
       </Link>
       <PageHeader
+        eyebrow="Карточка клиента"
         title={client.name}
         description={client.goal ?? undefined}
         action={
@@ -149,33 +150,42 @@ function InviteBlock({ clientId }: { clientId: string }) {
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-dashed bg-muted/30 p-3 text-sm">
-      <div className="flex flex-wrap items-center gap-2">
-        <UserPlus className="h-4 w-4 shrink-0 text-muted-foreground" />
-        {link ? (
-          <>
-            <span className="text-muted-foreground">Ссылка-приглашение (7 дней):</span>
-            <code className="max-w-full truncate rounded bg-muted px-2 py-1">{link}</code>
-            {copied && <Badge variant="secondary">Скопирована</Badge>}
-          </>
-        ) : (
-          <>
-            <span className="text-muted-foreground">
-              У клиента ещё нет кабинета — пригласите его:
-            </span>
-            <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              placeholder="email (необязательно)"
-              className="h-8 w-56"
-            />
-            <Button size="sm" onClick={createInvite} disabled={busy}>
-              {busy ? "Создаём…" : email ? "Отправить приглашение" : "Создать ссылку"}
-            </Button>
-          </>
-        )}
-        {error && <span className="text-destructive">{error}</span>}
+    <div className="mb-4 rounded-panel border border-dashed border-border bg-muted/30 p-4 text-sm">
+      <div className="flex items-start gap-2">
+        <UserPlus className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 flex-1 space-y-2">
+          {link ? (
+            <>
+              <p className="text-muted-foreground">Ссылка-приглашение (действует 7 дней):</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2 py-1.5 text-xs">
+                  {link}
+                </code>
+                {copied && <Badge variant="success">Скопирована</Badge>}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-muted-foreground">
+                У клиента ещё нет кабинета — пригласите его:
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  placeholder="email (необязательно)"
+                  className="h-10 sm:max-w-xs"
+                  aria-label="Email клиента для приглашения"
+                />
+                <Button size="sm" onClick={createInvite} disabled={busy} className="shrink-0">
+                  {busy ? "Создаём…" : email ? "Отправить приглашение" : "Создать ссылку"}
+                </Button>
+              </div>
+            </>
+          )}
+          {error && <p className="text-destructive">{error}</p>}
+        </div>
       </div>
     </div>
   );
@@ -342,7 +352,7 @@ function NotesTab({
                   {new Date(n.createdAt).toLocaleString("ru-RU")}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => remove(n.id)}>
+              <Button variant="ghost" size="icon" onClick={() => remove(n.id)} aria-label="Удалить заметку">
                 <Trash2 className="h-4 w-4 text-muted-foreground" />
               </Button>
             </CardContent>
@@ -515,7 +525,8 @@ function ProgressTab({ measurements }: { measurements: Measurement[] }) {
       </Card>
       <Card>
         <CardContent className="p-0">
-          <table className="w-full text-sm">
+          <TableScroll>
+          <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
                 <th className="p-3 font-medium">Дата</th>
@@ -537,6 +548,7 @@ function ProgressTab({ measurements }: { measurements: Measurement[] }) {
               ))}
             </tbody>
           </table>
+          </TableScroll>
         </CardContent>
       </Card>
     </div>

@@ -53,6 +53,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
   return (
     <div>
       <PageHeader
+        eyebrow="О себе"
         title="Анкета"
         description="Расскажите о себе — тренер составит программу под ваши цели и ограничения."
       />

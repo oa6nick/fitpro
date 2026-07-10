@@ -39,7 +39,8 @@ export function TemplatesPage() {
   return (
     <div>
       <PageHeader
-        title="Конструктор тренировок"
+        eyebrow="Конструктор"
+        title="Шаблоны тренировок"
         description="Шаблоны программ по целям: собираются из упражнений и назначаются клиенту в один клик."
         action={
           <Button onClick={() => setBuilding(true)}>
@@ -71,6 +72,7 @@ export function TemplatesPage() {
                       await api.delete(`/templates/${t.id}`);
                       reload();
                     }}
+                    aria-label="Удалить"
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
@@ -201,7 +203,7 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
                   onChange={(e) => update(i, { weight: e.target.value })}
                   placeholder="вес"
                 />
-                <Button variant="ghost" size="icon" onClick={() => remove(i)}>
+                <Button variant="ghost" size="icon" onClick={() => remove(i)} aria-label="Убрать упражнение">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

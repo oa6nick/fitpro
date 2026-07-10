@@ -44,15 +44,15 @@ export function EmailVerifyBanner() {
 
   return (
     <div
-      className="mb-4 rounded-panel border border-warning/30 bg-warning/10 p-3 text-sm"
+      className="mb-4 rounded-panel border border-warning/30 bg-warning/10 px-3 py-2.5 text-sm"
       role="status"
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <MailCheck className="h-4 w-4 shrink-0 text-warning" />
         {step === "idle" ? (
           <>
-            <span className="text-foreground">
-              Подтвердите почту <b>{user.email}</b> — пришлём код.
+            <span className="min-w-0 flex-1 truncate text-foreground">
+              Подтвердите почту <b className="font-medium">{user.email}</b>
             </span>
             <Button size="sm" variant="outline" onClick={requestCode} disabled={busy}>
               {busy ? "Отправляем…" : "Отправить код"}

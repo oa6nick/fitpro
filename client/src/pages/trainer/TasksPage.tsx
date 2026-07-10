@@ -20,6 +20,7 @@ export function TasksPage() {
   return (
     <div>
       <PageHeader
+        eyebrow="Сопровождение"
         title="Задачи и привычки"
         description="Недельные привычки клиента и контроль % соблюдения."
       />
@@ -87,6 +88,7 @@ function LibraryTab() {
                       await api.delete(`/tasks/habits/${h.id}`);
                       reload();
                     }}
+                    aria-label="Удалить"
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>

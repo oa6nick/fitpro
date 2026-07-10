@@ -36,7 +36,8 @@ export function ExercisesPage() {
   return (
     <div>
       <PageHeader
-        title="Библиотека упражнений"
+        eyebrow="Библиотека"
+        title="Упражнения"
         description="База упражнений тренера с техникой, ошибками и вариантами."
         action={
           <Button onClick={() => setCreating(true)}>
@@ -60,7 +61,7 @@ export function ExercisesPage() {
                       <span className="font-semibold">{ex.name}</span>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => setEditing(ex)}>
+                      <Button variant="ghost" size="icon" onClick={() => setEditing(ex)} aria-label={`Редактировать: `}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -70,6 +71,7 @@ export function ExercisesPage() {
                           await api.delete(`/exercises/${ex.id}`);
                           reload();
                         }}
+                        aria-label="Удалить"
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground" />
                       </Button>

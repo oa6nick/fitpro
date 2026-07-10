@@ -25,7 +25,11 @@ export function ClientHome() {
 
   return (
     <div>
-      <PageHeader title={`Привет, ${user?.name}!`} description="Ваш сегодняшний фокус" />
+      <PageHeader
+        eyebrow="Мой кабинет"
+        title={`Привет, ${user?.name}!`}
+        description="Ваш сегодняшний фокус"
+      />
 
       {!profileFilled && (
         <Card className="mb-4 border-warning/30 bg-warning/10">

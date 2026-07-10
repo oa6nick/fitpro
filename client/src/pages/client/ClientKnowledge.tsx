@@ -20,6 +20,7 @@ export function ClientKnowledge() {
   return (
     <div>
       <PageHeader
+        eyebrow="База знаний"
         title="Материалы"
         description={
           data ? `Вы на ${data.currentWeek}-й неделе сопровождения. Материалы открываются поэтапно.` : "База знаний"

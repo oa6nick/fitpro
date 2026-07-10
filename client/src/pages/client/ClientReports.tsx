@@ -48,7 +48,11 @@ export function ClientReports() {
 
   return (
     <div>
-      <PageHeader title="Отчёты" description="Заполните еженедельный отчёт тренеру." />
+      <PageHeader
+        eyebrow="Обратная связь"
+        title="Отчёты"
+        description="Заполните еженедельный отчёт тренеру."
+      />
       {form.loading ? (
         <Spinner />
       ) : !form.data?.form ? (
