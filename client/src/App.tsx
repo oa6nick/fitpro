@@ -43,6 +43,9 @@ const KnowledgePage = lazy(() =>
 const FinancePage = lazy(() =>
   import("@/pages/trainer/FinancePage").then((m) => ({ default: m.FinancePage })),
 );
+const TrainerWorkoutView = lazy(() =>
+  import("@/pages/trainer/TrainerWorkoutView").then((m) => ({ default: m.TrainerWorkoutView })),
+);
 
 const ClientHome = lazy(() =>
   import("@/pages/client/ClientHome").then((m) => ({ default: m.ClientHome })),
@@ -100,6 +103,7 @@ export default function App() {
             <Route path="tasks" element={<TasksPage />} />
             <Route path="knowledge" element={<KnowledgePage />} />
             <Route path="finance" element={<FinancePage />} />
+            <Route path="workouts/:id" element={<TrainerWorkoutView />} />
           </Route>
         </Route>
 

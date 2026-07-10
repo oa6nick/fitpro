@@ -206,6 +206,13 @@ export const workouts = pgTable("workouts", {
   /** Обратная связь клиента по всей тренировке (переиспользуем enum feeling). */
   clientFeeling: feeling("client_feeling"),
   clientComment: text("client_comment"),
+  /**
+   * Проверка тренером. text, а не pgEnum — чтобы не делать ALTER TYPE на проде.
+   * none — легаси/не требует проверки; pending — клиент завершил; reviewed — тренер проверил.
+   */
+  reviewStatus: text("review_status").notNull().default("none"),
+  trainerComment: text("trainer_comment"),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

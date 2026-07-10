@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Check, CheckCheck, Dumbbell, PlayCircle, Plus } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Check, CheckCheck, Dumbbell, PlayCircle, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync } from "@/components/common";
 import { RestTimer } from "@/components/RestTimer";
@@ -101,6 +101,25 @@ export function WorkoutDiary() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {workout.reviewStatus === "reviewed" && (
+        <Card className="mb-4 border-success/40 bg-success/5">
+          <CardContent className="p-4 text-sm">
+            <p className="type-caption mb-1 flex items-center gap-1.5 text-success">
+              <BadgeCheck className="h-3.5 w-3.5" /> Тренер проверил тренировку
+            </p>
+            <p>
+              {workout.trainerComment || (
+                <span className="text-muted-foreground">Без комментария</span>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {workout.status === "completed" && workout.reviewStatus === "pending" && (
+        <p className="mb-4 text-sm text-muted-foreground">Тренировка отправлена тренеру на проверку.</p>
       )}
 
       {workout.clientComment && (

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Users, AlertTriangle, Inbox, CalendarClock, UserCheck } from "lucide-react";
+import { Users, AlertTriangle, Inbox, CalendarClock, UserCheck, BadgeCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, StatCard, useAsync } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,16 +11,19 @@ interface DashboardData {
     newRequests: number;
     atRisk: number;
     ending: number;
+    unreviewed: number;
   };
   atRisk: { id: string; name: string; lastActivityAt: string | null }[];
   newRequests: { id: string; name: string; funnelStatus: string }[];
   ending: { id: string; name: string; daysToEnd: number | null }[];
+  unreviewed: { id: string; title: string | null; date: string | null; clientName: string }[];
 }
 
 const WIDGETS = [
   { key: "total", label: "Всего клиентов", icon: Users, tone: "info" },
   { key: "active", label: "Активные", icon: UserCheck, tone: "success" },
   { key: "newRequests", label: "Новые заявки и анкеты", icon: Inbox, tone: "default" },
+  { key: "unreviewed", label: "Непроверенных тренировок", icon: BadgeCheck, tone: "info" },
   { key: "atRisk", label: "Зона риска (7+ дней)", icon: AlertTriangle, tone: "destructive" },
   { key: "ending", label: "Заканчивается сопровождение", icon: CalendarClock, tone: "warning" },
 ] as const;
@@ -39,17 +42,40 @@ export function TrainerDashboard() {
       {error && <p className="text-sm text-destructive">{error}</p>}
       {data && (
         <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
             {WIDGETS.map((w) => (
               <StatCard
                 key={w.key}
                 label={w.label}
-                value={data.counts[w.key]}
+                value={data.counts[w.key] ?? 0}
                 icon={w.icon}
                 tone={w.tone}
               />
             ))}
           </div>
+
+          {data.unreviewed?.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-base">Ждут вашей проверки</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {data.unreviewed.map((w) => (
+                  <Link
+                    key={w.id}
+                    to={`/t/workouts/${w.id}`}
+                    className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors hover:bg-accent"
+                  >
+                    <span className="font-medium">
+                      {w.clientName}
+                      {w.title ? ` · ${w.title}` : ""}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{w.date ?? ""}</span>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <ListCard title="Зона риска" empty="Нет клиентов в зоне риска">

@@ -123,4 +123,40 @@ describe("завершение тренировки", () => {
     expect(res.body.workout.tonnage).toBe(1840);
     expect(res.body.items[0].logs.length).toBeGreaterThan(0);
   });
+
+  it("завершение клиентом ставит тренировку в очередь на проверку", async () => {
+    const res = await trainer.get(`/api/workouts/${workoutId}`);
+    expect(res.body.workout.reviewStatus).toBe("pending");
+  });
+});
+
+describe("проверка тренером", () => {
+  it("дашборд считает непроверенные тренировки и отдаёт список", async () => {
+    const res = await trainer.get("/api/dashboard");
+    expect(res.status).toBe(200);
+    expect(res.body.counts.unreviewed).toBe(1);
+    expect(res.body.unreviewed[0].clientName).toBe("Клиент дневника");
+  });
+
+  it("клиент не может проверить тренировку (403)", async () => {
+    const res = await client.patch(`/api/workouts/${workoutId}/review`).send({ comment: "я сам" });
+    expect(res.status).toBe(403);
+  });
+
+  it("тренер проверяет с комментарием → reviewed, счётчик обнуляется", async () => {
+    const res = await trainer
+      .patch(`/api/workouts/${workoutId}/review`)
+      .send({ comment: "Отличная работа, добавим вес" });
+    expect(res.status).toBe(200);
+    expect(res.body.workout.reviewStatus).toBe("reviewed");
+    expect(res.body.workout.trainerComment).toBe("Отличная работа, добавим вес");
+    expect(res.body.workout.reviewedAt).toBeTruthy();
+
+    const dash = await trainer.get("/api/dashboard");
+    expect(dash.body.counts.unreviewed).toBe(0);
+
+    // Клиент видит комментарий тренера.
+    const mine = await client.get(`/api/workouts/${workoutId}`);
+    expect(mine.body.workout.trainerComment).toBe("Отличная работа, добавим вес");
+  });
 });

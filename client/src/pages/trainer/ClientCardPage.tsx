@@ -387,27 +387,38 @@ function WorkoutsTab({
         <EmptyState text="Тренировки ещё не назначены" />
       ) : (
         workouts.map((w) => (
-          <Card key={w.id}>
-            <CardContent className="flex items-center justify-between pt-6">
-              <div>
-                <p className="font-medium">{w.title ?? "Тренировка"}</p>
-                <p className="text-xs text-muted-foreground">
-                  {w.date ?? "без даты"}
-                </p>
-              </div>
-              <Badge
-                variant={
-                  w.status === "completed"
-                    ? "success"
-                    : w.status === "skipped"
-                      ? "destructive"
-                      : "secondary"
-                }
-              >
-                {STATUS_LABEL[w.status]}
-              </Badge>
-            </CardContent>
-          </Card>
+          <Link
+            key={w.id}
+            to={`/t/workouts/${w.id}`}
+            className="block rounded-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Card className="transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:shadow-panel">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 pt-6">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{w.title ?? "Тренировка"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {w.date ?? "без даты"}
+                    {w.tonnage ? ` · ${Math.round(w.tonnage).toLocaleString("ru-RU")} кг` : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {w.reviewStatus === "pending" && <Badge variant="warning">на проверке</Badge>}
+                  {w.reviewStatus === "reviewed" && <Badge variant="info">проверена</Badge>}
+                  <Badge
+                    variant={
+                      w.status === "completed"
+                        ? "success"
+                        : w.status === "skipped"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                  >
+                    {STATUS_LABEL[w.status]}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))
       )}
     </div>

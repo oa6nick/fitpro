@@ -275,6 +275,8 @@ workoutsRouter.patch(
       patch.tonnage = await computeTonnage(workout.id);
       if (data.feeling) patch.clientFeeling = data.feeling;
       if (data.comment) patch.clientComment = data.comment;
+      // Завершённая клиентом тренировка ждёт проверки тренером.
+      patch.reviewStatus = "pending";
     }
 
     const [updated] = await db
@@ -286,8 +288,48 @@ workoutsRouter.patch(
     let earned: string[] = [];
     if (isClient) {
       await touchClientActivity(client.id);
-      if (data.status === "completed") earned = await recomputeAchievements(client.id);
+      if (data.status === "completed") {
+        earned = await recomputeAchievements(client.id);
+        await notify(
+          client.trainerId,
+          `${client.name} завершил(а) тренировку${updated?.title ? ` «${updated.title}»` : ""}`,
+          `/t/workouts/${workout.id}`,
+        );
+      }
     }
     res.json({ workout: updated, earnedAchievements: earned });
+  }),
+);
+
+// Тренер: проверить тренировку и оставить комментарий.
+workoutsRouter.patch(
+  "/:id/review",
+  asyncH(async (req, res) => {
+    if (req.user!.role !== "trainer") throw new HttpError(403, "Только для тренера");
+    const { workout, client } = await loadAuthorized(req);
+    const { comment } = z
+      .object({ comment: z.string().max(2000).optional() })
+      .parse(req.body ?? {});
+
+    const [updated] = await db
+      .update(workouts)
+      .set({
+        reviewStatus: "reviewed",
+        reviewedAt: new Date(),
+        trainerComment: comment ?? null,
+      })
+      .where(eq(workouts.id, workout.id))
+      .returning();
+
+    if (client.userId) {
+      await notify(
+        client.userId,
+        comment
+          ? "Тренер проверил тренировку и оставил комментарий"
+          : "Тренер проверил вашу тренировку",
+        `/c/workouts/${workout.id}`,
+      );
+    }
+    res.json({ workout: updated });
   }),
 );

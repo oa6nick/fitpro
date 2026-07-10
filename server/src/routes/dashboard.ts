@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { clients } from "../db/schema.js";
+import { clients, workouts } from "../db/schema.js";
 import { requireAuth, requireRole } from "../auth/middleware.js";
 import { asyncH } from "../lib/http.js";
 import { isAtRisk, daysUntil } from "../services/risk.js";
@@ -27,6 +27,24 @@ dashboardRouter.get(
     const byStatus: Record<string, number> = {};
     for (const c of enriched) byStatus[c.funnelStatus] = (byStatus[c.funnelStatus] ?? 0) + 1;
 
+    // Тренировки, завершённые клиентами и ждущие проверки.
+    const clientIds = rows.map((c) => c.id);
+    const unreviewed = clientIds.length
+      ? await db
+          .select({
+            id: workouts.id,
+            clientId: workouts.clientId,
+            title: workouts.title,
+            date: workouts.date,
+          })
+          .from(workouts)
+          .where(
+            and(inArray(workouts.clientId, clientIds), eq(workouts.reviewStatus, "pending")),
+          )
+          .orderBy(desc(workouts.date))
+      : [];
+    const nameById = new Map(rows.map((c) => [c.id, c.name]));
+
     res.json({
       counts: {
         total: enriched.length,
@@ -38,7 +56,14 @@ dashboardRouter.get(
         ending: enriched.filter(
           (c) => c.daysToEnd !== null && c.daysToEnd <= 7 && c.daysToEnd >= 0,
         ).length,
+        unreviewed: unreviewed.length,
       },
+      unreviewed: unreviewed.map((w) => ({
+        id: w.id,
+        title: w.title,
+        date: w.date,
+        clientName: nameById.get(w.clientId) ?? "",
+      })),
       byStatus,
       atRisk: enriched
         .filter((c) => c.riskFlag && c.funnelStatus === "active")

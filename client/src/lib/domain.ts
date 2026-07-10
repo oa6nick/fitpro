@@ -141,6 +141,10 @@ export interface Workout {
   tonnage: number | null;
   clientFeeling: Feeling | null;
   clientComment: string | null;
+  /** none — не требует проверки; pending — клиент завершил; reviewed — тренер проверил. */
+  reviewStatus: "none" | "pending" | "reviewed";
+  trainerComment: string | null;
+  reviewedAt: string | null;
   createdAt: string;
 }
 
