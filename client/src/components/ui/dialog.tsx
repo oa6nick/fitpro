@@ -16,7 +16,15 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "glass-elevated fixed left-1/2 top-1/2 z-50 grid max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-hero p-5 animate-scale-in sm:w-full sm:p-6",
+        "glass-elevated fixed left-1/2 top-1/2 z-50 grid max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-hero p-5 sm:w-full sm:p-6",
+        // Анимации только через tailwindcss-animate: он пишет --tw-enter-* переменные,
+        // а не сырой transform, поэтому центрирующий -translate-*-1/2 не затирается.
+        // Без slide-in-from-* диалог «прыгает» из угла в центр.
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
+        "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
         className,
       )}
       {...props}

@@ -1,9 +1,10 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
@@ -26,6 +27,35 @@ const SelectTrigger = React.forwardRef<
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
+/** Кнопки прокрутки обязательны: Viewport в popper-режиме имеет фиксированную высоту. */
+const SelectScrollUpButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollUpButton
+    ref={ref}
+    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    {...props}
+  >
+    <ChevronUp className="h-4 w-4" />
+  </SelectPrimitive.ScrollUpButton>
+));
+SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
+
+const SelectScrollDownButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollDownButton
+    ref={ref}
+    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    {...props}
+  >
+    <ChevronDown className="h-4 w-4" />
+  </SelectPrimitive.ScrollDownButton>
+));
+SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
+
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
@@ -34,27 +64,46 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
+        // Непрозрачный фон: сквозь стекло просвечивал контент под списком.
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-panel border border-border bg-popover text-popover-foreground shadow-panel",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        position === "popper" && "data-[side=bottom]:translate-y-1",
+        // Направленные slide вместо статичного translate-y-1 (его затирал keyframe enter).
+        "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2",
         className,
       )}
       position={position}
+      sideOffset={4}
       {...props}
     >
+      <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
           "p-1",
+          // НЕ фиксируем высоту в trigger-height (так список зажимался до одного пункта):
+          // высоту ограничивает max-h-96 на Content, ширину подгоняем под триггер.
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+            "w-full min-w-[var(--radix-select-trigger-width)]",
         )}
       >
         {children}
       </SelectPrimitive.Viewport>
+      <SelectScrollDownButton />
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 ));
 SelectContent.displayName = SelectPrimitive.Content.displayName;
+
+const SelectLabel = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Label
+    ref={ref}
+    className={cn("px-2 py-1.5 text-xs font-semibold text-muted-foreground", className)}
+    {...props}
+  />
+));
+SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
@@ -79,4 +128,14 @@ const SelectItem = React.forwardRef<
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
-export { Select, SelectValue, SelectTrigger, SelectContent, SelectItem };
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+};
