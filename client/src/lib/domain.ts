@@ -89,6 +89,7 @@ export interface Client {
   funnelStatus: FunnelStatus;
   lastActivityAt: string | null;
   streakWeeks: number;
+  isDemo?: boolean;
   createdAt: string;
   riskFlag?: boolean;
 }

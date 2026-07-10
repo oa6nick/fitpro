@@ -98,6 +98,8 @@ export const clients = pgTable("clients", {
   funnelStatus: funnelStatus("funnel_status").notNull().default("new"),
   lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
   streakWeeks: integer("streak_weeks").notNull().default(0),
+  /** Демо-клиент, созданный при регистрации тренера: не считается в лимит тарифа. */
+  isDemo: boolean("is_demo").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -407,6 +409,11 @@ export const payments = pgTable("payments", {
   date: date("date").notNull(),
   status: paymentStatus("status").notNull().default("paid"),
   nextRenewalDate: date("next_renewal_date"),
+  /** Оплаченный период. Конец периода = periodEnd ?? nextRenewalDate (легаси). */
+  periodStart: date("period_start"),
+  periodEnd: date("period_end"),
+  /** Когда отправлено автонапоминание — защита от повторной отправки. */
+  remindedAt: timestamp("reminded_at", { withTimezone: true }),
 });
 
 /* ------------------------------------------------------------------ */

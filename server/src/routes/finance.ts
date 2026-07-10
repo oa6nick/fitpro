@@ -48,6 +48,8 @@ const schema = z.object({
   date: z.string(),
   status: z.enum(["paid", "overdue"]).default("paid"),
   nextRenewalDate: z.string().optional(),
+  periodStart: z.string().optional(),
+  periodEnd: z.string().optional(),
 });
 
 financeRouter.post(

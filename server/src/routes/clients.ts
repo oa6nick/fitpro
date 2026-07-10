@@ -83,10 +83,11 @@ clientsRouter.post(
       .from(trainerSubscriptions)
       .where(eq(trainerSubscriptions.trainerId, trainerId));
     if (sub) {
+      // Демо-клиент не занимает место в тарифе.
       const [{ value: total }] = await db
         .select({ value: count() })
         .from(clients)
-        .where(eq(clients.trainerId, trainerId));
+        .where(and(eq(clients.trainerId, trainerId), eq(clients.isDemo, false)));
       if (total >= sub.clientLimit) {
         throw new HttpError(
           402,

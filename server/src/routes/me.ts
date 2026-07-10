@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { clients, clientProfiles, achievements } from "../db/schema.js";
+import { clients, clientProfiles, achievements, payments } from "../db/schema.js";
 import { desc } from "drizzle-orm";
 import { requireAuth, requireRole } from "../auth/middleware.js";
 import { resolveClientForUser, touchClientActivity } from "../services/access.js";
@@ -25,7 +25,27 @@ meRouter.get(
       .from(achievements)
       .where(eq(achievements.clientId, client.id))
       .orderBy(desc(achievements.earnedAt));
-    res.json({ client, profile: profile ?? null, achievements: badges });
+
+    // Последняя оплата — чтобы показать «Оплачено до …» и предупредить о продлении.
+    const [lastPayment] = await db
+      .select()
+      .from(payments)
+      .where(eq(payments.clientId, client.id))
+      .orderBy(desc(payments.date))
+      .limit(1);
+
+    res.json({
+      client,
+      profile: profile ?? null,
+      achievements: badges,
+      payment: lastPayment
+        ? {
+            paidUntil: lastPayment.periodEnd ?? lastPayment.nextRenewalDate,
+            status: lastPayment.status,
+            amount: lastPayment.amount,
+          }
+        : null,
+    });
   }),
 );
 

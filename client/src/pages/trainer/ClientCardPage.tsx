@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, AlertTriangle, UserPlus } from "lucide-react";
 import {
   LineChart,
@@ -81,11 +81,15 @@ export function ClientCardPage() {
         title={client.name}
         description={client.goal ?? undefined}
         action={
-          client.riskFlag && client.funnelStatus === "active" ? (
-            <Badge variant="destructive" className="gap-1">
-              <AlertTriangle className="h-3 w-3" /> Зона риска
-            </Badge>
-          ) : undefined
+          <>
+            {client.isDemo && <Badge variant="info">Демо</Badge>}
+            {client.riskFlag && client.funnelStatus === "active" && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="h-3 w-3" /> Зона риска
+              </Badge>
+            )}
+            <DeleteClientButton clientId={client.id} name={client.name} />
+          </>
         }
       />
 
@@ -563,5 +567,57 @@ function ProgressTab({ measurements }: { measurements: Measurement[] }) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/** Удаление клиента: каскадом уносит тренировки, замеры, оплаты — требуем подтверждения. */
+function DeleteClientButton({ clientId, name }: { clientId: string; name: string }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/clients/${clientId}`);
+      navigate("/t/clients", { replace: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить клиента ${name}`}
+        title="Удалить клиента"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить клиента «{name}»?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Вместе с карточкой безвозвратно удалятся тренировки, дневник, замеры, отчёты и
+              история оплат. Действие нельзя отменить.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

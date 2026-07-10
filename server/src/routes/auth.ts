@@ -10,6 +10,7 @@ import { asyncH, HttpError } from "../lib/http.js";
 import { emailHtml, sendEmail } from "../services/email.js";
 import { consumeEmailCode, createEmailCode, hourlyLimited } from "../services/emailCodes.js";
 import { PLANS, TRIAL_DAYS } from "../services/plans.js";
+import { createDemoClient } from "../services/demoSeed.js";
 import { notify } from "../services/notify.js";
 import { env } from "../env.js";
 
@@ -62,6 +63,9 @@ authRouter.post(
       paidUntil,
       clientLimit: PLANS.trial.clientLimit,
     });
+
+    // Тестовый клиент, чтобы новый тренер сразу увидел продукт в работе.
+    await createDemoClient(user.id).catch((err) => console.error("register: demo client:", err));
 
     // Welcome + код подтверждения почты — не блокируем ответ.
     void (async () => {

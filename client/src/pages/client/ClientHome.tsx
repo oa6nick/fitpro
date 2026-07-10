@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Dumbbell, Flame, ClipboardCheck, ChevronRight, Award } from "lucide-react";
+import { Dumbbell, Flame, ClipboardCheck, ChevronRight, Award, CalendarClock } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader, Spinner, StatCard, useAsync } from "@/components/common";
@@ -8,11 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Client, ClientProfile, Workout, Achievement } from "@/lib/domain";
 
+interface PaymentInfo {
+  paidUntil: string | null;
+  status: "paid" | "overdue";
+  amount: number;
+}
+
+/** Дней до даты (отрицательное — дата прошла). */
+function daysUntil(date: string | null): number | null {
+  if (!date) return null;
+  return Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+}
+
 export function ClientHome() {
   const { user } = useAuth();
-  const me = useAsync<{ client: Client; profile: ClientProfile | null; achievements: Achievement[] }>(
-    () => api.get("/me/client"),
-  );
+  const me = useAsync<{
+    client: Client;
+    profile: ClientProfile | null;
+    achievements: Achievement[];
+    payment: PaymentInfo | null;
+  }>(() => api.get("/me/client"));
   const workouts = useAsync<{ workouts: Workout[] }>(() => api.get("/workouts/mine"));
 
   if (me.loading || workouts.loading) return <Spinner />;
@@ -30,6 +45,8 @@ export function ClientHome() {
         title={`Привет, ${user?.name}!`}
         description="Ваш сегодняшний фокус"
       />
+
+      <PaymentCard payment={me.data?.payment ?? null} />
 
       {!profileFilled && (
         <Card className="mb-4 border-warning/30 bg-warning/10">
@@ -115,5 +132,48 @@ export function ClientHome() {
         </Card>
       )}
     </div>
+  );
+}
+
+/** Оплаченный период: за 5 дней до конца — предупреждение, после — просрочка. */
+function PaymentCard({ payment }: { payment: PaymentInfo | null }) {
+  if (!payment?.paidUntil) return null;
+  const left = daysUntil(payment.paidUntil);
+  if (left === null) return null;
+
+  const overdue = left < 0 || payment.status === "overdue";
+  const soon = !overdue && left <= 5;
+  if (!overdue && !soon) {
+    return (
+      <Card className="mb-4">
+        <CardContent className="flex items-center gap-2 p-4 text-sm">
+          <CalendarClock className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Оплачено до</span>
+          <b>{payment.paidUntil}</b>
+          <span className="text-muted-foreground">· осталось {left} дн.</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      className={`mb-4 ${overdue ? "border-destructive/40 bg-destructive/10" : "border-warning/30 bg-warning/10"}`}
+    >
+      <CardContent className="flex flex-wrap items-center gap-2 p-4 text-sm" role="status">
+        <CalendarClock className={`h-4 w-4 ${overdue ? "text-destructive" : "text-warning"}`} />
+        {overdue ? (
+          <span>
+            Период сопровождения закончился <b>{payment.paidUntil}</b>. Свяжитесь с тренером,
+            чтобы продлить.
+          </span>
+        ) : (
+          <span>
+            Сопровождение оплачено до <b>{payment.paidUntil}</b> — осталось{" "}
+            <b>{left} дн.</b> Пора продлить.
+          </span>
+        )}
+      </CardContent>
+    </Card>
   );
 }
