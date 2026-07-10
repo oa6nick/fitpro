@@ -30,6 +30,9 @@ interface DiaryData {
 
 const draftKey = (weId: string, set: number) => `fitpro-draft:${weId}:${set}`;
 
+/** План повторов может быть диапазоном («8-10») — в числовое поле берём нижнюю границу. */
+const plannedReps = (reps: string | null) => reps?.match(/\d+/)?.[0] ?? "";
+
 export function WorkoutDiary() {
   const { id } = useParams<{ id: string }>();
   const { data, loading, error, reload } = useAsync<DiaryData>(
@@ -195,7 +198,7 @@ function buildSlots(item: WorkoutExerciseRow): Slot[] {
     return {
       setNumber,
       weight: draft.weight ?? "",
-      reps: draft.reps ?? item.reps ?? "",
+      reps: draft.reps ?? plannedReps(item.reps),
       feeling: draft.feeling ?? "moderate",
       done: false,
     };
@@ -291,7 +294,7 @@ function ExerciseBlock({
       const extra = Array.from({ length: n }, (_, i) => ({
         setNumber: start + i + 1,
         weight: last?.weight ?? "",
-        reps: last?.reps ?? item.reps ?? "",
+        reps: last?.reps || plannedReps(item.reps),
         feeling: last?.feeling ?? ("moderate" as Feeling),
         done: false,
       }));
@@ -363,7 +366,7 @@ function ExerciseBlock({
               <CheckCheck className="h-4 w-4" /> Отметить все
             </Button>
             <div className="ml-auto">
-              <RestTimer rest={item.rest} />
+              <RestTimer rest={item.rest} storageKey={item.id} />
             </div>
           </div>
         )}

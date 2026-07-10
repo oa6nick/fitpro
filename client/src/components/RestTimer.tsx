@@ -3,8 +3,6 @@ import { Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STORAGE_KEY = "fitpro-rest-timer";
-
 interface Persisted {
   /** Момент окончания (мс epoch); null — таймер на паузе. */
   endsAt: number | null;
@@ -24,9 +22,9 @@ export function parseRest(rest: string | null | undefined): number {
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-function load(): Persisted | null {
+function load(key: string): Persisted | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as Persisted) : null;
   } catch {
     return null;
@@ -36,16 +34,18 @@ function load(): Persisted | null {
 /**
  * Таймер отдыха между подходами. Состояние в localStorage — переживает
  * переход между упражнениями и перезагрузку страницы.
+ * Ключ обязан быть свой на каждое упражнение, иначе таймеры делят состояние.
  */
-export function RestTimer({ rest }: { rest: string | null }) {
+export function RestTimer({ rest, storageKey }: { rest: string | null; storageKey: string }) {
   const total = parseRest(rest);
+  const key = `fitpro-rest-timer:${storageKey}`;
   const [remaining, setRemaining] = useState(total);
   const [running, setRunning] = useState(false);
   const notified = useRef(false);
 
   // Восстановление после перезагрузки.
   useEffect(() => {
-    const p = load();
+    const p = load(key);
     if (!p) return;
     if (p.endsAt) {
       const left = Math.round((p.endsAt - Date.now()) / 1000);
@@ -53,18 +53,21 @@ export function RestTimer({ rest }: { rest: string | null }) {
         setRemaining(left);
         setRunning(true);
       }
-    } else if (p.remaining > 0) {
+    } else if (p.remaining > 0 && p.remaining < p.total) {
       setRemaining(p.remaining);
     }
-  }, []);
+  }, [key]);
 
-  const persist = useCallback((state: Persisted) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      /* приватный режим */
-    }
-  }, []);
+  const persist = useCallback(
+    (state: Persisted) => {
+      try {
+        localStorage.setItem(key, JSON.stringify(state));
+      } catch {
+        /* приватный режим */
+      }
+    },
+    [key],
+  );
 
   useEffect(() => {
     if (!running) return;

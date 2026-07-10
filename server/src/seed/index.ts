@@ -223,10 +223,22 @@ async function main() {
         { workoutExerciseId: we[0]!.id, clientId, setNumber: 3, weight: 45, reps: 8, feeling: "very_hard" },
       ]);
 
-      // Новая (назначенная, ещё не выполнена)
-      await db
+      // Новая (назначенная, ещё не выполнена) — с упражнениями, чтобы дневник был рабочим
+      const [next] = await db
         .insert(s.workouts)
-        .values({ clientId, templateId: template!.id, title: "Фуллбоди B", date: daysAgo(-1), status: "assigned" });
+        .values({
+          clientId,
+          templateId: template!.id,
+          title: "Фуллбоди B",
+          date: daysAgo(-1),
+          status: "assigned",
+        })
+        .returning();
+      await db.insert(s.workoutExercises).values([
+        { workoutId: next!.id, exerciseId: ex[0]!.id, order: 0, sets: 4, reps: "8-10", rest: "120 сек" },
+        { workoutId: next!.id, exerciseId: ex[1]!.id, order: 1, sets: 3, reps: "10-12", rest: "90 сек" },
+        { workoutId: next!.id, exerciseId: ex[2]!.id, order: 2, sets: 3, reps: "12", rest: "60 сек" },
+      ]);
 
       // Оплата
       await db.insert(s.payments).values({
