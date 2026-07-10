@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { EmailVerifyBanner } from "@/components/EmailVerifyBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   LayoutDashboard,
   Users,
@@ -106,8 +107,14 @@ export function AppLayout() {
       <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
         <Brand />
         <div className="flex items-center gap-1">
+          <ThemeToggle />
           <NotificationsBell />
-          <Button variant="ghost" size="icon" onClick={() => setOpen((v) => !v)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Закрыть меню" : "Открыть меню"}
+          >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
@@ -132,7 +139,8 @@ export function AppLayout() {
 
       <main className="md:pl-64">
         {/* Десктоп-топбар */}
-        <header className="hidden h-14 items-center justify-end border-b bg-background px-8 md:flex">
+        <header className="glass-header sticky top-0 z-20 hidden h-14 items-center justify-end gap-1 border-b border-border/60 px-8 md:flex">
+          <ThemeToggle />
           <NotificationsBell />
         </header>
         <div className="mx-auto max-w-6xl p-4 md:p-8">

@@ -8,8 +8,20 @@
       name="description"
       content="FitPro — операционная система для онлайн-тренера: CRM клиентов, конструктор тренировок, дневник, отчёты, аналитика и финансы в одном кабинете. 14 дней бесплатно."
     />
-    <meta name="theme-color" content="#16a34a" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f1ea" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151515" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Анти-FOUC: тема выставляется до загрузки бандла.
+      // При включении CSP в будущем этому скрипту потребуется hash.
+      (function () {
+        try {
+          var t = localStorage.getItem("fitpro-theme");
+          if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches))
+            document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content="FitPro" />
