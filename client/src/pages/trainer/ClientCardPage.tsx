@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertTriangle, UserPlus } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -86,6 +86,8 @@ export function ClientCardPage() {
         }
       />
 
+      {!client.userId && <InviteBlock clientId={client.id} />}
+
       <Tabs defaultValue="main">
         <TabsList>
           <TabsTrigger value="main">Основные</TabsTrigger>
@@ -111,6 +113,68 @@ export function ClientCardPage() {
           <ProgressTab measurements={data.measurements} />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/** Клиент без аккаунта: выдать инвайт-ссылку в кабинет (и опц. отправить письмо). */
+function InviteBlock({ clientId }: { clientId: string }) {
+  const [link, setLink] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function createInvite() {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api.post<{ link: string }>(`/clients/${clientId}/invite`, {
+        ...(email ? { email } : {}),
+      });
+      setLink(r.link);
+      try {
+        await navigator.clipboard.writeText(r.link);
+        setCopied(true);
+      } catch {
+        setCopied(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось создать приглашение");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mb-4 rounded-lg border border-dashed bg-muted/30 p-3 text-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <UserPlus className="h-4 w-4 shrink-0 text-muted-foreground" />
+        {link ? (
+          <>
+            <span className="text-muted-foreground">Ссылка-приглашение (7 дней):</span>
+            <code className="max-w-full truncate rounded bg-muted px-2 py-1">{link}</code>
+            {copied && <Badge variant="secondary">Скопирована</Badge>}
+          </>
+        ) : (
+          <>
+            <span className="text-muted-foreground">
+              У клиента ещё нет кабинета — пригласите его:
+            </span>
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              placeholder="email (необязательно)"
+              className="h-8 w-56"
+            />
+            <Button size="sm" onClick={createInvite} disabled={busy}>
+              {busy ? "Создаём…" : email ? "Отправить приглашение" : "Создать ссылку"}
+            </Button>
+          </>
+        )}
+        {error && <span className="text-destructive">{error}</span>}
+      </div>
     </div>
   );
 }

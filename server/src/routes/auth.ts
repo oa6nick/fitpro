@@ -1,22 +1,26 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { users } from "../db/schema.js";
+import { clientInvites, clients, trainerSubscriptions, users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../auth/password.js";
 import { signToken, AUTH_COOKIE, cookieOptions } from "../auth/jwt.js";
 import { requireAuth } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
 import { emailHtml, sendEmail } from "../services/email.js";
 import { consumeEmailCode, createEmailCode, hourlyLimited } from "../services/emailCodes.js";
+import { PLANS, TRIAL_DAYS } from "../services/plans.js";
+import { notify } from "../services/notify.js";
+import { env } from "../env.js";
 
 export const authRouter = Router();
 
+// Саморегистрация — только для тренеров. Клиенты попадают в кабинет
+// исключительно по инвайту тренера (иначе аккаунт не привязан к карточке).
 const registerSchema = z.object({
   email: z.string().email("Некорректный email"),
   password: z.string().min(6, "Пароль минимум 6 символов"),
   name: z.string().min(1, "Укажите имя"),
-  role: z.enum(["trainer", "client"]),
 });
 
 const loginSchema = z.object({
@@ -42,10 +46,39 @@ authRouter.post(
         email: data.email.toLowerCase(),
         passwordHash,
         name: data.name,
-        role: data.role,
+        role: "trainer",
       })
       .returning();
     if (!user) throw new HttpError(500, "Не удалось создать пользователя");
+
+    // Trial-подписка тренера (лимиты из PLANS, оплата подключится позже).
+    const paidUntil = new Date(Date.now() + TRIAL_DAYS * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    await db.insert(trainerSubscriptions).values({
+      trainerId: user.id,
+      plan: "trial",
+      status: "trial",
+      paidUntil,
+      clientLimit: PLANS.trial.clientLimit,
+    });
+
+    // Welcome + код подтверждения почты — не блокируем ответ.
+    void (async () => {
+      const code = await createEmailCode(user.email, "verify");
+      await sendEmail({
+        to: user.email,
+        subject: "Добро пожаловать в FitPro",
+        html: emailHtml({
+          title: `Здравствуйте, ${user.name}!`,
+          intro: `Аккаунт тренера создан, пробный период — ${TRIAL_DAYS} дней. Чтобы подтвердить почту, введите код в личном кабинете:`,
+          code,
+          ctaText: "Открыть FitPro",
+          ctaUrl: env.publicUrl,
+        }),
+        text: `Добро пожаловать в FitPro! Код подтверждения почты: ${code}`,
+      });
+    })().catch((err) => console.error("register: welcome email:", err));
 
     const token = signToken({
       sub: user.id,
@@ -178,6 +211,106 @@ authRouter.post(
       }
     }
     res.json({ ok: true });
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* Инвайт клиента: публичная информация и принятие приглашения         */
+/* ------------------------------------------------------------------ */
+
+async function findActiveInvite(token: string) {
+  const [invite] = await db
+    .select()
+    .from(clientInvites)
+    .where(
+      and(
+        eq(clientInvites.token, token),
+        isNull(clientInvites.acceptedAt),
+        gt(clientInvites.expiresAt, new Date()),
+      ),
+    );
+  return invite;
+}
+
+authRouter.get(
+  "/invite/:token",
+  asyncH(async (req, res) => {
+    const invite = await findActiveInvite(req.params.token);
+    if (!invite) throw new HttpError(404, "Приглашение не найдено или устарело");
+    const [trainer] = await db.select().from(users).where(eq(users.id, invite.trainerId));
+    const [card] = await db.select().from(clients).where(eq(clients.id, invite.clientId));
+    if (!trainer || !card) throw new HttpError(404, "Приглашение не найдено или устарело");
+    res.json({
+      invite: {
+        trainerName: trainer.name,
+        clientName: card.name,
+        email: invite.email,
+      },
+    });
+  }),
+);
+
+authRouter.post(
+  "/invite/:token/accept",
+  asyncH(async (req, res) => {
+    const data = z
+      .object({
+        email: z.string().email("Некорректный email"),
+        password: z.string().min(6, "Пароль минимум 6 символов"),
+      })
+      .parse(req.body);
+    const invite = await findActiveInvite(req.params.token);
+    if (!invite) throw new HttpError(404, "Приглашение не найдено или устарело");
+
+    const [card] = await db.select().from(clients).where(eq(clients.id, invite.clientId));
+    if (!card) throw new HttpError(404, "Приглашение не найдено или устарело");
+    if (card.userId) throw new HttpError(409, "К этой карточке уже привязан аккаунт");
+
+    const normalized = data.email.toLowerCase();
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, normalized));
+    if (existing.length > 0) {
+      throw new HttpError(409, "Пользователь с таким email уже существует");
+    }
+
+    const passwordHash = await hashPassword(data.password);
+    const [user] = await db
+      .insert(users)
+      .values({
+        email: normalized,
+        passwordHash,
+        name: card.name,
+        role: "client",
+        // Пришёл по ссылке из письма на этот же адрес — почта фактически подтверждена.
+        emailVerifiedAt:
+          invite.email && invite.email.toLowerCase() === normalized ? new Date() : null,
+      })
+      .returning();
+    if (!user) throw new HttpError(500, "Не удалось создать пользователя");
+
+    await db.update(clients).set({ userId: user.id }).where(eq(clients.id, card.id));
+    await db
+      .update(clientInvites)
+      .set({ acceptedAt: new Date() })
+      .where(eq(clientInvites.id, invite.id));
+    await notify(
+      invite.trainerId,
+      `Клиент «${card.name}» принял приглашение и завёл кабинет`,
+      `/t/clients/${card.id}`,
+    );
+
+    const token = signToken({
+      sub: user.id,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+    });
+    res.cookie(AUTH_COOKIE, token, cookieOptions);
+    res.status(201).json({
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    });
   }),
 );
 

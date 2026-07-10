@@ -1,11 +1,15 @@
+import { randomBytes } from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   clients,
+  clientInvites,
   clientProfiles,
   trainerNotes,
+  trainerSubscriptions,
+  users,
   workouts,
   measurements,
   payments,
@@ -13,7 +17,9 @@ import {
 import { requireAuth, requireRole } from "../auth/middleware.js";
 import { assertTrainerClient } from "../services/access.js";
 import { isAtRisk } from "../services/risk.js";
-import { asyncH } from "../lib/http.js";
+import { asyncH, HttpError } from "../lib/http.js";
+import { emailHtml, escapeHtml, sendEmail } from "../services/email.js";
+import { env } from "../env.js";
 
 export const clientsRouter = Router();
 clientsRouter.use(requireAuth, requireRole("trainer"));
@@ -69,11 +75,74 @@ clientsRouter.post(
   "/",
   asyncH(async (req, res) => {
     const data = createSchema.parse(req.body);
+    const trainerId = req.user!.sub;
+
+    // Мягкий лимит тарифа (для аккаунтов без подписки — например seed — не режем).
+    const [sub] = await db
+      .select()
+      .from(trainerSubscriptions)
+      .where(eq(trainerSubscriptions.trainerId, trainerId));
+    if (sub) {
+      const [{ value: total }] = await db
+        .select({ value: count() })
+        .from(clients)
+        .where(eq(clients.trainerId, trainerId));
+      if (total >= sub.clientLimit) {
+        throw new HttpError(
+          402,
+          `Достигнут лимит тарифа (${sub.clientLimit} клиентов). Смените тариф, чтобы добавить больше.`,
+        );
+      }
+    }
+
     const [created] = await db
       .insert(clients)
-      .values({ ...data, trainerId: req.user!.sub })
+      .values({ ...data, trainerId })
       .returning();
     res.status(201).json({ client: created });
+  }),
+);
+
+// Приглашение клиента в кабинет: ссылка /join/<token> (+ письмо, если у карточки есть email).
+clientsRouter.post(
+  "/:id/invite",
+  asyncH(async (req, res) => {
+    const trainerId = req.user!.sub;
+    const client = await assertTrainerClient(trainerId, req.params.id);
+    if (client.userId) throw new HttpError(409, "У клиента уже есть кабинет");
+
+    const { email } = z.object({ email: z.string().email().optional() }).parse(req.body ?? {});
+
+    const token = randomBytes(24).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 86400000);
+    await db.insert(clientInvites).values({
+      trainerId,
+      clientId: client.id,
+      email: email?.toLowerCase() ?? null,
+      token,
+      expiresAt,
+    });
+
+    const link = `${env.publicUrl}/join/${token}`;
+    if (email) {
+      const [trainer] = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, trainerId));
+      void sendEmail({
+        to: email,
+        subject: "Приглашение в FitPro",
+        html: emailHtml({
+          title: "Вас приглашают в FitPro",
+          intro: `Тренер ${escapeHtml(trainer?.name ?? "")} приглашает вас (${escapeHtml(client.name)}) в личный кабинет FitPro: тренировки, дневник, замеры и отчёты в одном месте.`,
+          ctaText: "Принять приглашение",
+          ctaUrl: link,
+        }),
+        text: `Тренер приглашает вас в FitPro. Ссылка: ${link} (действует 7 дней)`,
+      }).catch((err) => console.error("invite email:", err));
+    }
+
+    res.status(201).json({ link, expiresAt });
   }),
 );
 

@@ -1,17 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
-import type { User, Role } from "@/lib/domain";
+import type { User } from "@/lib/domain";
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (data: {
-    email: string;
-    password: string;
-    name: string;
-    role: Role;
-  }) => Promise<User>;
+  register: (data: { email: string; password: string; name: string }) => Promise<User>;
   logout: () => Promise<void>;
   /** Перечитать /auth/me (например, после подтверждения почты). */
   refresh: () => Promise<void>;
@@ -38,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (data: { email: string; password: string; name: string; role: Role }) => {
+    async (data: { email: string; password: string; name: string }) => {
       const r = await api.post<{ user: User }>("/auth/register", data);
       setUser(r.user);
       return r.user;

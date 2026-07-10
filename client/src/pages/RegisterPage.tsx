@@ -1,21 +1,21 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Dumbbell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Role } from "@/lib/domain";
-import { cn } from "@/lib/utils";
 
+/** Саморегистрация — только для тренеров. Клиенты подключаются по приглашению (/join/:token). */
 export function RegisterPage() {
   const { user, register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const plan = searchParams.get("plan");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("trainer");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,8 +26,8 @@ export function RegisterPage() {
     setBusy(true);
     setError(null);
     try {
-      const u = await register({ name, email, password, role });
-      navigate(u.role === "trainer" ? "/t" : "/c");
+      await register({ name, email, password });
+      navigate("/t");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");
     } finally {
@@ -42,28 +42,15 @@ export function RegisterPage() {
           <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Dumbbell className="h-6 w-6" />
           </div>
-          <CardTitle className="text-xl">Регистрация в FitPro</CardTitle>
-          <CardDescription>Создайте аккаунт тренера или клиента</CardDescription>
+          <CardTitle className="text-xl">Регистрация тренера</CardTitle>
+          <CardDescription>
+            {plan
+              ? "14 дней бесплатно, тариф подключите после пробного периода"
+              : "Аккаунт тренера. Клиенты подключаются по приглашению."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              {(["trainer", "client"] as Role[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-                    role === r
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-accent",
-                  )}
-                >
-                  {r === "trainer" ? "Я тренер" : "Я клиент"}
-                </button>
-              ))}
-            </div>
             <div>
               <Label htmlFor="name">Имя</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -73,6 +60,7 @@ export function RegisterPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -83,6 +71,7 @@ export function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength={6}
@@ -91,7 +80,7 @@ export function RegisterPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={busy}>
-              {busy ? "Создаём…" : "Зарегистрироваться"}
+              {busy ? "Создаём…" : "Начать бесплатно"}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
