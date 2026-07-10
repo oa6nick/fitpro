@@ -4,7 +4,7 @@ import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { clientInvites, clients, trainerSubscriptions, users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../auth/password.js";
-import { signToken, AUTH_COOKIE, cookieOptions } from "../auth/jwt.js";
+import { signToken, verifyToken, AUTH_COOKIE, cookieOptions } from "../auth/jwt.js";
 import { requireAuth } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
 import { emailHtml, sendEmail } from "../services/email.js";
@@ -122,11 +122,15 @@ authRouter.post("/logout", (req, res) => {
   res.json({ ok: true });
 });
 
+// Публичный: «кто я?» без сессии — это не ошибка, а ответ «никто».
+// (401 здесь заставлял браузер писать красную ошибку в консоль на каждой загрузке.)
 authRouter.get(
   "/me",
-  requireAuth,
   asyncH(async (req, res) => {
-    const u = req.user!;
+    const token = req.cookies?.[AUTH_COOKIE];
+    const u = token ? verifyToken(token) : null;
+    if (!u) return res.json({ user: null });
+
     // emailVerified читаем из БД, а не из JWT — иначе флаг протухает до перелогина.
     const [row] = await db
       .select({ emailVerifiedAt: users.emailVerifiedAt })

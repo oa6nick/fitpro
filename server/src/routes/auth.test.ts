@@ -45,6 +45,12 @@ describe("auth: регистрация тренера", () => {
     expect(res.body.user.role).toBe("trainer");
   });
 
+  it("me без сессии отдаёт 200 и user=null (а не 401)", async () => {
+    const res = await request(app).get("/api/auth/me");
+    expect(res.status).toBe(200);
+    expect(res.body.user).toBeNull();
+  });
+
   it("me отдаёт emailVerified=false для нового аккаунта", async () => {
     const agent = request.agent(app);
     await agent

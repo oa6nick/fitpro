@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     api
-      .get<{ user: User }>("/auth/me")
+      .get<{ user: User | null }>("/auth/me")
       .then((r) => setUser(r.user))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const r = await api.get<{ user: User }>("/auth/me");
+      const r = await api.get<{ user: User | null }>("/auth/me");
       setUser(r.user);
     } catch {
       setUser(null);
