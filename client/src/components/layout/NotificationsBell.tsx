@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, BellOff, BellRing } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import {
+  currentSubscription,
+  pushSupported,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "@/lib/push";
 import type { AppNotification } from "@/lib/domain";
 
 export function NotificationsBell() {
@@ -66,8 +72,9 @@ export function NotificationsBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-background shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-80 rounded-panel border bg-popover shadow-panel">
           <div className="border-b px-3 py-2 text-sm font-semibold">Уведомления</div>
+          <PushToggle />
           <div className="max-h-80 overflow-y-auto">
             {items.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-muted-foreground">Пока пусто</p>
@@ -92,5 +99,65 @@ export function NotificationsBell() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Подписка на push: показываем только когда браузер и сервер это умеют. */
+function PushToggle() {
+  const [state, setState] = useState<"loading" | "off" | "on" | "unavailable">("loading");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!pushSupported()) return alive && setState("unavailable");
+      const { enabled } = await api
+        .get<{ enabled: boolean }>("/push/vapid-public-key")
+        .catch(() => ({ enabled: false }));
+      if (!enabled) return alive && setState("unavailable");
+      const sub = await currentSubscription();
+      if (alive) setState(sub ? "on" : "off");
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  if (state === "loading" || state === "unavailable") return null;
+
+  async function toggle() {
+    setBusy(true);
+    try {
+      if (state === "on") {
+        await unsubscribeFromPush();
+        setState("off");
+      } else {
+        const r = await subscribeToPush();
+        setState(r.ok ? "on" : "off");
+        if (!r.ok && r.reason) alert(r.reason);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      disabled={busy}
+      className="flex w-full items-center gap-2 border-b px-3 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
+    >
+      {state === "on" ? (
+        <>
+          <BellRing className="h-3.5 w-3.5 text-primary" />
+          Push-уведомления включены — отключить
+        </>
+      ) : (
+        <>
+          <BellOff className="h-3.5 w-3.5" />
+          Включить push-уведомления
+        </>
+      )}
+    </button>
   );
 }

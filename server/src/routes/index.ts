@@ -14,6 +14,7 @@ import { financeRouter } from "./finance.js";
 import { analyticsRouter } from "./analytics.js";
 import { notificationsRouter } from "./notifications.js";
 import { uploadsRouter } from "./uploads.js";
+import { pushRouter } from "./push.js";
 
 export const apiRouter = Router();
 
@@ -32,3 +33,4 @@ apiRouter.use("/finance", financeRouter);
 apiRouter.use("/analytics", analyticsRouter);
 apiRouter.use("/notifications", notificationsRouter);
 apiRouter.use("/uploads", uploadsRouter);
+apiRouter.use("/push", pushRouter);

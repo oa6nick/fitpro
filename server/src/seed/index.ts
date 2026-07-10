@@ -41,6 +41,7 @@ async function clearAll() {
     s.notifications,
     s.exerciseAlternatives,
     s.exercises,
+    s.pushSubscriptions,
     s.clientInvites,
     s.trainerSubscriptions,
     s.authEmailCodes,

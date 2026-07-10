@@ -57,4 +57,11 @@ export const env = {
   smtpPort: num("SMTP_PORT", 465),
   smtpUser: process.env.SMTP_USER ?? "",
   smtpPass: process.env.SMTP_PASS ?? "",
+  // Web-push (VAPID). Без ключей push просто выключен — dev и тесты не ломаются.
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? "",
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? "",
+  vapidSubject: str("VAPID_SUBJECT", "mailto:hello@oasixlab.com"),
+  get pushEnabled(): boolean {
+    return Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+  },
 };

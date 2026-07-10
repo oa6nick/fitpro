@@ -43,6 +43,13 @@
       "when": 1783678848142,
       "tag": "0005_high_thunderbird",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783680020664,
+      "tag": "0006_thick_cyclops",
+      "breakpoints": true
     }
   ]
 }

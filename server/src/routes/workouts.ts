@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   workouts,
@@ -215,10 +215,25 @@ workoutsRouter.post(
         .where(eq(workoutLogs.id, existing.id))
         .returning();
     } else {
+      // Первый подход в этой тренировке = клиент начал заниматься.
+      const [{ value: logsInWorkout }] = await db
+        .select({ value: count() })
+        .from(workoutLogs)
+        .innerJoin(workoutExercises, eq(workoutLogs.workoutExerciseId, workoutExercises.id))
+        .where(eq(workoutExercises.workoutId, workout.id));
+
       [log] = await db
         .insert(workoutLogs)
         .values({ ...data, clientId: client.id })
         .returning();
+
+      if (logsInWorkout === 0) {
+        await notify(
+          client.trainerId,
+          `${client.name} начал(а) тренировку${workout.title ? ` «${workout.title}»` : ""}`,
+          `/t/workouts/${workout.id}`,
+        );
+      }
     }
 
     await touchClientActivity(client.id);
