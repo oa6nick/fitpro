@@ -9,10 +9,24 @@ const badgeVariants = cva(
       variant: {
         default: "border-transparent bg-primary text-primary-foreground",
         secondary: "border-transparent bg-secondary text-secondary-foreground",
-        destructive: "border-transparent bg-destructive text-destructive-foreground",
+        destructive: "border-transparent bg-destructive/15 text-destructive dark:text-destructive-soft",
         outline: "text-foreground",
-        success: "border-transparent bg-emerald-100 text-emerald-700",
-        warning: "border-transparent bg-amber-100 text-amber-700",
+        // Семантические статусы — работают в обеих темах через токены.
+        success: "border-transparent bg-success/15 text-success",
+        warning: "border-transparent bg-warning/15 text-warning",
+        info: "border-transparent bg-info/15 text-info",
+        neutral: "border-transparent bg-muted text-muted-foreground",
+        // Tone-варианты воронки клиентов (единственное место с палитрами).
+        sky: "border-transparent bg-sky-500/12 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300",
+        indigo:
+          "border-transparent bg-indigo-500/12 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300",
+        violet:
+          "border-transparent bg-violet-500/12 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300",
+        slate:
+          "border-transparent bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300",
+        orange:
+          "border-transparent bg-orange-500/12 text-orange-700 dark:bg-orange-400/15 dark:text-orange-300",
+        zinc: "border-transparent bg-zinc-500/12 text-zinc-600 dark:bg-zinc-400/15 dark:text-zinc-400",
       },
     },
     defaultVariants: { variant: "default" },

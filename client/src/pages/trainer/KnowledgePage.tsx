@@ -199,7 +199,7 @@ function KnowledgeDialog({ onClose, onSaved }: { onClose: () => void; onSaved: (
             <Label>Файл (PDF / видео)</Label>
             <Input type="file" accept="application/pdf,video/*,image/*" onChange={onFile} />
             {uploading && <p className="text-xs text-muted-foreground">Загрузка…</p>}
-            {fileUrl && <p className="text-xs text-emerald-600">Файл загружен ✓</p>}
+            {fileUrl && <p className="text-xs text-success" role="status">Файл загружен ✓</p>}
           </div>
           <Button className="w-full" onClick={save} disabled={busy || !title}>
             {busy ? "Сохраняем…" : "Сохранить"}

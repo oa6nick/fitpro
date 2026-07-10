@@ -34,15 +34,27 @@ export const FUNNEL_LABELS: Record<FunnelStatus, string> = {
   archived: "Архив",
 };
 
-export const FUNNEL_COLORS: Record<FunnelStatus, string> = {
-  new: "bg-sky-100 text-sky-700",
-  profile_filled: "bg-indigo-100 text-indigo-700",
-  call: "bg-violet-100 text-violet-700",
-  awaiting_payment: "bg-amber-100 text-amber-700",
-  active: "bg-emerald-100 text-emerald-700",
-  frozen: "bg-slate-200 text-slate-600",
-  ending: "bg-orange-100 text-orange-700",
-  archived: "bg-zinc-100 text-zinc-500",
+// Тона воронки — имена вариантов Badge (единый источник цветов: ui/badge.tsx,
+// каждый вариант имеет светлую и тёмную пару).
+export type FunnelTone =
+  | "sky"
+  | "indigo"
+  | "violet"
+  | "warning"
+  | "success"
+  | "slate"
+  | "orange"
+  | "zinc";
+
+export const FUNNEL_TONES: Record<FunnelStatus, FunnelTone> = {
+  new: "sky",
+  profile_filled: "indigo",
+  call: "violet",
+  awaiting_payment: "warning",
+  active: "success",
+  frozen: "slate",
+  ending: "orange",
+  archived: "zinc",
 };
 
 export const FEELING_LABELS: Record<string, string> = {

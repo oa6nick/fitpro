@@ -210,12 +210,12 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
             <div>
               <Label>Фото «до»</Label>
               <Input type="file" accept="image/*" onChange={(e) => uploadPhoto(e, setBefore)} />
-              {photoBeforeUrl && <p className="text-xs text-emerald-600">Загружено ✓</p>}
+              {photoBeforeUrl && <p className="text-xs text-success" role="status">Загружено ✓</p>}
             </div>
             <div>
               <Label>Фото «после»</Label>
               <Input type="file" accept="image/*" onChange={(e) => uploadPhoto(e, setAfter)} />
-              {photoAfterUrl && <p className="text-xs text-emerald-600">Загружено ✓</p>}
+              {photoAfterUrl && <p className="text-xs text-success" role="status">Загружено ✓</p>}
             </div>
           </div>
           <Button className="w-full" onClick={save} disabled={busy}>

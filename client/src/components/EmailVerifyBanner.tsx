@@ -43,12 +43,15 @@ export function EmailVerifyBanner() {
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm">
+    <div
+      className="mb-4 rounded-panel border border-warning/30 bg-warning/10 p-3 text-sm"
+      role="status"
+    >
       <div className="flex flex-wrap items-center gap-2">
-        <MailCheck className="h-4 w-4 shrink-0 text-amber-600" />
+        <MailCheck className="h-4 w-4 shrink-0 text-warning" />
         {step === "idle" ? (
           <>
-            <span className="text-amber-900">
+            <span className="text-foreground">
               Подтвердите почту <b>{user.email}</b> — пришлём код.
             </span>
             <Button size="sm" variant="outline" onClick={requestCode} disabled={busy}>
@@ -57,7 +60,7 @@ export function EmailVerifyBanner() {
           </>
         ) : (
           <form onSubmit={confirmCode} className="flex flex-wrap items-center gap-2">
-            <span className="text-amber-900">Код из письма:</span>
+            <span className="text-foreground">Код из письма:</span>
             <Input
               value={code}
               onChange={(e) => setCode(e.target.value)}

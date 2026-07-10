@@ -22,11 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import {
   FUNNEL_ORDER,
   FUNNEL_LABELS,
-  FUNNEL_COLORS,
+  FUNNEL_TONES,
   type Client,
   type FunnelStatus,
 } from "@/lib/domain";
@@ -93,7 +92,7 @@ function Board({ clients }: { clients: Client[] }) {
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{c.name}</span>
                         {c.riskFlag && c.funnelStatus === "active" && (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                          <AlertTriangle className="h-4 w-4 text-destructive" aria-label="Зона риска" />
                         )}
                       </div>
                       {c.goal && (
@@ -136,14 +135,9 @@ function ClientList({ clients }: { clients: Client[] }) {
                   </Link>
                 </td>
                 <td className="p-3">
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-xs",
-                      FUNNEL_COLORS[c.funnelStatus],
-                    )}
-                  >
+                  <Badge variant={FUNNEL_TONES[c.funnelStatus]}>
                     {FUNNEL_LABELS[c.funnelStatus]}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-3 text-muted-foreground">{c.goal ?? "—"}</td>
                 <td className="p-3">

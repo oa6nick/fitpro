@@ -48,14 +48,14 @@ export function FinancePage() {
           <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md">
             <Card>
               <CardContent className="p-4">
-                <Wallet className="h-5 w-5 text-emerald-600" />
+                <Wallet className="h-5 w-5 text-success" />
                 <p className="mt-2 text-2xl font-bold">{data.totals.paid.toLocaleString("ru-RU")} ₽</p>
                 <p className="text-xs text-muted-foreground">Получено всего</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <Bell className="h-5 w-5 text-amber-600" />
+                <Bell className="h-5 w-5 text-warning" />
                 <p className="mt-2 text-2xl font-bold">{data.totals.overdue}</p>
                 <p className="text-xs text-muted-foreground">Просроченных</p>
               </CardContent>

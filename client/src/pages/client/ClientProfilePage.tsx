@@ -80,7 +80,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
             <Button onClick={save} disabled={busy}>
               {busy ? "Сохраняем…" : "Сохранить анкету"}
             </Button>
-            {saved && <span className="text-sm text-emerald-600">Сохранено ✓</span>}
+            {saved && <span className="text-sm text-success" role="status">Сохранено ✓</span>}
           </div>
         </CardContent>
       </Card>

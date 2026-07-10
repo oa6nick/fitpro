@@ -5,6 +5,7 @@ import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
@@ -147,7 +148,7 @@ function AssignTab() {
         <Button onClick={assign} disabled={!clientId || !habitId}>
           Назначить на неделю
         </Button>
-        {msg && <p className="text-sm text-emerald-600">{msg}</p>}
+        {msg && <p className="text-sm text-success" role="status">{msg}</p>}
       </CardContent>
     </Card>
   );
@@ -197,9 +198,7 @@ function ComplianceList({ clientId }: { clientId: string }) {
               <span className="font-medium">{t.title}</span>
               <span className="text-muted-foreground">{t.compliance}%</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary" style={{ width: `${t.compliance}%` }} />
-            </div>
+            <Progress value={t.compliance} aria-label={`Соблюдение: ${t.compliance}%`} />
           </div>
         ))}
       </CardContent>

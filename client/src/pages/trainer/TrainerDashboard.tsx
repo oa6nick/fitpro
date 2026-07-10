@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Users, AlertTriangle, Inbox, CalendarClock, UserCheck } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import { PageHeader, Spinner, StatCard, useAsync } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface DashboardData {
@@ -18,11 +18,11 @@ interface DashboardData {
 }
 
 const WIDGETS = [
-  { key: "total", label: "Всего клиентов", icon: Users, color: "text-sky-600" },
-  { key: "active", label: "Активные", icon: UserCheck, color: "text-emerald-600" },
-  { key: "newRequests", label: "Новые заявки и анкеты", icon: Inbox, color: "text-indigo-600" },
-  { key: "atRisk", label: "Зона риска (7+ дней)", icon: AlertTriangle, color: "text-red-600" },
-  { key: "ending", label: "Заканчивается сопровождение", icon: CalendarClock, color: "text-amber-600" },
+  { key: "total", label: "Всего клиентов", icon: Users, tone: "info" },
+  { key: "active", label: "Активные", icon: UserCheck, tone: "success" },
+  { key: "newRequests", label: "Новые заявки и анкеты", icon: Inbox, tone: "default" },
+  { key: "atRisk", label: "Зона риска (7+ дней)", icon: AlertTriangle, tone: "destructive" },
+  { key: "ending", label: "Заканчивается сопровождение", icon: CalendarClock, tone: "warning" },
 ] as const;
 
 export function TrainerDashboard() {
@@ -40,13 +40,13 @@ export function TrainerDashboard() {
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             {WIDGETS.map((w) => (
-              <Card key={w.key}>
-                <CardContent className="p-4">
-                  <w.icon className={`h-5 w-5 ${w.color}`} />
-                  <p className="mt-2 text-2xl font-bold">{data.counts[w.key]}</p>
-                  <p className="text-xs text-muted-foreground">{w.label}</p>
-                </CardContent>
-              </Card>
+              <StatCard
+                key={w.key}
+                label={w.label}
+                value={data.counts[w.key]}
+                icon={w.icon}
+                tone={w.tone}
+              />
             ))}
           </div>
 

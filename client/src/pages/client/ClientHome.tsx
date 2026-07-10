@@ -28,7 +28,7 @@ export function ClientHome() {
       <PageHeader title={`Привет, ${user?.name}!`} description="Ваш сегодняшний фокус" />
 
       {!profileFilled && (
-        <Card className="mb-4 border-amber-300 bg-amber-50">
+        <Card className="mb-4 border-warning/30 bg-warning/10">
           <CardContent className="flex items-center justify-between pt-6">
             <div>
               <p className="font-medium">Заполните анкету</p>
@@ -76,7 +76,7 @@ export function ClientHome() {
         <div className="space-y-4">
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <Flame className="h-8 w-8 text-orange-500" />
+              <Flame className="h-8 w-8 text-warning" />
               <div>
                 <p className="text-2xl font-bold">{client?.streakWeeks ?? 0}</p>
                 <p className="text-xs text-muted-foreground">недель серии</p>
@@ -85,7 +85,7 @@ export function ClientHome() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <ClipboardCheck className="h-8 w-8 text-emerald-500" />
+              <ClipboardCheck className="h-8 w-8 text-success" />
               <div>
                 <p className="text-2xl font-bold">{completed}</p>
                 <p className="text-xs text-muted-foreground">тренировок выполнено</p>

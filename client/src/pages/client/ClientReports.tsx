@@ -80,7 +80,7 @@ export function ClientReports() {
               <Button onClick={submit} disabled={busy}>
                 {busy ? "Отправляем…" : "Отправить отчёт"}
               </Button>
-              {done && <span className="text-sm text-emerald-600">Отправлено ✓</span>}
+              {done && <span className="text-sm text-success" role="status">Отправлено ✓</span>}
             </div>
           </CardContent>
         </Card>
