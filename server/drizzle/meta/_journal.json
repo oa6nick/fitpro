@@ -15,6 +15,13 @@
       "when": 1783659721538,
       "tag": "0001_bitter_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783675485034,
+      "tag": "0002_handy_marten_broadcloak",
+      "breakpoints": true
     }
   ]
 }

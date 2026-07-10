@@ -168,50 +168,125 @@ const logSchema = z.object({
   feeling: z.enum(["easy", "moderate", "hard", "very_hard"]).optional(),
 });
 
-// Клиент: записать подход в дневник.
+/** Проверяет, что упражнение принадлежит тренировке. */
+async function assertWorkoutExercise(workoutId: string, workoutExerciseId: string) {
+  const [we] = await db
+    .select()
+    .from(workoutExercises)
+    .where(
+      and(eq(workoutExercises.id, workoutExerciseId), eq(workoutExercises.workoutId, workoutId)),
+    );
+  if (!we) throw new HttpError(404, "Упражнение не найдено в тренировке");
+  return we;
+}
+
+// Клиент: отметить подход выполненным (upsert по номеру подхода).
+// Уникального индекса на (workoutExerciseId, setNumber) нет — на проде могли
+// накопиться дубли, поэтому upsert делаем чтением.
 workoutsRouter.post(
   "/:id/log",
   asyncH(async (req, res) => {
     if (req.user!.role !== "client") throw new HttpError(403, "Только для клиента");
     const { workout, client } = await loadAuthorized(req);
     const data = logSchema.parse(req.body);
-    // Проверяем, что упражнение из этой тренировки.
-    const [we] = await db
+    await assertWorkoutExercise(workout.id, data.workoutExerciseId);
+
+    const [existing] = await db
       .select()
-      .from(workoutExercises)
+      .from(workoutLogs)
       .where(
         and(
-          eq(workoutExercises.id, data.workoutExerciseId),
-          eq(workoutExercises.workoutId, workout.id),
+          eq(workoutLogs.workoutExerciseId, data.workoutExerciseId),
+          eq(workoutLogs.setNumber, data.setNumber),
         ),
       );
-    if (!we) throw new HttpError(404, "Упражнение не найдено в тренировке");
-    const [log] = await db
-      .insert(workoutLogs)
-      .values({ ...data, clientId: client.id })
-      .returning();
+
+    let log;
+    if (existing) {
+      [log] = await db
+        .update(workoutLogs)
+        .set({ weight: data.weight, reps: data.reps, feeling: data.feeling })
+        .where(eq(workoutLogs.id, existing.id))
+        .returning();
+    } else {
+      [log] = await db
+        .insert(workoutLogs)
+        .values({ ...data, clientId: client.id })
+        .returning();
+    }
+
     await touchClientActivity(client.id);
-    res.status(201).json({ log });
+    res.status(existing ? 200 : 201).json({ log });
   }),
 );
 
-// Сменить статус тренировки (assigned/completed/skipped).
+// Клиент: снять отметку с подхода (значения в форме на клиенте сохраняются).
+workoutsRouter.delete(
+  "/:id/log",
+  asyncH(async (req, res) => {
+    if (req.user!.role !== "client") throw new HttpError(403, "Только для клиента");
+    const { workout } = await loadAuthorized(req);
+    const { workoutExerciseId, setNumber } = z
+      .object({
+        workoutExerciseId: z.string().uuid(),
+        setNumber: z.number().int().positive(),
+      })
+      .parse(req.body);
+    await assertWorkoutExercise(workout.id, workoutExerciseId);
+    await db
+      .delete(workoutLogs)
+      .where(
+        and(
+          eq(workoutLogs.workoutExerciseId, workoutExerciseId),
+          eq(workoutLogs.setNumber, setNumber),
+        ),
+      );
+    res.json({ ok: true });
+  }),
+);
+
+/** Тоннаж тренировки: Σ(вес × повторы) по всем записанным подходам. */
+export async function computeTonnage(workoutId: string): Promise<number> {
+  const rows = await db
+    .select({ weight: workoutLogs.weight, reps: workoutLogs.reps })
+    .from(workoutLogs)
+    .innerJoin(workoutExercises, eq(workoutLogs.workoutExerciseId, workoutExercises.id))
+    .where(eq(workoutExercises.workoutId, workoutId));
+  return rows.reduce((sum, r) => sum + (r.weight ?? 0) * (r.reps ?? 0), 0);
+}
+
+const statusSchema = z.object({
+  status: z.enum(["assigned", "completed", "skipped"]),
+  feeling: z.enum(["easy", "moderate", "hard", "very_hard"]).optional(),
+  comment: z.string().max(2000).optional(),
+});
+
+// Сменить статус тренировки. При завершении клиентом — считаем тоннаж и
+// сохраняем самочувствие/комментарий по всей тренировке.
 workoutsRouter.patch(
   "/:id/status",
   asyncH(async (req, res) => {
     const { workout, client } = await loadAuthorized(req);
-    const { status } = z
-      .object({ status: z.enum(["assigned", "completed", "skipped"]) })
-      .parse(req.body);
+    const data = statusSchema.parse(req.body);
+    const isClient = req.user!.role === "client";
+
+    const patch: Record<string, unknown> = { status: data.status };
+    if (isClient && data.status === "completed") {
+      patch.tonnage = await computeTonnage(workout.id);
+      if (data.feeling) patch.clientFeeling = data.feeling;
+      if (data.comment) patch.clientComment = data.comment;
+    }
+
     const [updated] = await db
       .update(workouts)
-      .set({ status })
+      .set(patch)
       .where(eq(workouts.id, workout.id))
       .returning();
+
     let earned: string[] = [];
-    if (req.user!.role === "client") {
+    if (isClient) {
       await touchClientActivity(client.id);
-      if (status === "completed") earned = await recomputeAchievements(client.id);
+      if (data.status === "completed") earned = await recomputeAchievements(client.id);
     }
     res.json({ workout: updated, earnedAchievements: earned });
   }),

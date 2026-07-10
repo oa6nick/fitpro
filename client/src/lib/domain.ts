@@ -128,6 +128,8 @@ export interface Exercise {
   createdAt: string;
 }
 
+export type Feeling = "easy" | "moderate" | "hard" | "very_hard";
+
 export interface Workout {
   id: string;
   clientId: string;
@@ -135,6 +137,10 @@ export interface Workout {
   title: string | null;
   date: string | null;
   status: "assigned" | "completed" | "skipped";
+  /** Σ(вес × повторы), считается при завершении. */
+  tonnage: number | null;
+  clientFeeling: Feeling | null;
+  clientComment: string | null;
   createdAt: string;
 }
 

@@ -198,7 +198,16 @@ async function main() {
       // Назначенная тренировка из шаблона
       const [w] = await db
         .insert(s.workouts)
-        .values({ clientId, templateId: template!.id, title: "Фуллбоди A", date: daysAgo(2), status: "completed" })
+        .values({
+          clientId,
+          templateId: template!.id,
+          title: "Фуллбоди A",
+          date: daysAgo(2),
+          status: "completed",
+          tonnage: 4820,
+          clientFeeling: "moderate",
+          clientComment: "Хорошо зашло, последний подход тяжело",
+        })
         .returning();
       const we = await db
         .insert(s.workoutExercises)

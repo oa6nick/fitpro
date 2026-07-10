@@ -201,6 +201,11 @@ export const workouts = pgTable("workouts", {
   title: text("title"),
   date: date("date"),
   status: workoutStatus("status").notNull().default("assigned"),
+  /** Суммарный тоннаж Σ(вес × повторы), считается при завершении тренировки. */
+  tonnage: real("tonnage"),
+  /** Обратная связь клиента по всей тренировке (переиспользуем enum feeling). */
+  clientFeeling: feeling("client_feeling"),
+  clientComment: text("client_comment"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
