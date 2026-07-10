@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Хук bare-репозитория /opt/fitpro/repo.git/hooks/post-receive.
-# Деплоит только push в main.
+# Деплоит только push в main. Сам deploy.sh обновляется из репо при каждом пуше.
 set -euo pipefail
 while read -r _old new ref; do
   if [ "$ref" = "refs/heads/main" ]; then
+    TMP=$(mktemp -d)
+    git --git-dir=/opt/fitpro/repo.git --work-tree="$TMP" checkout -f "$new" -- deploy/deploy.sh
+    install -m 755 "$TMP/deploy/deploy.sh" /opt/fitpro/deploy.sh
+    rm -rf "$TMP"
     echo "post-receive: деплой $new"
     /opt/fitpro/deploy.sh "$new"
   else

@@ -35,6 +35,9 @@ npm run prod:build
 echo "==> Миграции БД (без seed!)"
 npm run db:migrate
 
+echo "==> Права: релиз переходит юзеру fitpro"
+chown -R fitpro:fitpro "$REL"
+
 PREV=$(readlink -f "$BASE/current" 2>/dev/null || true)
 echo "==> Переключение current -> $REL (пред.: ${PREV:-нет})"
 ln -sfnT "$REL" "$BASE/current"

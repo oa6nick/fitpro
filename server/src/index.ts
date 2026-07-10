@@ -4,7 +4,12 @@ import { env } from "./env.js";
 import { createApp } from "./app.js";
 
 function ensureDirs() {
-  for (const dir of [env.uploadsDir, env.pgliteDataDir]) {
+  // Каталог PGlite нужен только этому драйверу; при pg релиз может быть read-only.
+  const dirs = [env.uploadsDir];
+  if (env.dbDriver === "pglite" && !env.pgliteDataDir.startsWith("memory://")) {
+    dirs.push(env.pgliteDataDir);
+  }
+  for (const dir of dirs) {
     const abs = path.resolve(dir);
     if (!fs.existsSync(abs)) fs.mkdirSync(abs, { recursive: true });
   }
