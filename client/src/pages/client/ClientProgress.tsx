@@ -11,6 +11,8 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { ChartTooltip } from "@/components/ChartTooltip";
+import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +27,7 @@ import {
 import type { Measurement } from "@/lib/domain";
 
 export function ClientProgress() {
+  const colors = useChartColors();
   const { data, loading, error, reload } = useAsync<{ measurements: Measurement[] }>(() =>
     api.get("/measurements"),
   );
@@ -56,12 +59,12 @@ export function ClientProgress() {
                         .reverse()
                         .map((m) => ({ date: m.date, Вес: m.weight, Талия: m.waist }))}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                      <XAxis dataKey="date" fontSize={11} />
-                      <YAxis fontSize={11} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="Вес" stroke="#16a34a" strokeWidth={2} />
-                      <Line type="monotone" dataKey="Талия" stroke="#f59e0b" strokeWidth={2} />
+                      <CartesianGrid strokeDasharray="3 6" stroke={colors.border} vertical={false} />
+                      <XAxis dataKey="date" tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+                      <YAxis tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Line type="monotone" dataKey="Вес" stroke={colors.primary} strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Талия" stroke={colors.warning} strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

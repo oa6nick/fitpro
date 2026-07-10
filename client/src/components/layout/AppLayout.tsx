@@ -75,9 +75,9 @@ export function AppLayout() {
           onClick={() => setOpen(false)}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isActive
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )
           }
@@ -95,16 +95,16 @@ export function AppLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen">
       {/* Десктоп-сайдбар */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-background p-4 md:flex">
+      <aside className="glass-header fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border/60 p-4 md:flex">
         <Brand />
         <div className="mt-6 flex-1 overflow-y-auto">{navContent}</div>
         <UserBox name={user?.name} role={user?.role} onLogout={handleLogout} />
       </aside>
 
       {/* Мобильный хедер */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
+      <header className="glass-header sticky top-0 z-20 flex items-center justify-between border-b border-border/60 px-4 py-3 md:hidden">
         <Brand />
         <div className="flex items-center gap-1">
           <ThemeToggle />
@@ -123,9 +123,12 @@ export function AppLayout() {
       {/* Мобильное выезжающее меню */}
       {open && (
         <div className="fixed inset-0 z-30 md:hidden" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 animate-in fade-in-0 bg-black/45 backdrop-blur-sm duration-200" />
           <div
-            className="absolute left-0 top-0 h-full w-72 bg-background p-4 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Меню навигации"
+            className="glass-elevated absolute left-0 top-0 h-full w-72 animate-in slide-in-from-left p-4 duration-300 ease-spring"
             onClick={(e) => e.stopPropagation()}
           >
             <Brand />

@@ -47,6 +47,8 @@ export function ClientsPage() {
               variant={view === "board" ? "default" : "outline"}
               size="icon"
               onClick={() => setView("board")}
+              aria-label="Вид: доска"
+              aria-pressed={view === "board"}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -54,6 +56,8 @@ export function ClientsPage() {
               variant={view === "list" ? "default" : "outline"}
               size="icon"
               onClick={() => setView("list")}
+              aria-label="Вид: список"
+              aria-pressed={view === "list"}
             >
               <ListIcon className="h-4 w-4" />
             </Button>
@@ -81,13 +85,17 @@ function Board({ clients }: { clients: Client[] }) {
         return (
           <div key={status} className="w-64 shrink-0">
             <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-sm font-semibold">{FUNNEL_LABELS[status]}</span>
-              <Badge variant="secondary">{list.length}</Badge>
+              <span className="type-caption">{FUNNEL_LABELS[status]}</span>
+              <Badge variant={FUNNEL_TONES[status]}>{list.length}</Badge>
             </div>
             <div className="space-y-2">
               {list.map((c) => (
-                <Link key={c.id} to={`/t/clients/${c.id}`}>
-                  <Card className="transition-colors hover:border-primary">
+                <Link
+                  key={c.id}
+                  to={`/t/clients/${c.id}`}
+                  className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Card className="rounded-xl transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-panel">
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{c.name}</span>

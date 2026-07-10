@@ -10,8 +10,10 @@ import {
   Legend,
 } from "recharts";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, StatCard, useAsync, EmptyState } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartTooltip } from "@/components/ChartTooltip";
+import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import {
   Select,
   SelectContent,
@@ -28,8 +30,6 @@ interface Analytics {
   measurements: { date: string; weight: number | null; waist: number | null }[];
 }
 
-const COLORS = ["#16a34a", "#2563eb", "#f59e0b", "#db2777", "#7c3aed"];
-
 export function AnalyticsPage() {
   const { data: clientsData } = useAsync<{ clients: Client[] }>(() => api.get("/clients"), []);
   const [clientId, setClientId] = useState<string>("");
@@ -37,12 +37,13 @@ export function AnalyticsPage() {
   return (
     <div>
       <PageHeader
-        title="Аналитика"
+        eyebrow="Аналитика"
+        title="Прогресс клиента"
         description="Прогрессия весов, посещаемость, субъективная тяжесть и замеры по клиенту."
         action={
           <div className="w-56">
             <Select value={clientId} onValueChange={setClientId}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Выбор клиента">
                 <SelectValue placeholder="Выберите клиента" />
               </SelectTrigger>
               <SelectContent>
@@ -66,6 +67,7 @@ export function AnalyticsPage() {
 }
 
 function AnalyticsBody({ clientId }: { clientId: string }) {
+  const colors = useChartColors();
   const { data, loading, error } = useAsync<Analytics>(
     () => api.get(`/analytics/client/${clientId}`),
     [clientId],
@@ -73,13 +75,19 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
   if (loading) return <Spinner />;
   if (error || !data) return <p className="text-sm text-destructive">{error}</p>;
 
+  const seriesColors = [colors.primary, colors.info, colors.warning, colors.destructive];
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Всего тренировок" value={data.attendance.total} />
-        <Stat label="Выполнено" value={data.attendance.completed} />
-        <Stat label="Пропущено" value={data.attendance.skipped} />
-        <Stat label="Выполнение плана" value={`${data.attendance.completionRate}%`} />
+        <StatCard label="Всего тренировок" value={data.attendance.total} />
+        <StatCard label="Выполнено" value={data.attendance.completed} tone="success" />
+        <StatCard label="Пропущено" value={data.attendance.skipped} tone="warning" />
+        <StatCard
+          label="Выполнение плана"
+          value={`${data.attendance.completionRate}%`}
+          tone={data.attendance.completionRate >= 70 ? "success" : "warning"}
+        />
       </div>
 
       <Card>
@@ -93,10 +101,16 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                  <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 6" stroke={colors.border} vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    type="category"
+                    allowDuplicatedCategory={false}
+                    tick={{ fill: colors.mutedFg }}
+                    {...CHART_AXIS}
+                  />
+                  <YAxis tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+                  <Tooltip content={<ChartTooltip />} />
                   <Legend />
                   {data.weightProgression.map((s, i) => (
                     <Line
@@ -104,8 +118,9 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
                       data={s.points}
                       dataKey="weight"
                       name={s.exercise}
-                      stroke={COLORS[i % COLORS.length]}
+                      stroke={seriesColors[i % seriesColors.length]}
                       strokeWidth={2}
+                      dot={false}
                     />
                   ))}
                 </LineChart>
@@ -120,29 +135,18 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
           {data.heaviness.length === 0 ? (
             <p className="text-sm text-muted-foreground">Нет данных.</p>
           ) : (
-            <Chart data={data.heaviness} dataKey="avg" color="#db2777" domain={[0, 4]} />
+            <SimpleChart data={data.heaviness} dataKey="avg" color={colors.info} domain={[0, 4]} />
           )}
         </ChartCard>
         <ChartCard title="Вес тела (замеры)">
           {data.measurements.length === 0 ? (
             <p className="text-sm text-muted-foreground">Нет замеров.</p>
           ) : (
-            <Chart data={data.measurements} dataKey="weight" color="#16a34a" />
+            <SimpleChart data={data.measurements} dataKey="weight" color={colors.primary} />
           )}
         </ChartCard>
       </div>
     </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-2xl font-bold">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -157,7 +161,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function Chart({
+function SimpleChart({
   data,
   dataKey,
   color,
@@ -168,15 +172,16 @@ function Chart({
   color: string;
   domain?: [number, number];
 }) {
+  const colors = useChartColors();
   return (
     <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-          <XAxis dataKey="date" fontSize={11} />
-          <YAxis fontSize={11} domain={domain ?? ["auto", "auto"]} />
-          <Tooltip />
-          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} />
+          <CartesianGrid strokeDasharray="3 6" stroke={colors.border} vertical={false} />
+          <XAxis dataKey="date" tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+          <YAxis tick={{ fill: colors.mutedFg }} domain={domain ?? ["auto", "auto"]} {...CHART_AXIS} />
+          <Tooltip content={<ChartTooltip />} />
+          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

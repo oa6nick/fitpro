@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Bell, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, StatCard, useAsync, EmptyState } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,20 +46,18 @@ export function FinancePage() {
       {data && (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md">
-            <Card>
-              <CardContent className="p-4">
-                <Wallet className="h-5 w-5 text-success" />
-                <p className="mt-2 text-2xl font-bold">{data.totals.paid.toLocaleString("ru-RU")} ₽</p>
-                <p className="text-xs text-muted-foreground">Получено всего</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <Bell className="h-5 w-5 text-warning" />
-                <p className="mt-2 text-2xl font-bold">{data.totals.overdue}</p>
-                <p className="text-xs text-muted-foreground">Просроченных</p>
-              </CardContent>
-            </Card>
+            <StatCard
+              label="Получено всего"
+              value={`${data.totals.paid.toLocaleString("ru-RU")} ₽`}
+              icon={Wallet}
+              tone="success"
+            />
+            <StatCard
+              label="Просроченных"
+              value={data.totals.overdue}
+              icon={Bell}
+              tone="warning"
+            />
           </div>
           {data.payments.length === 0 ? (
             <EmptyState text="Оплат пока нет." />

@@ -12,6 +12,8 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { ChartTooltip } from "@/components/ChartTooltip";
+import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -484,6 +486,7 @@ function AssignWorkoutDialog({
 }
 
 function ProgressTab({ measurements }: { measurements: Measurement[] }) {
+  const colors = useChartColors();
   if (measurements.length === 0) return <EmptyState text="Замеров пока нет" />;
   const chartData = [...measurements]
     .reverse()
@@ -499,12 +502,12 @@ function ProgressTab({ measurements }: { measurements: Measurement[] }) {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="date" fontSize={11} />
-                <YAxis fontSize={11} />
-                <Tooltip />
-                <Line type="monotone" dataKey="Вес" stroke="#16a34a" strokeWidth={2} />
-                <Line type="monotone" dataKey="Талия" stroke="#f59e0b" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 6" stroke={colors.border} vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+                <YAxis tick={{ fill: colors.mutedFg }} {...CHART_AXIS} />
+                <Tooltip content={<ChartTooltip />} />
+                <Line type="monotone" dataKey="Вес" stroke={colors.primary} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Талия" stroke={colors.warning} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
