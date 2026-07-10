@@ -18,6 +18,8 @@ const itemSchema = z.object({
   tempo: z.string().optional(),
   rest: z.string().optional(),
   comment: z.string().optional(),
+  groupKey: z.string().max(64).optional(),
+  groupType: z.enum(["superset", "triset", "circuit"]).optional(),
 });
 
 const createSchema = z.object({

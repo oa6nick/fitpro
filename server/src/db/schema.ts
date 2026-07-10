@@ -184,6 +184,9 @@ export const templateExercises = pgTable("template_exercises", {
   tempo: text("tempo"),
   rest: text("rest"),
   comment: text("comment"),
+  /** Упражнения с одинаковым groupKey выполняются связкой. Генерится на клиенте. */
+  groupKey: text("group_key"),
+  groupType: text("group_type"), // superset | triset | circuit
 });
 
 /* ------------------------------------------------------------------ */
@@ -231,6 +234,20 @@ export const workoutExercises = pgTable("workout_exercises", {
   tempo: text("tempo"),
   rest: text("rest"),
   comment: text("comment"),
+  groupKey: text("group_key"),
+  groupType: text("group_type"), // superset | triset | circuit
+});
+
+/** Равноценные замены упражнения (двусторонняя связь хранится одной строкой). */
+export const exerciseAlternatives = pgTable("exercise_alternatives", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  exerciseId: uuid("exercise_id")
+    .notNull()
+    .references(() => exercises.id, { onDelete: "cascade" }),
+  alternativeId: uuid("alternative_id")
+    .notNull()
+    .references(() => exercises.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const workoutLogs = pgTable("workout_logs", {

@@ -39,6 +39,7 @@ async function clearAll() {
     s.achievements,
     s.payments,
     s.notifications,
+    s.exerciseAlternatives,
     s.exercises,
     s.clientInvites,
     s.trainerSubscriptions,
@@ -109,6 +110,12 @@ async function main() {
     .insert(s.exercises)
     .values(exDefs.map((e) => ({ ...e, trainerId })))
     .returning();
+
+  // Равноценные замены (двусторонняя связь): становая тяга ↔ тяга верхнего блока
+  await db.insert(s.exerciseAlternatives).values([
+    { exerciseId: ex[2]!.id, alternativeId: ex[3]!.id },
+    { exerciseId: ex[3]!.id, alternativeId: ex[2]!.id },
+  ]);
 
   // --- Шаблон программы ---
   const [template] = await db
@@ -234,10 +241,29 @@ async function main() {
           status: "assigned",
         })
         .returning();
+      // Последние два упражнения — суперсет (демонстрация связки).
       await db.insert(s.workoutExercises).values([
         { workoutId: next!.id, exerciseId: ex[0]!.id, order: 0, sets: 4, reps: "8-10", rest: "120 сек" },
-        { workoutId: next!.id, exerciseId: ex[1]!.id, order: 1, sets: 3, reps: "10-12", rest: "90 сек" },
-        { workoutId: next!.id, exerciseId: ex[2]!.id, order: 2, sets: 3, reps: "12", rest: "60 сек" },
+        {
+          workoutId: next!.id,
+          exerciseId: ex[1]!.id,
+          order: 1,
+          sets: 3,
+          reps: "10-12",
+          rest: "90 сек",
+          groupKey: "demo-superset",
+          groupType: "superset",
+        },
+        {
+          workoutId: next!.id,
+          exerciseId: ex[2]!.id,
+          order: 2,
+          sets: 3,
+          reps: "12",
+          rest: "60 сек",
+          groupKey: "demo-superset",
+          groupType: "superset",
+        },
       ]);
 
       // Оплата

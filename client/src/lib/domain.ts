@@ -148,6 +148,14 @@ export interface Workout {
   createdAt: string;
 }
 
+export type GroupType = "superset" | "triset" | "circuit";
+
+export const GROUP_LABELS: Record<GroupType, string> = {
+  superset: "Суперсет",
+  triset: "Трисет",
+  circuit: "Круговая",
+};
+
 export interface WorkoutExerciseRow {
   id: string;
   workoutId: string;
@@ -159,6 +167,8 @@ export interface WorkoutExerciseRow {
   tempo: string | null;
   rest: string | null;
   comment: string | null;
+  groupKey: string | null;
+  groupType: GroupType | null;
   exercise: Exercise;
   logs: WorkoutLog[];
 }

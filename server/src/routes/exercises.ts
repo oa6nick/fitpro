@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { exercises } from "../db/schema.js";
+import { exercises, exerciseAlternatives } from "../db/schema.js";
 import { requireAuth, requireRole } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
 
@@ -64,6 +64,87 @@ exercisesRouter.delete(
     await db
       .delete(exercises)
       .where(and(eq(exercises.id, req.params.id), eq(exercises.trainerId, req.user!.sub)));
+    res.json({ ok: true });
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* Равноценные альтернативы (замены) упражнения                        */
+/* ------------------------------------------------------------------ */
+
+/** Убеждаемся, что упражнение принадлежит тренеру. */
+async function assertOwnExercise(trainerId: string, exerciseId: string) {
+  const [ex] = await db
+    .select()
+    .from(exercises)
+    .where(and(eq(exercises.id, exerciseId), eq(exercises.trainerId, trainerId)));
+  if (!ex) throw new HttpError(404, "Упражнение не найдено");
+  return ex;
+}
+
+exercisesRouter.get(
+  "/:id/alternatives",
+  asyncH(async (req, res) => {
+    await assertOwnExercise(req.user!.sub, req.params.id);
+    const rows = await db
+      .select({ link: exerciseAlternatives, ex: exercises })
+      .from(exerciseAlternatives)
+      .innerJoin(exercises, eq(exerciseAlternatives.alternativeId, exercises.id))
+      .where(eq(exerciseAlternatives.exerciseId, req.params.id));
+    res.json({ alternatives: rows.map((r) => ({ ...r.ex, linkId: r.link.id })) });
+  }),
+);
+
+exercisesRouter.post(
+  "/:id/alternatives",
+  asyncH(async (req, res) => {
+    const { alternativeId } = z.object({ alternativeId: z.string().uuid() }).parse(req.body);
+    if (alternativeId === req.params.id) {
+      throw new HttpError(400, "Упражнение не может заменять само себя");
+    }
+    await assertOwnExercise(req.user!.sub, req.params.id);
+    await assertOwnExercise(req.user!.sub, alternativeId);
+
+    const [existing] = await db
+      .select()
+      .from(exerciseAlternatives)
+      .where(
+        and(
+          eq(exerciseAlternatives.exerciseId, req.params.id),
+          eq(exerciseAlternatives.alternativeId, alternativeId),
+        ),
+      );
+    if (existing) return res.json({ ok: true });
+
+    // Связь равноценная — пишем в обе стороны, чтобы замена работала симметрично.
+    await db.insert(exerciseAlternatives).values([
+      { exerciseId: req.params.id, alternativeId },
+      { exerciseId: alternativeId, alternativeId: req.params.id },
+    ]);
+    res.status(201).json({ ok: true });
+  }),
+);
+
+exercisesRouter.delete(
+  "/:id/alternatives/:altId",
+  asyncH(async (req, res) => {
+    await assertOwnExercise(req.user!.sub, req.params.id);
+    await db
+      .delete(exerciseAlternatives)
+      .where(
+        and(
+          eq(exerciseAlternatives.exerciseId, req.params.id),
+          eq(exerciseAlternatives.alternativeId, req.params.altId),
+        ),
+      );
+    await db
+      .delete(exerciseAlternatives)
+      .where(
+        and(
+          eq(exerciseAlternatives.exerciseId, req.params.altId),
+          eq(exerciseAlternatives.alternativeId, req.params.id),
+        ),
+      );
     res.json({ ok: true });
   }),
 );

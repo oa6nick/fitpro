@@ -29,6 +29,13 @@
       "when": 1783675929807,
       "tag": "0003_tan_the_hand",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783678223628,
+      "tag": "0004_open_inhumans",
+      "breakpoints": true
     }
   ]
 }

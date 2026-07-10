@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ClipboardList, GripVertical } from "lucide-react";
+import { Plus, Trash2, ClipboardList, GripVertical, Link2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Exercise, WorkoutTemplate } from "@/lib/domain";
+import { GROUP_LABELS, type Exercise, type GroupType, type WorkoutTemplate } from "@/lib/domain";
 
 interface Row {
   exerciseId: string;
@@ -28,7 +28,16 @@ interface Row {
   weight?: string;
   rest?: string;
   comment?: string;
+  /** Одинаковый ключ = связка (суперсет). Генерится на клиенте: PUT пересоздаёт строки. */
+  groupKey?: string;
+  groupType?: GroupType;
 }
+
+const newGroupKey = () => `g${Math.random().toString(36).slice(2, 10)}`;
+
+/** По числу упражнений в связке: 2 — суперсет, 3 — трисет, 4+ — круговая. */
+const groupTypeFor = (n: number): GroupType =>
+  n <= 2 ? "superset" : n === 3 ? "triset" : "circuit";
 
 export function TemplatesPage() {
   const { data, loading, error, reload } = useAsync<{ templates: WorkoutTemplate[] }>(() =>
@@ -100,6 +109,7 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
 
   const exMap = new Map((data?.exercises ?? []).map((e) => [e.id, e]));
@@ -113,6 +123,22 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   }
   function remove(i: number) {
     setRows((r) => r.filter((_, idx) => idx !== i));
+    setSelected((s) => s.filter((idx) => idx !== i).map((idx) => (idx > i ? idx - 1 : idx)));
+  }
+
+  /** Объединить выделенные строки в связку (общий groupKey). */
+  function groupSelected() {
+    if (selected.length < 2) return;
+    const key = newGroupKey();
+    const type = groupTypeFor(selected.length);
+    setRows((r) => r.map((row, idx) => (selected.includes(idx) ? { ...row, groupKey: key, groupType: type } : row)));
+    setSelected([]);
+  }
+
+  function ungroup(key: string) {
+    setRows((r) =>
+      r.map((row) => (row.groupKey === key ? { ...row, groupKey: undefined, groupType: undefined } : row)),
+    );
   }
 
   async function save() {
@@ -177,12 +203,53 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
             )}
           </div>
 
+          {rows.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">
+                {selected.length > 0
+                  ? `Выбрано: ${selected.length}`
+                  : "Отметьте 2–4 упражнения, чтобы объединить в связку"}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={groupSelected}
+                disabled={selected.length < 2}
+              >
+                <Link2 className="h-4 w-4" /> Объединить в {GROUP_LABELS[groupTypeFor(Math.max(selected.length, 2))].toLowerCase()}
+              </Button>
+            </div>
+          )}
+
           <div className="space-y-2">
             {rows.map((r, i) => (
-              <div key={i} className="flex items-center gap-2 rounded-lg border p-2">
+              <div
+                key={i}
+                className={`flex items-center gap-2 rounded-lg border p-2 ${
+                  r.groupKey ? "border-primary/40 bg-primary/5" : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(i)}
+                  onChange={(e) =>
+                    setSelected((s) => (e.target.checked ? [...s, i] : s.filter((x) => x !== i)))
+                  }
+                  aria-label={`Выбрать упражнение ${i + 1} для связки`}
+                  className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                />
                 <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="w-40 shrink-0 truncate text-sm font-medium">
                   {exMap.get(r.exerciseId)?.name ?? "?"}
+                  {r.groupKey && (
+                    <button
+                      onClick={() => ungroup(r.groupKey!)}
+                      className="ml-1.5 text-xs font-normal text-primary hover:underline"
+                      title="Разгруппировать"
+                    >
+                      {GROUP_LABELS[r.groupType ?? "superset"].toLowerCase()}
+                    </button>
+                  )}
                 </span>
                 <Input
                   className="w-16"

@@ -9,6 +9,7 @@ import {
   templateExercises,
   clients,
   exercises,
+  exerciseAlternatives,
 } from "../db/schema.js";
 import { requireAuth } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
@@ -28,6 +29,8 @@ const exerciseRowSchema = z.object({
   tempo: z.string().optional(),
   rest: z.string().optional(),
   comment: z.string().optional(),
+  groupKey: z.string().max(64).optional(),
+  groupType: z.enum(["superset", "triset", "circuit"]).optional(),
 });
 
 const assignSchema = z.object({
@@ -77,6 +80,9 @@ workoutsRouter.post(
         tempo: r.tempo ?? undefined,
         rest: r.rest ?? undefined,
         comment: r.comment ?? undefined,
+        // Группы (суперсеты) переносим из шаблона в тренировку.
+        groupKey: r.groupKey ?? undefined,
+        groupType: (r.groupType as "superset" | "triset" | "circuit" | null) ?? undefined,
       }));
     }
 
@@ -298,6 +304,60 @@ workoutsRouter.patch(
       }
     }
     res.json({ workout: updated, earnedAchievements: earned });
+  }),
+);
+
+// Клиент: заменить упражнение на равноценную альтернативу.
+// Разрешено только пока по упражнению нет ни одного записанного подхода —
+// иначе история подходов относилась бы к другому движению.
+workoutsRouter.patch(
+  "/:id/exercises/:weId/replace",
+  asyncH(async (req, res) => {
+    if (req.user!.role !== "client") throw new HttpError(403, "Только для клиента");
+    const { workout } = await loadAuthorized(req);
+    const { alternativeId } = z.object({ alternativeId: z.string().uuid() }).parse(req.body);
+    const we = await assertWorkoutExercise(workout.id, req.params.weId);
+
+    const logs = await db
+      .select({ id: workoutLogs.id })
+      .from(workoutLogs)
+      .where(eq(workoutLogs.workoutExerciseId, we.id));
+    if (logs.length > 0) {
+      throw new HttpError(409, "Нельзя заменить упражнение: уже есть записанные подходы");
+    }
+
+    const [allowed] = await db
+      .select()
+      .from(exerciseAlternatives)
+      .where(
+        and(
+          eq(exerciseAlternatives.exerciseId, we.exerciseId),
+          eq(exerciseAlternatives.alternativeId, alternativeId),
+        ),
+      );
+    if (!allowed) throw new HttpError(400, "Это упражнение не указано как равноценная замена");
+
+    const [updated] = await db
+      .update(workoutExercises)
+      .set({ exerciseId: alternativeId })
+      .where(eq(workoutExercises.id, we.id))
+      .returning();
+    res.json({ workoutExercise: updated });
+  }),
+);
+
+// Клиент: доступные замены для упражнения тренировки.
+workoutsRouter.get(
+  "/:id/exercises/:weId/alternatives",
+  asyncH(async (req, res) => {
+    const { workout } = await loadAuthorized(req);
+    const we = await assertWorkoutExercise(workout.id, req.params.weId);
+    const rows = await db
+      .select({ ex: exercises })
+      .from(exerciseAlternatives)
+      .innerJoin(exercises, eq(exerciseAlternatives.alternativeId, exercises.id))
+      .where(eq(exerciseAlternatives.exerciseId, we.exerciseId));
+    res.json({ alternatives: rows.map((r) => r.ex) });
   }),
 );
 

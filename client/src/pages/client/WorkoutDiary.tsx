@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Check, CheckCheck, Dumbbell, PlayCircle, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Check,
+  CheckCheck,
+  Dumbbell,
+  PlayCircle,
+  Plus,
+  Repeat,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync } from "@/components/common";
 import { RestTimer } from "@/components/RestTimer";
@@ -21,7 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FEELING_LABELS, type Feeling, type Workout, type WorkoutExerciseRow } from "@/lib/domain";
+import {
+  FEELING_LABELS,
+  GROUP_LABELS,
+  type Exercise,
+  type Feeling,
+  type GroupType,
+  type Workout,
+  type WorkoutExerciseRow,
+} from "@/lib/domain";
 
 interface DiaryData {
   workout: Workout;
@@ -32,6 +49,26 @@ const draftKey = (weId: string, set: number) => `fitpro-draft:${weId}:${set}`;
 
 /** План повторов может быть диапазоном («8-10») — в числовое поле берём нижнюю границу. */
 const plannedReps = (reps: string | null) => reps?.match(/\d+/)?.[0] ?? "";
+
+interface ItemGroup {
+  groupKey: string | null;
+  groupType: GroupType | null;
+  items: WorkoutExerciseRow[];
+}
+
+/** Соседние упражнения с одинаковым groupKey объединяются в связку. */
+function groupItems(items: WorkoutExerciseRow[]): ItemGroup[] {
+  const groups: ItemGroup[] = [];
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (item.groupKey && last?.groupKey === item.groupKey) {
+      last.items.push(item);
+    } else {
+      groups.push({ groupKey: item.groupKey, groupType: item.groupType, items: [item] });
+    }
+  }
+  return groups;
+}
 
 export function WorkoutDiary() {
   const { id } = useParams<{ id: string }>();
@@ -135,15 +172,39 @@ export function WorkoutDiary() {
       )}
 
       <div className="space-y-4">
-        {items.map((item) => (
-          <ExerciseBlock
-            key={item.id}
-            workoutId={id!}
-            item={item}
-            readOnly={done}
-            onChanged={reload}
-          />
-        ))}
+        {groupItems(items).map((group) =>
+          group.groupKey ? (
+            <div
+              key={group.groupKey}
+              className="rounded-hero border-2 border-dashed border-primary/30 p-3"
+            >
+              <p className="type-caption mb-2 text-primary">
+                {GROUP_LABELS[group.groupType ?? "superset"]} · выполняйте по кругу без отдыха
+              </p>
+              <div className="space-y-3">
+                {group.items.map((item) => (
+                  <ExerciseBlock
+                    key={item.id}
+                    workoutId={id!}
+                    item={item}
+                    readOnly={done}
+                    onChanged={reload}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            group.items.map((item) => (
+              <ExerciseBlock
+                key={item.id}
+                workoutId={id!}
+                item={item}
+                readOnly={done}
+                onChanged={reload}
+              />
+            ))
+          ),
+        )}
         {items.length === 0 && (
           <p className="text-sm text-muted-foreground">В тренировке нет упражнений.</p>
         )}
@@ -311,6 +372,14 @@ function ExerciseBlock({
             <Badge variant={doneCount >= (item.sets ?? 0) && doneCount > 0 ? "success" : "neutral"}>
               {doneCount} / {item.sets ?? slots.length}
             </Badge>
+            {!readOnly && item.logs.length === 0 && (
+              <ReplaceExercise
+                workoutId={workoutId}
+                weId={item.id}
+                currentName={item.exercise.name}
+                onReplaced={onChanged}
+              />
+            )}
             {item.exercise.videoUrl && (
               <a
                 href={item.exercise.videoUrl}
@@ -372,6 +441,86 @@ function ExerciseBlock({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/** Замена упражнения на равноценное (только пока нет записанных подходов). */
+function ReplaceExercise({
+  workoutId,
+  weId,
+  currentName,
+  onReplaced,
+}: {
+  workoutId: string;
+  weId: string;
+  currentName: string;
+  onReplaced: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [alts, setAlts] = useState<Exercise[] | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    setOpen(true);
+    const r = await api.get<{ alternatives: Exercise[] }>(
+      `/workouts/${workoutId}/exercises/${weId}/alternatives`,
+    );
+    setAlts(r.alternatives);
+  }
+
+  async function replace(alternativeId: string) {
+    setBusy(true);
+    try {
+      await api.patch(`/workouts/${workoutId}/exercises/${weId}/replace`, { alternativeId });
+      setOpen(false);
+      onReplaced();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={load}
+        aria-label={`Заменить упражнение «${currentName}»`}
+        title="Заменить упражнение"
+      >
+        <Repeat className="h-4 w-4" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Заменить «{currentName}»</DialogTitle>
+          </DialogHeader>
+          {alts === null ? (
+            <p className="text-sm text-muted-foreground">Загружаем…</p>
+          ) : alts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Тренер не указал равноценных замен для этого упражнения.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {alts.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => replace(a.id)}
+                  disabled={busy}
+                  className="flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  <span className="font-medium">{a.name}</span>
+                  {a.muscles && (
+                    <span className="text-xs text-muted-foreground">{a.muscles}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

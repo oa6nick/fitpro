@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Dumbbell } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Dumbbell, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -13,6 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Exercise } from "@/lib/domain";
 
 const FIELDS: { key: keyof Exercise; label: string; area?: boolean }[] = [
@@ -61,7 +69,12 @@ export function ExercisesPage() {
                       <span className="font-semibold">{ex.name}</span>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => setEditing(ex)} aria-label={`Редактировать: `}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditing(ex)}
+                        aria-label={`Редактировать: ${ex.name}`}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -85,6 +98,7 @@ export function ExercisesPage() {
                       {ex.techniqueDescription}
                     </p>
                   )}
+                  <Alternatives exercise={ex} all={data.exercises} />
                 </CardContent>
               </Card>
             ))}
@@ -164,5 +178,80 @@ function ExerciseDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Равноценные замены упражнения: клиент сможет подменить его в дневнике. */
+function Alternatives({ exercise, all }: { exercise: Exercise; all: Exercise[] }) {
+  const [alts, setAlts] = useState<Exercise[] | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  const load = useCallback(async () => {
+    const r = await api.get<{ alternatives: Exercise[] }>(`/exercises/${exercise.id}/alternatives`);
+    setAlts(r.alternatives);
+  }, [exercise.id]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function add(alternativeId: string) {
+    if (!alternativeId) return;
+    setAdding(true);
+    try {
+      await api.post(`/exercises/${exercise.id}/alternatives`, { alternativeId });
+      await load();
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  async function remove(altId: string) {
+    await api.delete(`/exercises/${exercise.id}/alternatives/${altId}`);
+    await load();
+  }
+
+  const candidates = all.filter(
+    (e) => e.id !== exercise.id && !alts?.some((a) => a.id === e.id),
+  );
+
+  return (
+    <div className="mt-3 border-t pt-3">
+      <p className="type-caption mb-2">Равноценные замены</p>
+      {alts && alts.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {alts.map((a) => (
+            <Badge key={a.id} variant="secondary" className="gap-1 pr-1">
+              {a.name}
+              <button
+                onClick={() => remove(a.id)}
+                aria-label={`Убрать замену ${a.name}`}
+                className="rounded-full p-0.5 hover:bg-background/60"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      {candidates.length > 0 ? (
+        <Select value="" onValueChange={add} disabled={adding}>
+          <SelectTrigger className="h-9" aria-label={`Добавить замену для ${exercise.name}`}>
+            <SelectValue placeholder="Добавить замену" />
+          </SelectTrigger>
+          <SelectContent>
+            {candidates.map((e) => (
+              <SelectItem key={e.id} value={e.id}>
+                {e.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        !alts?.length && (
+          <p className="text-xs text-muted-foreground">Добавьте ещё упражнения в библиотеку.</p>
+        )
+      )}
+    </div>
   );
 }
