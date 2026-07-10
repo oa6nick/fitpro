@@ -44,4 +44,17 @@ export const env = {
   pgliteDataDir: str("PGLITE_DATA_DIR", "./.data/fitpro"),
   databaseUrl: process.env.DATABASE_URL ?? "",
   uploadsDir: str("UPLOADS_DIR", "./uploads"),
+  // Публичный адрес приложения — для ссылок в письмах (инвайты, welcome).
+  publicUrl: str("PUBLIC_URL", isProd ? "http://204.168.243.54" : "http://localhost:5173"),
+  // За reverse-proxy (nginx) Express должен доверять первому хопу, иначе
+  // rate-limit видит 127.0.0.1, а secure-cookie не работает по X-Forwarded-Proto.
+  trustProxy: bool("TRUST_PROXY", isProd),
+  // Почта: off — письма не шлются, коды логируются в консоль (dev без ключей).
+  emailProvider: str("EMAIL_PROVIDER", "off") as "resend" | "smtp" | "off",
+  emailFrom: str("EMAIL_FROM", "FitPro <hello@oasixlab.com>"),
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  smtpHost: process.env.SMTP_HOST ?? "",
+  smtpPort: num("SMTP_PORT", 465),
+  smtpUser: process.env.SMTP_USER ?? "",
+  smtpPass: process.env.SMTP_PASS ?? "",
 };

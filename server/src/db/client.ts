@@ -23,8 +23,11 @@ function buildPglite() {
   const { PGlite } = require("@electric-sql/pglite");
   const { drizzle } = require("drizzle-orm/pglite");
   // PGlite mkdir не рекурсивный — гарантируем существование каталога заранее.
-  const fs = require("node:fs");
-  fs.mkdirSync(env.pgliteDataDir, { recursive: true });
+  // memory:// — эфемерная БД (тесты), каталог на диске не нужен.
+  if (!env.pgliteDataDir.startsWith("memory://")) {
+    const fs = require("node:fs");
+    fs.mkdirSync(env.pgliteDataDir, { recursive: true });
+  }
   const client = new PGlite(env.pgliteDataDir);
   const db = drizzle(client, { schema });
   return Object.assign(db, { __pgliteClient: client });

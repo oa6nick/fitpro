@@ -1,11 +1,15 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { sql } from "drizzle-orm";
 import { ZodError } from "zod";
 import { env } from "./env.js";
+import { db } from "./db/client.js";
 import { apiRouter } from "./routes/index.js";
 import { HttpError } from "./lib/http.js";
 
@@ -13,6 +17,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function createApp() {
   const app = express();
+
+  if (env.trustProxy) app.set("trust proxy", 1);
+
+  app.use(
+    helmet({
+      // CSP ломает Vite-бандл и inline-стили recharts — включать отдельной задачей.
+      contentSecurityPolicy: false,
+      // HSTS — только когда весь трафик на HTTPS (после переезда на домен).
+      hsts: false,
+    }),
+  );
 
   app.use(
     cors({
@@ -23,11 +38,33 @@ export function createApp() {
   app.use(express.json({ limit: "5mb" }));
   app.use(cookieParser());
 
+  // Общий лимит на API + строгий на чувствительные auth-операции.
+  app.use(
+    "/api",
+    rateLimit({ windowMs: 60_000, limit: 300, standardHeaders: true, legacyHeaders: false }),
+  );
+  app.use(
+    ["/api/auth/login", "/api/auth/register", "/api/auth/reset", "/api/auth/verify"],
+    rateLimit({
+      windowMs: 15 * 60_000,
+      limit: 20,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { error: "Слишком много попыток, повторите позже" },
+    }),
+  );
+
   // Отдача загруженных файлов
   app.use("/uploads", express.static(path.resolve(env.uploadsDir)));
 
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok", driver: env.dbDriver, ts: new Date().toISOString() });
+  app.get("/health", async (_req, res) => {
+    try {
+      await db.execute(sql`select 1`);
+      res.json({ status: "ok", driver: env.dbDriver, ts: new Date().toISOString() });
+    } catch (err) {
+      console.error("health: БД недоступна:", err);
+      res.status(503).json({ status: "error", driver: env.dbDriver, error: "БД недоступна" });
+    }
   });
 
   app.use("/api", apiRouter);
