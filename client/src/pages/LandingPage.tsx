@@ -198,6 +198,7 @@ export function LandingPage() {
             <a href="#app" className="transition-colors hover:text-foreground">Приложение</a>
             <a href="#pricing" className="transition-colors hover:text-foreground">Тарифы</a>
             <a href="#faq" className="transition-colors hover:text-foreground">Вопросы</a>
+            <Link to="/for-clients" className="transition-colors hover:text-foreground">Клиентам</Link>
           </nav>
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
@@ -486,7 +487,12 @@ export function LandingPage() {
             </div>
             <span className="font-semibold text-foreground">FitPro Platform</span>
           </div>
-          <p>© 2026 FitPro. Операционная система для онлайн-тренера.</p>
+          <div className="flex items-center gap-4">
+            <Link to="/for-clients" className="transition-colors hover:text-foreground">
+              FitPro для клиента
+            </Link>
+            <p>© 2026 FitPro. Операционная система для онлайн-тренера.</p>
+          </div>
         </div>
       </footer>
     </div>
