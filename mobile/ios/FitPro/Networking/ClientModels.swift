@@ -299,6 +299,29 @@ struct SubmissionOnlyResponse: Codable {
     let submission: ReportSubmission
 }
 
+/* Оплата подписки (ЮKassa) — Android BillingPlan */
+
+struct BillingPlan: Codable, Identifiable, Equatable {
+    let id: String
+    let title: String
+    let priceRub: Int
+    let clientLimit: Int
+}
+
+struct BillingPlansResponse: Codable {
+    var enabled: Bool = false
+    var plans: [BillingPlan] = []
+}
+
+struct SubscribeRequest: Encodable {
+    let plan: String
+}
+
+struct SubscribeResponse: Codable {
+    let confirmationUrl: String
+    let paymentId: String
+}
+
 /* Конструкторы тренера (Ф4) — зеркала mobile/android ApiModels.kt */
 
 /// GET /api/trainer/subscription (server/src/routes/trainer.ts).
