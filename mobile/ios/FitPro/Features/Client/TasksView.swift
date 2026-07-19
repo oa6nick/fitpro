@@ -53,13 +53,14 @@ struct TasksView: View {
         NavigationStack {
             ZStack {
                 FPTheme.background.ignoresSafeArea()
-                VStack {
+                VStack(spacing: 12) {
                     Picker("Раздел", selection: $segment) {
                         Text("Привычки").tag(0)
                         Text("Отчёт").tag(1)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 16)
+                    .padding(.top, 8)
 
                     if segment == 0 {
                         HabitsSectionView()
@@ -67,6 +68,8 @@ struct TasksView: View {
                         ReportSectionView()
                     }
                 }
+                // Без этого VStack центрируется в ZStack и сегменты уезжают в середину.
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("Задачи недели")
         }

@@ -11,7 +11,7 @@ struct StudioView: View {
         NavigationStack {
             ZStack {
                 FPTheme.background.ignoresSafeArea()
-                VStack {
+                VStack(spacing: 12) {
                     Picker("Раздел", selection: $segment) {
                         Text("Упражнения").tag(0)
                         Text("Шаблоны").tag(1)
@@ -21,6 +21,7 @@ struct StudioView: View {
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 16)
+                    .padding(.top, 8)
 
                     switch segment {
                     case 0: StudioExercisesSection()
@@ -30,6 +31,7 @@ struct StudioView: View {
                     default: StudioFormsSection()
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("Студия")
         }

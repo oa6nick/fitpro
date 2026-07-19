@@ -652,13 +652,14 @@ struct ReviewView: View {
         NavigationStack {
             ZStack {
                 FPTheme.background.ignoresSafeArea()
-                VStack {
+                VStack(spacing: 12) {
                     Picker("Раздел", selection: $segment) {
                         Text("Дневники").tag(0)
                         Text("Отчёты").tag(1)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 16)
+                    .padding(.top, 8)
 
                     if segment == 0 {
                         if model.diaries.isEmpty {
@@ -705,6 +706,8 @@ struct ReviewView: View {
                         }
                     }
                 }
+                // Иначе VStack центрируется в ZStack и сегменты уезжают в середину.
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationTitle("Проверка")
             .navigationDestination(for: ReviewTarget.self) { target in
