@@ -95,6 +95,64 @@ const AUDIENCE = [
   },
 ];
 
+// Живые экраны iOS-приложения (client/public/screens/).
+const APP_SCREENS = [
+  {
+    src: "/screens/trainer-dashboard.png",
+    role: "Тренер",
+    title: "Дашборд",
+    text: "Клиенты, заявки и зона риска — одним взглядом",
+  },
+  {
+    src: "/screens/trainer-client-card.png",
+    role: "Тренер",
+    title: "Карточка клиента",
+    text: "Тренировки, анкета, замеры и заметки в одном месте",
+  },
+  {
+    src: "/screens/trainer-studio.png",
+    role: "Тренер",
+    title: "Студия",
+    text: "Упражнения, шаблоны, привычки и материалы",
+  },
+  {
+    src: "/screens/trainer-profile.png",
+    role: "Тренер",
+    title: "Подписка и финансы",
+    text: "Тариф, оплаты и уведомления — под контролем",
+  },
+  {
+    src: "/screens/client-workouts.png",
+    role: "Клиент",
+    title: "Тренировки",
+    text: "Назначенные программы со статусами",
+  },
+  {
+    src: "/screens/client-workout-log.png",
+    role: "Клиент",
+    title: "Дневник тренировки",
+    text: "Подходы, вес и повторы — прямо в зале",
+  },
+  {
+    src: "/screens/onboarding-diary.png",
+    role: "Клиент",
+    title: "Дневник всегда рядом",
+    text: "Программа от тренера в телефоне, таймер отдыха подскажет паузу",
+  },
+  {
+    src: "/screens/onboarding-progress.png",
+    role: "Клиент",
+    title: "Прогресс на ладони",
+    text: "Замеры, фото «до/после» и привычки недели",
+  },
+  {
+    src: "/screens/onboarding-coach.png",
+    role: "Клиент",
+    title: "Тренер всегда рядом",
+    text: "Проверка дневников и еженедельные отчёты",
+  },
+];
+
 const FAQ = [
   {
     q: "Как клиент попадает в свой кабинет?",
@@ -137,6 +195,7 @@ export function LandingPage() {
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
             <a href="#features" className="transition-colors hover:text-foreground">Возможности</a>
             <a href="#how" className="transition-colors hover:text-foreground">Как это работает</a>
+            <a href="#app" className="transition-colors hover:text-foreground">Приложение</a>
             <a href="#pricing" className="transition-colors hover:text-foreground">Тарифы</a>
             <a href="#faq" className="transition-colors hover:text-foreground">Вопросы</a>
           </nav>
@@ -258,6 +317,44 @@ export function LandingPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Приложение: живые экраны iOS */}
+      <section id="app" className="mx-auto max-w-6xl px-4 py-20">
+        <div className="mb-12 text-center">
+          <p className="type-eyebrow mb-3">Мобильное приложение</p>
+          <h2 className="type-section-title">FitPro в вашем телефоне</h2>
+          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+            Нативное iOS-приложение для тренера и клиента — вот его живые экраны.
+            Скоро в App Store; веб-версия полностью работает с телефона уже сейчас.
+          </p>
+        </div>
+        <div className="-mx-4 overflow-x-auto px-4 pb-4">
+          <div className="flex snap-x gap-5 md:gap-6">
+            {APP_SCREENS.map((s) => (
+              <figure key={s.src} className="w-[220px] shrink-0 snap-center sm:w-[240px]">
+                <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-panel">
+                  <img
+                    src={s.src}
+                    alt={`${s.title} — экран iOS-приложения FitPro`}
+                    loading="lazy"
+                    width={1179}
+                    height={2556}
+                    className="block w-full"
+                  />
+                </div>
+                <figcaption className="mt-3 text-center">
+                  <span className="text-xs font-medium text-primary">{s.role}</span>
+                  <p className="mt-0.5 text-sm font-semibold">{s.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{s.text}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Листайте галерею вбок — 9 экранов приложения
+        </p>
       </section>
 
       {/* Тарифы */}
