@@ -73,4 +73,10 @@ export const env = {
       process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
     );
   },
+  // ЮKassa: оплата подписки тренера. Без ключей биллинг выключен (503 на subscribe).
+  yookassaShopId: process.env.YOOKASSA_SHOP_ID ?? "",
+  yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY ?? "",
+  get billingEnabled(): boolean {
+    return Boolean(process.env.YOOKASSA_SHOP_ID && process.env.YOOKASSA_SECRET_KEY);
+  },
 };

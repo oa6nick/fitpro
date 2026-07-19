@@ -121,6 +121,12 @@ interface FitProApi {
     @GET("api/trainer/subscription")
     suspend fun trainerSubscription(): TrainerSubscriptionResponse
 
+    @GET("api/billing/plans")
+    suspend fun billingPlans(): BillingPlansResponse
+
+    @POST("api/billing/subscribe")
+    suspend fun subscribe(@Body body: SubscribeRequest): SubscribeResponse
+
     @POST("api/clients")
     suspend fun createClient(@Body body: ClientUpsertRequest): TrainerClientResponse
 

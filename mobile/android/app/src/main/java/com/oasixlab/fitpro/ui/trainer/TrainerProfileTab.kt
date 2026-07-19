@@ -1,4 +1,5 @@
 package com.oasixlab.fitpro.ui.trainer
+import android.content.Intent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,14 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.oasixlab.fitpro.data.api.BillingPlansResponse
 import com.oasixlab.fitpro.data.api.FinanceResponse
 import com.oasixlab.fitpro.data.api.FitProApi
+import com.oasixlab.fitpro.data.api.SubscribeRequest
 import com.oasixlab.fitpro.data.api.NotificationsResponse
 import com.oasixlab.fitpro.data.api.PaymentCreateRequest
 import com.oasixlab.fitpro.data.api.TrainerClient
@@ -133,6 +138,37 @@ class TrainerProfileViewModel @Inject constructor(private val api: FitProApi) : 
             }
         }
     }
+
+    /* Оплата подписки (ЮKassa) */
+
+    val plans = MutableStateFlow<Loadable<BillingPlansResponse>>(Loadable.Loading)
+    val payError = MutableStateFlow<String?>(null)
+
+    fun loadPlans() {
+        plans.value = Loadable.Loading
+        viewModelScope.launch {
+            plans.value = try {
+                Loadable.Ready(apiCall { api.billingPlans() })
+            } catch (e: Exception) {
+                Loadable.Error(e.message ?: "Не удалось загрузить тарифы")
+            }
+        }
+    }
+
+    /** Создать платёж и открыть страницу ЮKassa; 503 (оплата не подключена) — текст сервера. */
+    fun pay(planId: String, onUrl: (String) -> Unit) {
+        busy.value = true
+        payError.value = null
+        viewModelScope.launch {
+            try {
+                onUrl(apiCall { api.subscribe(SubscribeRequest(planId)) }.confirmationUrl)
+            } catch (e: Exception) {
+                payError.value = e.message
+            } finally {
+                busy.value = false
+            }
+        }
+    }
 }
 
 private val SUBSCRIPTION_STATUS_LABELS = mapOf(
@@ -152,6 +188,7 @@ fun TrainerProfileTab(
     val notifications by viewModel.notifications.collectAsState()
     val extra = LocalExtraColors.current
     var showAddPayment by rememberSaveable { mutableStateOf(false) }
+    var showPlans by rememberSaveable { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
         TabHeader("Профиль")
@@ -171,7 +208,12 @@ fun TrainerProfileTab(
                 }
             }
 
-            item { SubscriptionCard(subscription) }
+            item {
+                SubscriptionCard(subscription, onPay = {
+                    viewModel.loadPlans()
+                    showPlans = true
+                })
+            }
 
             item {
                 FinanceCard(
@@ -220,6 +262,17 @@ fun TrainerProfileTab(
             onDismiss = { showAddPayment = false },
         )
     }
+
+    if (showPlans) {
+        PlansDialog(
+            viewModel = viewModel,
+            onDismiss = {
+                showPlans = false
+                // Вернулись из браузера после оплаты — подтягиваем активацию вебхуком.
+                viewModel.refresh()
+            },
+        )
+    }
 }
 
 /** Общая карточка секции профиля. */
@@ -239,7 +292,10 @@ private fun SectionCard(content: @Composable androidx.compose.foundation.layout.
 }
 
 @Composable
-private fun SubscriptionCard(state: Loadable<TrainerSubscriptionResponse>) {
+private fun SubscriptionCard(
+    state: Loadable<TrainerSubscriptionResponse>,
+    onPay: () -> Unit,
+) {
     val extra = LocalExtraColors.current
     SectionCard {
         Text("Подписка", style = MaterialTheme.typography.titleMedium)
@@ -290,16 +346,105 @@ private fun SubscriptionCard(state: Loadable<TrainerSubscriptionResponse>) {
                         )
                     }
                 }
-                Spacer(Modifier.height(2.dp))
-                // Политика сторов: без цен и кнопок оплаты в приложении.
-                Text(
-                    "Управление подпиской — на сайте fitpro.oasixlab.com",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = extra.mutedForeground,
-                )
+                Spacer(Modifier.height(8.dp))
+                // Google Play billing в РФ приостановлен — альтернативная оплата
+                // (ЮKassa) для российских пользователей разрешена правилами Play.
+                Button(
+                    onClick = onPay,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                ) { Text("Тарифы и оплата") }
             }
         }
     }
+}
+
+@Composable
+private fun PlansDialog(
+    viewModel: TrainerProfileViewModel,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val plans by viewModel.plans.collectAsState()
+    val busy by viewModel.busy.collectAsState()
+    val payError by viewModel.payError.collectAsState()
+    val extra = LocalExtraColors.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Тарифы FitPro") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                when (val p = plans) {
+                    is Loadable.Loading -> CircularProgressIndicator(
+                        modifier = Modifier.height(24.dp),
+                        strokeWidth = 2.dp,
+                    )
+
+                    is Loadable.Error -> Text(
+                        p.message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = extra.destructiveSoft,
+                    )
+
+                    is Loadable.Ready -> {
+                        p.value.plans.forEach { plan ->
+                            Card(
+                                shape = MaterialTheme.shapes.medium,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Column(Modifier.padding(14.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                plan.title,
+                                                style = MaterialTheme.typography.titleSmall,
+                                            )
+                                            Text(
+                                                "до ${plan.clientLimit} клиентов",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = extra.mutedForeground,
+                                            )
+                                        }
+                                        Button(
+                                            enabled = !busy,
+                                            onClick = {
+                                                viewModel.pay(plan.id) { url ->
+                                                    context.startActivity(
+                                                        Intent(Intent.ACTION_VIEW, url.toUri()),
+                                                    )
+                                                    onDismiss()
+                                                }
+                                            },
+                                            shape = MaterialTheme.shapes.small,
+                                        ) { Text("${plan.priceRub} ₽/мес") }
+                                    }
+                                }
+                            }
+                        }
+                        Text(
+                            "Оплата через ЮKassa. Подписка активируется автоматически " +
+                                "в течение минуты после оплаты.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = extra.mutedForeground,
+                        )
+                    }
+                }
+                payError?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = extra.destructiveSoft,
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Закрыть") } },
+    )
 }
 
 private val PAYMENT_STATUS_LABELS = mapOf(

@@ -403,6 +403,23 @@ data class TrainerSubscriptionResponse(
     val clientsUsed: Int = 0,
 )
 
+@Serializable
+data class BillingPlan(
+    val id: String,
+    val title: String,
+    val priceRub: Int,
+    val clientLimit: Int,
+)
+
+@Serializable
+data class BillingPlansResponse(val enabled: Boolean = false, val plans: List<BillingPlan>)
+
+@Serializable
+data class SubscribeRequest(val plan: String)
+
+@Serializable
+data class SubscribeResponse(val confirmationUrl: String, val paymentId: String)
+
 /** POST /clients и PATCH /clients/:id (все поля опциональны при PATCH). */
 @Serializable
 data class ClientUpsertRequest(

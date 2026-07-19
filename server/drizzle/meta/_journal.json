@@ -57,6 +57,13 @@
       "when": 1784433069177,
       "tag": "0007_yummy_invaders",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784436446069,
+      "tag": "0008_workable_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

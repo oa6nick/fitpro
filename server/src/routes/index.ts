@@ -16,6 +16,7 @@ import { notificationsRouter } from "./notifications.js";
 import { uploadsRouter } from "./uploads.js";
 import { pushRouter } from "./push.js";
 import { trainerRouter } from "./trainer.js";
+import { billingRouter } from "./billing.js";
 
 export const apiRouter = Router();
 
@@ -27,6 +28,7 @@ apiRouter.use("/workouts", workoutsRouter);
 apiRouter.use("/measurements", measurementsRouter);
 apiRouter.use("/dashboard", dashboardRouter);
 apiRouter.use("/trainer", trainerRouter);
+apiRouter.use("/billing", billingRouter);
 apiRouter.use("/me", meRouter);
 apiRouter.use("/reports", reportsRouter);
 apiRouter.use("/tasks", tasksRouter);
