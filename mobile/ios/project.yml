@@ -1,0 +1,25 @@
+# XcodeGen-манифест: .xcodeproj не хранится в git, генерируется на Mac командой `xcodegen`.
+name: FitPro
+options:
+  bundleIdPrefix: com.oasixlab
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+targets:
+  FitPro:
+    type: application
+    platform: iOS
+    sources:
+      - FitPro
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.oasixlab.fitpro
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.10"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: FitPro
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        # Geist подключается после добавления TTF в FitPro/Resources/Fonts (см. README).
+        # INFOPLIST_KEY_UIAppFonts: ...

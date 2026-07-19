@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- background светлой темы (tokens.json) -->
+    <color name="window_background">#f5f1ea</color>
+    <color name="ic_launcher_background">#15753d</color>
+</resources>
