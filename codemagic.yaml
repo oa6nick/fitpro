@@ -7,13 +7,10 @@ workflows:
     name: FitPro iOS Simulator → Appetize
     instance_type: mac_mini_m2
     max_build_duration: 30
+    # APPETIZE_TOKEN (Secret) и опц. APPETIZE_IOS_KEY задаются в UI Codemagic
+    # (Environment variables), а НЕ здесь — Codemagic запрещает пустые vars в yaml.
     environment:
       xcode: latest
-      vars:
-        # APPETIZE_TOKEN задать в UI Codemagic (Secret). Опционально APPETIZE_IOS_KEY
-        # для обновления того же приложения вместо создания нового.
-        APPETIZE_TOKEN: ""
-        APPETIZE_IOS_KEY: ""
     scripts:
       - name: Generate Xcode project (XcodeGen)
         script: |
