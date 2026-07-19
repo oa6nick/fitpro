@@ -16,8 +16,27 @@ pushRouter.get("/vapid-public-key", (_req, res) => {
 
 pushRouter.use(requireAuth);
 
+// Разрешённые хосты push-сервисов браузеров. Без allowlist endpoint = blind SSRF:
+// авторизованный юзер мог заставить сервер слать POST на внутренние адреса.
+const PUSH_HOSTS = [
+  /\.push\.services\.mozilla\.com$/,
+  /(^|\.)fcm\.googleapis\.com$/,
+  /\.notify\.windows\.com$/,
+  /\.push\.apple\.com$/,
+];
+
+function isAllowedPushEndpoint(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:") return false;
+    return PUSH_HOSTS.some((re) => re.test(u.hostname));
+  } catch {
+    return false;
+  }
+}
+
 const subscriptionSchema = z.object({
-  endpoint: z.string().url(),
+  endpoint: z.string().url().refine(isAllowedPushEndpoint, "Недопустимый push-endpoint"),
   keys: z.object({ p256dh: z.string(), auth: z.string() }),
 });
 

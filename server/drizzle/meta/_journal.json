@@ -64,6 +64,13 @@
       "when": 1784436446069,
       "tag": "0008_workable_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784490816161,
+      "tag": "0009_famous_whistler",
+      "breakpoints": true
     }
   ]
 }

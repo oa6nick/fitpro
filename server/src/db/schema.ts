@@ -10,6 +10,7 @@ import {
   date,
   jsonb,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -544,31 +545,40 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
 });
 
 /** Платёжные намерения ЮKassa: связка платежа с тренером/тарифом до вебхука. */
-export const paymentIntents = pgTable("payment_intents", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  trainerId: uuid("trainer_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  plan: text("plan").notNull(), // basic | pro | expert
-  amountRub: real("amount_rub").notNull(),
-  // id платежа в ЮKassa; уникален — вебхук идемпотентен по нему
-  providerPaymentId: text("provider_payment_id").notNull().unique(),
-  status: text("status").notNull().default("pending"), // pending | succeeded | canceled
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  completedAt: timestamp("completed_at", { withTimezone: true }),
-});
+export const paymentIntents = pgTable(
+  "payment_intents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    trainerId: uuid("trainer_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    plan: text("plan").notNull(), // basic | pro | expert
+    amountRub: real("amount_rub").notNull(),
+    // id платежа в ЮKassa; уникален — вебхук идемпотентен по нему
+    providerPaymentId: text("provider_payment_id").notNull().unique(),
+    status: text("status").notNull().default("pending"), // pending | succeeded | canceled
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => ({ trainerIdx: index("payment_intents_trainer_idx").on(t.trainerId) }),
+);
 
 /** Нативные push-токены (FCM) мобильных приложений; web-push живёт в pushSubscriptions. */
-export const deviceTokens = pgTable("device_tokens", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  // 'android' | 'ios' — text, не enum (аддитивные миграции)
-  platform: text("platform").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const deviceTokens = pgTable(
+  "device_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // 'android' | 'ios' — text, не enum (аддитивные миграции)
+    platform: text("platform").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // sendPushToUsers фильтрует по userId — индекс убирает seq scan.
+  (t) => ({ userIdx: index("device_tokens_user_idx").on(t.userId) }),
+);
 
 /** Приглашение клиента в кабинет: привязывает регистрацию к карточке clients. */
 export const clientInvites = pgTable("client_invites", {

@@ -413,10 +413,17 @@ private fun PlansDialog(
                                             enabled = !busy,
                                             onClick = {
                                                 viewModel.pay(plan.id) { url ->
-                                                    context.startActivity(
-                                                        Intent(Intent.ACTION_VIEW, url.toUri()),
-                                                    )
-                                                    onDismiss()
+                                                    // На устройстве без браузера startActivity бросает
+                                                    // ActivityNotFoundException — не роняем приложение.
+                                                    try {
+                                                        context.startActivity(
+                                                            Intent(Intent.ACTION_VIEW, url.toUri()),
+                                                        )
+                                                        onDismiss()
+                                                    } catch (e: Exception) {
+                                                        viewModel.payError.value =
+                                                            "Не удалось открыть страницу оплаты"
+                                                    }
                                                 }
                                             },
                                             shape = MaterialTheme.shapes.small,

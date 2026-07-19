@@ -53,6 +53,12 @@ export async function getPayment(paymentId: string): Promise<YooPayment | null> 
   const res = await fetch(`${API}/payments/${paymentId}`, {
     headers: { Authorization: authHeader() },
   });
-  if (!res.ok) return null;
+  // 404 — платежа нет (чужой/левый id): это НЕ ошибка, вернём null.
+  if (res.status === 404) return null;
+  // Прочие не-2xx (500/429/таймаут балансера) — временный сбой: throw, чтобы
+  // вебхук ответил 5xx и ЮKassa повторила уведомление (иначе оплата теряется).
+  if (!res.ok) {
+    throw new Error(`ЮKassa get payment: ${res.status} ${await res.text()}`);
+  }
   return (await res.json()) as YooPayment;
 }

@@ -113,37 +113,41 @@ async function sendNativePush(
     .where(inArray(deviceTokens.userId, userIds));
   if (tokens.length === 0) return 0;
 
-  try {
-    const res = await fcm.sendEachForMulticast({
-      tokens: tokens.map((t) => t.token),
-      notification: { title, body },
-      data: { url, tag },
-      android: { priority: "high", notification: { channelId: "fitpro" } },
-    });
-    let sent = 0;
-    await Promise.all(
-      res.responses.map(async (r, i) => {
-        if (r.success) {
-          sent += 1;
-          return;
-        }
-        const code = r.error?.code ?? "";
-        if (
-          code.includes("registration-token-not-registered") ||
-          code.includes("invalid-argument")
-        ) {
-          await db
-            .delete(deviceTokens)
-            .where(eq(deviceTokens.token, tokens[i]!.token))
-            .catch(() => null);
-        } else {
-          console.error("FCM failed:", code);
-        }
-      }),
-    );
-    return sent;
-  } catch (err) {
-    console.error("FCM multicast failed:", (err as Error).message);
-    return 0;
+  // FCM sendEachForMulticast — жёсткий лимит 500 токенов на вызов; чанкуем,
+  // иначе при >500 бросит и НИКОМУ ничего не уйдёт.
+  let sent = 0;
+  for (let i = 0; i < tokens.length; i += 500) {
+    const chunk = tokens.slice(i, i + 500);
+    try {
+      const res = await fcm.sendEachForMulticast({
+        tokens: chunk.map((t) => t.token),
+        notification: { title, body },
+        data: { url, tag },
+        android: { priority: "high", notification: { channelId: "fitpro" } },
+      });
+      await Promise.all(
+        res.responses.map(async (r, j) => {
+          if (r.success) {
+            sent += 1;
+            return;
+          }
+          const code = r.error?.code ?? "";
+          if (
+            code.includes("registration-token-not-registered") ||
+            code.includes("invalid-argument")
+          ) {
+            await db
+              .delete(deviceTokens)
+              .where(eq(deviceTokens.token, chunk[j]!.token))
+              .catch(() => null);
+          } else {
+            console.error("FCM failed:", code);
+          }
+        }),
+      );
+    } catch (err) {
+      console.error("FCM multicast failed:", (err as Error).message);
+    }
   }
+  return sent;
 }

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { paymentIntents, trainerSubscriptions } from "../db/schema.js";
 import { requireAuth, requireRole } from "../auth/middleware.js";
@@ -74,16 +74,18 @@ billingRouter.post(
     // Без ключей просто подтверждаем приём (нечего проверять).
     if (!env.billingEnabled) return res.json({ ok: true });
 
-    const paymentId = (req.body?.object?.id ?? "") as string;
-    if (!paymentId) return res.json({ ok: true });
+    const paymentId = req.body?.object?.id;
+    // Валидируем тип: {"object":{"id":{}}} иначе уедет в eq() и даст 500 на каждый такой запрос.
+    if (typeof paymentId !== "string" || paymentId === "") return res.json({ ok: true });
 
     const [intent] = await db
       .select()
       .from(paymentIntents)
       .where(eq(paymentIntents.providerPaymentId, paymentId));
-    if (!intent || intent.status === "succeeded") return res.json({ ok: true });
+    if (!intent || intent.status !== "pending") return res.json({ ok: true });
 
-    // Единственный источник истины — сам API ЮKassa.
+    // Единственный источник истины — сам API ЮKassa. При 5xx getPayment бросит →
+    // asyncH вернёт 500 → ЮKassa повторит вебхук (оплата не потеряется).
     const payment = await getPayment(paymentId);
     if (!payment) return res.json({ ok: true });
 
@@ -96,38 +98,59 @@ billingRouter.post(
     }
     if (payment.status !== "succeeded") return res.json({ ok: true });
 
+    // Defense-in-depth: активируем только если оплаченная сумма/валюта совпали с намерением.
+    const paid = Number(payment.amount.value);
+    if (payment.amount.currency !== "RUB" || paid < intent.amountRub) {
+      console.error(
+        `billing: сумма не совпала intent=${intent.id} ожидали ${intent.amountRub} RUB, ` +
+          `пришло ${payment.amount.value} ${payment.amount.currency}`,
+      );
+      return res.json({ ok: true });
+    }
+
+    // Атомарный замок: помечаем succeeded только если строка была pending.
+    // Параллельный дубль вебхука не пройдёт (0 строк) — активируем ровно один раз.
+    const locked = await db
+      .update(paymentIntents)
+      .set({ status: "succeeded", completedAt: new Date() })
+      .where(and(eq(paymentIntents.id, intent.id), eq(paymentIntents.status, "pending")))
+      .returning({ id: paymentIntents.id });
+    if (locked.length === 0) return res.json({ ok: true });
+
     const plan = intent.plan as PlanId;
     const info = PLANS[plan];
-    const paidUntil = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
+    // Продлеваем от текущего срока, а не перезаписываем: max(paidUntil, сегодня) + 30 дней.
     const [existing] = await db
       .select()
       .from(trainerSubscriptions)
       .where(eq(trainerSubscriptions.trainerId, intent.trainerId));
-    if (existing) {
-      await db
-        .update(trainerSubscriptions)
-        .set({
-          plan,
-          status: "active",
-          paidUntil,
-          clientLimit: info.clientLimit,
-          updatedAt: new Date(),
-        })
-        .where(eq(trainerSubscriptions.id, existing.id));
-    } else {
-      await db.insert(trainerSubscriptions).values({
+    const today = new Date().toISOString().slice(0, 10);
+    const base =
+      existing?.paidUntil && existing.paidUntil > today ? existing.paidUntil : today;
+    const until = new Date(`${base}T00:00:00Z`);
+    until.setUTCDate(until.getUTCDate() + 30);
+    const paidUntil = until.toISOString().slice(0, 10);
+
+    await db
+      .insert(trainerSubscriptions)
+      .values({
         trainerId: intent.trainerId,
         plan,
         status: "active",
         paidUntil,
         clientLimit: info.clientLimit,
+      })
+      .onConflictDoUpdate({
+        target: trainerSubscriptions.trainerId,
+        set: {
+          plan,
+          status: "active",
+          paidUntil,
+          clientLimit: info.clientLimit,
+          updatedAt: new Date(),
+        },
       });
-    }
-    await db
-      .update(paymentIntents)
-      .set({ status: "succeeded", completedAt: new Date() })
-      .where(eq(paymentIntents.id, intent.id));
 
     res.json({ ok: true });
   }),

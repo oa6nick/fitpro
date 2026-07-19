@@ -208,6 +208,20 @@ reportsRouter.post(
     if (req.user!.role !== "client") throw new HttpError(403, "Только для клиента");
     const client = await resolveClientForUser(req.user!.sub);
     const data = submitSchema.parse(req.body);
+    // Форма должна принадлежать тренеру этого клиента (не чужая/произвольная).
+    const [form] = await db
+      .select({ id: reportForms.id })
+      .from(reportForms)
+      .where(and(eq(reportForms.id, data.formId), eq(reportForms.trainerId, client.trainerId)));
+    if (!form) throw new HttpError(404, "Форма отчёта не найдена");
+    // Ответы принимаем только по полям этой формы (чужие fieldId отсекаем).
+    const formFields = await db
+      .select({ id: reportFields.id })
+      .from(reportFields)
+      .where(eq(reportFields.formId, data.formId));
+    const allowed = new Set(formFields.map((f) => f.id));
+    const answers = data.answers.filter((a) => allowed.has(a.fieldId));
+
     const [sub] = await db
       .insert(reportSubmissions)
       .values({
@@ -217,10 +231,10 @@ reportsRouter.post(
         status: "awaiting_review",
       })
       .returning();
-    if (data.answers.length) {
+    if (answers.length) {
       await db
         .insert(reportAnswers)
-        .values(data.answers.map((a) => ({ ...a, submissionId: sub!.id })));
+        .values(answers.map((a) => ({ ...a, submissionId: sub!.id })));
     }
     await touchClientActivity(client.id);
     await notify(client.trainerId, `Новый отчёт от ${client.name}`, "/t/reports");

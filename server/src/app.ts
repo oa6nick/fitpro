@@ -54,8 +54,20 @@ export function createApp() {
     }),
   );
 
-  // Отдача загруженных файлов
-  app.use("/uploads", express.static(path.resolve(env.uploadsDir)));
+  // Отдача загруженных файлов. Имена — crypto-UUID (неугадываемая капабилити),
+  // поэтому режем утечку ссылки: no-referrer (URL не уйдёт в Referer со страниц),
+  // nosniff (не исполнять как HTML), скачивание как вложение.
+  // TODO Ф5: подписанные URL / пофайловая авторизация под мобильную загрузку.
+  app.use(
+    "/uploads",
+    (_req, res, next) => {
+      res.setHeader("Referrer-Policy", "no-referrer");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Content-Disposition", "inline");
+      next();
+    },
+    express.static(path.resolve(env.uploadsDir), { index: false, dotfiles: "deny" }),
+  );
 
   app.get("/health", async (_req, res) => {
     try {

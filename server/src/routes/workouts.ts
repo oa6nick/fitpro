@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { z } from "zod";
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   workouts,
   workoutExercises,
   workoutLogs,
   templateExercises,
+  workoutTemplates,
   clients,
   exercises,
   exerciseAlternatives,
@@ -63,6 +64,20 @@ workoutsRouter.post(
     const data = assignSchema.parse(req.body);
     await assertTrainerClient(req.user!.sub, data.clientId);
 
+    // Шаблон должен принадлежать тренеру (иначе — доступ к чужой библиотеке).
+    if (data.templateId) {
+      const [tpl] = await db
+        .select({ id: workoutTemplates.id })
+        .from(workoutTemplates)
+        .where(
+          and(
+            eq(workoutTemplates.id, data.templateId),
+            eq(workoutTemplates.trainerId, req.user!.sub),
+          ),
+        );
+      if (!tpl) throw new HttpError(404, "Шаблон не найден");
+    }
+
     let rows = data.exercises ?? [];
     // Если задан шаблон и строки не переданы — копируем из шаблона.
     if (data.templateId && rows.length === 0) {
@@ -84,6 +99,18 @@ workoutsRouter.post(
         groupKey: r.groupKey ?? undefined,
         groupType: (r.groupType as "superset" | "triset" | "circuit" | null) ?? undefined,
       }));
+    }
+
+    // Все упражнения (ручные и из шаблона) должны принадлежать тренеру.
+    const exerciseIds = [...new Set(rows.map((r) => r.exerciseId))];
+    if (exerciseIds.length) {
+      const owned = await db
+        .select({ id: exercises.id })
+        .from(exercises)
+        .where(and(inArray(exercises.id, exerciseIds), eq(exercises.trainerId, req.user!.sub)));
+      if (owned.length !== exerciseIds.length) {
+        throw new HttpError(404, "Упражнение не найдено");
+      }
     }
 
     const [workout] = await db

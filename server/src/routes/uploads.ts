@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import path from "node:path";
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import { env } from "../env.js";
 import { requireAuth } from "../auth/middleware.js";
 import { HttpError } from "../lib/http.js";
@@ -12,9 +13,10 @@ fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).slice(0, 10);
-    const safe = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, safe);
+    // crypto-random, а не Date.now()+Math.random(): имя = неугадываемая
+    // капабилити-ссылка (файлы отдаются статикой без пофайловой авторизации).
+    const ext = path.extname(file.originalname).slice(0, 10).replace(/[^.\w]/g, "");
+    cb(null, `${randomUUID()}${ext}`);
   },
 });
 

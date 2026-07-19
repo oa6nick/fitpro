@@ -68,6 +68,12 @@ tasksRouter.post(
     if (req.user!.role !== "trainer") throw new HttpError(403, "Только для тренера");
     const data = assignSchema.parse(req.body);
     const client = await assertTrainerClient(req.user!.sub, data.clientId);
+    // Привычка должна принадлежать тренеру (иначе назначил бы чужую).
+    const [habit] = await db
+      .select({ id: habitTasks.id })
+      .from(habitTasks)
+      .where(and(eq(habitTasks.id, data.habitTaskId), eq(habitTasks.trainerId, req.user!.sub)));
+    if (!habit) throw new HttpError(404, "Привычка не найдена");
     const [assignment] = await db
       .insert(taskAssignments)
       .values({

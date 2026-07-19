@@ -24,7 +24,7 @@ describe("push-подписки", () => {
   it("subscribe требует авторизации", async () => {
     const res = await request(app)
       .post("/api/push/subscribe")
-      .send(subscription("https://push.example.com/a"));
+      .send(subscription("https://updates.push.services.mozilla.com/wpush/v2/a"));
     expect(res.status).toBe(401);
   });
 
@@ -34,7 +34,7 @@ describe("push-подписки", () => {
       .post("/api/auth/register")
       .send({ email: "push-user@test.ru", password: "secret1", name: "Пушер" });
 
-    const endpoint = "https://push.example.com/unique-1";
+    const endpoint = "https://updates.push.services.mozilla.com/wpush/v2/u1";
     const first = await agent.post("/api/push/subscribe").send(subscription(endpoint));
     expect(first.status).toBe(201);
 
@@ -55,7 +55,7 @@ describe("push-подписки", () => {
       .post("/api/auth/register")
       .send({ email: "push-user2@test.ru", password: "secret1", name: "Пушер2" });
 
-    const endpoint = "https://push.example.com/unique-2";
+    const endpoint = "https://updates.push.services.mozilla.com/wpush/v2/u2";
     await agent.post("/api/push/subscribe").send(subscription(endpoint));
     const res = await agent.post("/api/push/unsubscribe").send({ endpoint });
     expect(res.status).toBe(200);
@@ -105,6 +105,30 @@ describe("push-подписки", () => {
       .from(deviceTokens)
       .where(eq(deviceTokens.token, "fcm-token-1234567890"));
     expect(after).toHaveLength(0);
+  });
+
+  it("subscribe отклоняет SSRF-endpoint (внутренний адрес)", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/api/auth/register")
+      .send({ email: "ssrf@test.ru", password: "secret1", name: "SSRF" });
+    const res = await agent.post("/api/push/subscribe").send({
+      endpoint: "https://127.0.0.1:8080/internal",
+      keys: { p256dh: "k", auth: "a" },
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("subscribe принимает валидный push-endpoint", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/api/auth/register")
+      .send({ email: "ssrf-ok@test.ru", password: "secret1", name: "OK" });
+    const res = await agent.post("/api/push/subscribe").send({
+      endpoint: "https://updates.push.services.mozilla.com/wpush/v2/abc",
+      keys: { p256dh: "k", auth: "a" },
+    });
+    expect(res.status).toBe(201);
   });
 
   it("device отклоняет неизвестную платформу", async () => {

@@ -37,4 +37,11 @@ describe("billing: оплата подписки", () => {
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
   });
+
+  it("вебхук с нестроковым object.id не падает (200, а не 500)", async () => {
+    const res = await request(app)
+      .post("/api/billing/webhook")
+      .send({ object: { id: { $ne: null } } });
+    expect(res.status).toBe(200);
+  });
 });
