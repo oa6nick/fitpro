@@ -1,0 +1,64 @@
+# iOS-сборка на облачном Mac: на этом проекте нет локального macOS-тулчейна,
+# поэтому симуляторная сборка и публикация демо в Appetize живут в CI.
+name: iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/ios/**"
+      - ".github/workflows/ios.yml"
+
+concurrency:
+  group: ios-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: mobile/ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Xcode project (XcodeGen)
+        run: |
+          brew install xcodegen
+          xcodegen
+
+      - name: Build for iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project FitPro.xcodeproj -scheme FitPro \
+            -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Zip .app
+        run: |
+          APP=$(find build -name "FitPro.app" -type d | head -1)
+          test -n "$APP"
+          ditto -c -k --keepParent "$APP" FitPro.app.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FitPro-simulator
+          path: mobile/ios/FitPro.app.zip
+
+      - name: Upload to Appetize
+        env:
+          APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
+          APPETIZE_IOS_KEY: ${{ vars.APPETIZE_IOS_KEY }}
+        run: |
+          if [ -z "$APPETIZE_TOKEN" ]; then
+            echo "APPETIZE_TOKEN не задан — пропускаю публикацию"; exit 0
+          fi
+          URL="https://api.appetize.io/v1/apps"
+          if [ -n "$APPETIZE_IOS_KEY" ]; then URL="$URL/$APPETIZE_IOS_KEY"; fi
+          curl -sf -H "X-API-KEY: $APPETIZE_TOKEN" \
+            -F "file=@FitPro.app.zip" \
+            -F "platform=ios" \
+            -F "note=FitPro iOS CI ${GITHUB_SHA::7}" \
+            "$URL"

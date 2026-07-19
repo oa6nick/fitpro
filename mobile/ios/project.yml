@@ -9,6 +9,8 @@ targets:
   FitPro:
     type: application
     platform: iOS
+    # Разделяемая схема нужна xcodebuild в CI (Xcode сам генерирует только локально).
+    scheme: {}
     sources:
       - FitPro
     settings:
