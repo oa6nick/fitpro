@@ -12,6 +12,7 @@ import { env } from "./env.js";
 import { db } from "./db/client.js";
 import { apiRouter } from "./routes/index.js";
 import { HttpError } from "./lib/http.js";
+import { requireFileAuth } from "./auth/middleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -54,12 +55,11 @@ export function createApp() {
     }),
   );
 
-  // Отдача загруженных файлов. Имена — crypto-UUID (неугадываемая капабилити),
-  // поэтому режем утечку ссылки: no-referrer (URL не уйдёт в Referer со страниц),
-  // nosniff (не исполнять как HTML), скачивание как вложение.
-  // TODO Ф5: подписанные URL / пофайловая авторизация под мобильную загрузку.
+  // Отдача загруженных файлов ТОЛЬКО авторизованным (requireFileAuth: cookie/bearer/?token).
+  // Имена crypto-UUID + заголовки против утечки ссылки: no-referrer, nosniff, dotfiles deny.
   app.use(
     "/uploads",
+    requireFileAuth,
     (_req, res, next) => {
       res.setHeader("Referrer-Policy", "no-referrer");
       res.setHeader("X-Content-Type-Options", "nosniff");

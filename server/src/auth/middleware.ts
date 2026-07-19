@@ -19,6 +19,20 @@ export function tokenFromRequest(req: Request): string | undefined {
   return undefined;
 }
 
+/**
+ * Гейт для /uploads: файлы отдаются статикой, но только при валидном JWT.
+ * Web <img> шлёт cookie; iOS AsyncImage — токен в ?token= (заголовок не добавить);
+ * Android Coil — Bearer через свой OkHttp. Без валидного токена — 401.
+ */
+export function requireFileAuth(req: Request, res: Response, next: NextFunction) {
+  const queryToken = typeof req.query.token === "string" ? req.query.token : undefined;
+  const token = tokenFromRequest(req) ?? queryToken;
+  if (!token || !verifyToken(token)) {
+    return res.status(401).json({ error: "Требуется авторизация" });
+  }
+  next();
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = tokenFromRequest(req);
   const payload = token ? verifyToken(token) : null;

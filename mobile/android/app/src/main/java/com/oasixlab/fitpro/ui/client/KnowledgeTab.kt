@@ -107,8 +107,8 @@ fun KnowledgeTab(viewModel: KnowledgeViewModel = hiltViewModel()) {
             items(data.items, key = { it.id }) { itemData ->
                 KnowledgeCard(itemData) {
                     itemData.fileUrl?.let { url ->
-                        val absolute = if (url.startsWith("http")) url else BASE_URL.trimEnd('/') + url
-                        context.startActivity(Intent(Intent.ACTION_VIEW, absolute.toUri()))
+                        // absoluteUrl добавит ?token= — сервер отдаёт файл только по JWT.
+                        context.startActivity(Intent(Intent.ACTION_VIEW, absoluteUrl(url).toUri()))
                     }
                 }
             }

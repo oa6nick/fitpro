@@ -67,9 +67,17 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-/** Абсолютный URL картинки из относительного /uploads/… */
-fun absoluteUrl(url: String): String =
-    if (url.startsWith("http")) url else BASE_URL.trimEnd('/') + url
+/**
+ * Абсолютный URL файла из относительного /uploads/… с ?token= — сервер (requireFileAuth)
+ * пускает к файлам только по валидному JWT, а Coil/Intent заголовок Bearer не добавляют.
+ */
+fun absoluteUrl(url: String): String {
+    val base = if (url.startsWith("http")) url else BASE_URL.trimEnd('/') + url
+    val token = com.oasixlab.fitpro.data.auth.SessionToken.value ?: return base
+    if (!url.startsWith("/uploads")) return base
+    val sep = if (base.contains('?')) '&' else '?'
+    return "$base${sep}token=$token"
+}
 
 @HiltViewModel
 class MeasurementsViewModel @Inject constructor(

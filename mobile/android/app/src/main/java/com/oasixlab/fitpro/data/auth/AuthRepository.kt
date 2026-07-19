@@ -18,18 +18,26 @@ class AuthRepository @Inject constructor(
     suspend fun login(email: String, password: String): User {
         val res = apiCall { api.login(LoginRequest(email = email, password = password)) }
         tokenStore.save(res.token)
+        SessionToken.value = res.token
         return res.user
     }
 
     /** null = токена нет или он протух (тогда чистим хранилище). */
     suspend fun restoreSession(): User? {
-        tokenStore.current() ?: return null
+        val saved = tokenStore.current() ?: return null
+        SessionToken.value = saved
         val me = apiCall { api.me() }
-        if (me.user == null) tokenStore.clear()
+        if (me.user == null) {
+            tokenStore.clear()
+            SessionToken.value = null
+        }
         return me.user
     }
 
-    suspend fun logout() = tokenStore.clear()
+    suspend fun logout() {
+        SessionToken.value = null
+        tokenStore.clear()
+    }
 
     /** Саморегистрация тренера. register отвечает cookie — bearer-токен добираем логином. */
     suspend fun registerTrainer(name: String, email: String, password: String): User {

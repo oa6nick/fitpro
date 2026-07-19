@@ -98,10 +98,8 @@ struct KnowledgeView: View {
 
     private func open(_ item: KnowledgeItem) {
         guard let fileUrl = item.fileUrl else { return }
-        let absolute = fileUrl.hasPrefix("http")
-            ? fileUrl
-            : APIConfig.baseURL.absoluteString + fileUrl
-        if let url = URL(string: absolute) {
+        // absoluteUrl добавит ?token= — сервер отдаёт файл только по валидному JWT.
+        if let url = absoluteUrl(fileUrl) {
             openURL(url)
         }
     }

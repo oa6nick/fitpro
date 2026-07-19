@@ -93,11 +93,15 @@ struct MeasurementsView: View {
     }
 }
 
-/// Абсолютный URL картинки из относительного /uploads/…
+/// Абсолютный URL файла из /uploads/… с ?token= — сервер (requireFileAuth) пускает
+/// к файлам только по валидному JWT, а AsyncImage заголовок Bearer не добавляет.
 func absoluteUrl(_ url: String) -> URL? {
-    url.hasPrefix("http")
-        ? URL(string: url)
-        : URL(string: APIConfig.baseURL.absoluteString + url)
+    let baseStr = url.hasPrefix("http") ? url : APIConfig.baseURL.absoluteString + url
+    guard url.hasPrefix("/uploads"), let token = sessionToken.get() else {
+        return URL(string: baseStr)
+    }
+    let sep = baseStr.contains("?") ? "&" : "?"
+    return URL(string: "\(baseStr)\(sep)token=\(token)")
 }
 
 struct MeasurementRow: View {

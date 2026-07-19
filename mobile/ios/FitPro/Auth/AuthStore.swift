@@ -12,6 +12,10 @@ final class TokenHolder: @unchecked Sendable {
     func set(_ v: String?) { lock.lock(); defer { lock.unlock() }; value = v }
 }
 
+/// Общий держатель токена: читается синхронно из absoluteUrl (сборка URL картинок
+/// с ?token=, т.к. AsyncImage заголовок Bearer не добавляет).
+let sessionToken = TokenHolder()
+
 @MainActor
 @Observable
 final class AuthStore {
@@ -23,7 +27,7 @@ final class AuthStore {
 
     private(set) var session: Session = .loading
     private static let tokenKey = "fitpro_token"
-    private let tokenHolder = TokenHolder()
+    private let tokenHolder = sessionToken
 
     var api: APIClient {
         APIClient(tokenProvider: { [tokenHolder] in
