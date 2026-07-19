@@ -6,6 +6,7 @@ import retrofit2.http.HTTP
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -114,6 +115,125 @@ interface FitProApi {
         @Path("id") id: String,
         @Body body: EmptyBody = EmptyBody(),
     ): SubmissionResponse
+
+    /* Конструкторы тренера */
+
+    @GET("api/trainer/subscription")
+    suspend fun trainerSubscription(): TrainerSubscriptionResponse
+
+    @POST("api/clients")
+    suspend fun createClient(@Body body: ClientUpsertRequest): TrainerClientResponse
+
+    @PATCH("api/clients/{id}")
+    suspend fun updateClient(
+        @Path("id") id: String,
+        @Body body: ClientUpsertRequest,
+    ): TrainerClientResponse
+
+    @PATCH("api/clients/{id}/status")
+    suspend fun setClientStatus(
+        @Path("id") id: String,
+        @Body body: FunnelStatusRequest,
+    ): TrainerClientResponse
+
+    @HTTP(method = "DELETE", path = "api/clients/{id}")
+    suspend fun deleteClient(@Path("id") id: String): OkResponse
+
+    @POST("api/clients/{id}/invite")
+    suspend fun createInvite(
+        @Path("id") id: String,
+        @Body body: InviteCreateRequest = InviteCreateRequest(),
+    ): InviteLinkResponse
+
+    @POST("api/clients/{id}/notes")
+    suspend fun addNote(@Path("id") id: String, @Body body: NoteRequest): NoteResponse
+
+    @HTTP(method = "DELETE", path = "api/clients/{id}/notes/{noteId}")
+    suspend fun deleteNote(@Path("id") id: String, @Path("noteId") noteId: String): OkResponse
+
+    @PUT("api/clients/{id}/profile")
+    suspend fun updateClientProfile(
+        @Path("id") id: String,
+        @Body body: ClientProfile,
+    ): ClientProfileResponse
+
+    @PUT("api/me/profile")
+    suspend fun updateMyProfile(@Body body: ClientProfile): ClientProfileResponse
+
+    @GET("api/exercises")
+    suspend fun exercises(): ExercisesResponse
+
+    @POST("api/exercises")
+    suspend fun createExercise(@Body body: ExerciseUpsertRequest): ExerciseResponse
+
+    @PATCH("api/exercises/{id}")
+    suspend fun updateExercise(
+        @Path("id") id: String,
+        @Body body: ExerciseUpsertRequest,
+    ): ExerciseResponse
+
+    @HTTP(method = "DELETE", path = "api/exercises/{id}")
+    suspend fun deleteExercise(@Path("id") id: String): OkResponse
+
+    @GET("api/templates")
+    suspend fun templates(): TemplatesResponse
+
+    @GET("api/templates/{id}")
+    suspend fun template(@Path("id") id: String): TemplateDetailResponse
+
+    @POST("api/templates")
+    suspend fun createTemplate(@Body body: TemplateUpsertRequest): TemplateResponse
+
+    @PUT("api/templates/{id}")
+    suspend fun updateTemplate(
+        @Path("id") id: String,
+        @Body body: TemplateUpsertRequest,
+    ): OkResponse
+
+    @HTTP(method = "DELETE", path = "api/templates/{id}")
+    suspend fun deleteTemplate(@Path("id") id: String): OkResponse
+
+    @POST("api/workouts")
+    suspend fun assignWorkout(@Body body: AssignWorkoutRequest): WorkoutResponse
+
+    @GET("api/tasks/habits")
+    suspend fun habits(): HabitsResponse
+
+    @POST("api/tasks/habits")
+    suspend fun createHabit(@Body body: HabitRequest): HabitResponse
+
+    @HTTP(method = "DELETE", path = "api/tasks/habits/{id}")
+    suspend fun deleteHabit(@Path("id") id: String): OkResponse
+
+    @POST("api/tasks/assign")
+    suspend fun assignHabit(@Body body: AssignHabitRequest): OkResponse
+
+    @GET("api/knowledge")
+    suspend fun knowledgeAdmin(): KnowledgeAdminResponse
+
+    @POST("api/knowledge")
+    suspend fun createKnowledge(@Body body: KnowledgeCreateRequest): KnowledgeItemResponse
+
+    @HTTP(method = "DELETE", path = "api/knowledge/{id}")
+    suspend fun deleteKnowledge(@Path("id") id: String): OkResponse
+
+    @GET("api/reports/forms")
+    suspend fun reportForms(): ReportFormsResponse
+
+    @POST("api/reports/forms")
+    suspend fun createReportForm(@Body body: ReportFormCreateRequest): ReportFormResponse
+
+    @HTTP(method = "DELETE", path = "api/reports/forms/{id}")
+    suspend fun deleteReportForm(@Path("id") id: String): OkResponse
+
+    @GET("api/finance")
+    suspend fun finance(): FinanceResponse
+
+    @POST("api/finance")
+    suspend fun addPayment(@Body body: PaymentCreateRequest): PaymentResponse
+
+    @POST("api/finance/{id}/remind")
+    suspend fun remindPayment(@Path("id") id: String): OkResponse
 
     /* Файлы */
 

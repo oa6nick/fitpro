@@ -150,6 +150,8 @@ data class CreateMeasurementRequest(
     val chest: Double? = null,
     val photoBeforeUrl: String? = null,
     val photoAfterUrl: String? = null,
+    // Тренер добавляет замер за клиента; у клиента игнорируется сервером.
+    val clientId: String? = null,
 )
 
 @Serializable
@@ -181,7 +183,8 @@ data class KnowledgeItem(
     val title: String,
     val type: String, // pdf | video | checklist
     val unlockWeek: Int,
-    val locked: Boolean,
+    // Тренерские GET/POST /api/knowledge отдают сырые строки БД без locked.
+    val locked: Boolean = false,
     val fileUrl: String? = null, // null у заблокированных
 )
 
@@ -381,6 +384,240 @@ data class SubmissionDetailResponse(
 
 @Serializable
 data class SubmissionResponse(val submission: ReportSubmission)
+
+/* ---------------- Конструкторы тренера ---------------- */
+
+@Serializable
+data class TrainerSubscription(
+    val plan: String,
+    val planTitle: String,
+    val status: String,
+    val paidUntil: String? = null,
+    val clientLimit: Int = 0,
+    val clientsUsed: Int = 0,
+)
+
+@Serializable
+data class TrainerSubscriptionResponse(
+    val subscription: TrainerSubscription? = null,
+    val clientsUsed: Int = 0,
+)
+
+/** POST /clients и PATCH /clients/:id (все поля опциональны при PATCH). */
+@Serializable
+data class ClientUpsertRequest(
+    val name: String? = null,
+    val age: Int? = null,
+    val height: Double? = null,
+    val weight: Double? = null,
+    val goal: String? = null,
+    val level: String? = null,
+    val workFormat: String? = null,
+    val startDate: String? = null,
+    val supportEndDate: String? = null,
+)
+
+@Serializable
+data class TrainerClientResponse(val client: TrainerClient)
+
+@Serializable
+data class FunnelStatusRequest(val status: String)
+
+@Serializable
+data class InviteCreateRequest(val email: String? = null)
+
+@Serializable
+data class InviteLinkResponse(val link: String, val expiresAt: String? = null)
+
+@Serializable
+data class NoteRequest(val text: String)
+
+@Serializable
+data class NoteResponse(val note: TrainerNote)
+
+/** Анкета клиента: PUT /me/profile (клиент о себе) и PUT /clients/:id/profile (тренер). */
+@Serializable
+data class ClientProfile(
+    val trainingExperience: String? = null,
+    val injuries: String? = null,
+    val lifestyle: String? = null,
+    val nutrition: String? = null,
+    val steps: Int? = null,
+    val equipment: String? = null,
+    val preferences: String? = null,
+    val dislikes: String? = null,
+)
+
+@Serializable
+data class ClientProfileResponse(val profile: ClientProfile? = null)
+
+@Serializable
+data class ExerciseUpsertRequest(
+    val name: String,
+    val videoUrl: String? = null,
+    val techniqueDescription: String? = null,
+    val keyHints: String? = null,
+    val commonMistakes: String? = null,
+    val muscles: String? = null,
+)
+
+@Serializable
+data class ExercisesResponse(val exercises: List<Exercise>)
+
+@Serializable
+data class ExerciseResponse(val exercise: Exercise)
+
+/** Строка упражнения шаблона/назначаемой тренировки (общая форма API). */
+@Serializable
+data class WorkoutItemDraft(
+    val exerciseId: String,
+    val order: Int? = null,
+    val sets: Int? = null,
+    val reps: String? = null,
+    val weight: String? = null,
+    val tempo: String? = null,
+    val rest: String? = null,
+    val comment: String? = null,
+    val groupKey: String? = null,
+    val groupType: String? = null,
+)
+
+@Serializable
+data class WorkoutTemplate(
+    val id: String,
+    val name: String,
+    val goal: String? = null,
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class TemplatesResponse(val templates: List<WorkoutTemplate>)
+
+@Serializable
+data class TemplateItemRow(
+    val id: String,
+    val exerciseId: String,
+    val order: Int = 0,
+    val sets: Int? = null,
+    val reps: String? = null,
+    val weight: String? = null,
+    val tempo: String? = null,
+    val rest: String? = null,
+    val comment: String? = null,
+    val groupKey: String? = null,
+    val groupType: String? = null,
+)
+
+@Serializable
+data class TemplateDetailResponse(val template: WorkoutTemplate, val items: List<TemplateItemRow>)
+
+@Serializable
+data class TemplateUpsertRequest(
+    val name: String,
+    val goal: String? = null,
+    val items: List<WorkoutItemDraft> = emptyList(),
+)
+
+@Serializable
+data class TemplateResponse(val template: WorkoutTemplate)
+
+@Serializable
+data class AssignWorkoutRequest(
+    val clientId: String,
+    val title: String? = null,
+    val date: String? = null,
+    val templateId: String? = null,
+    val exercises: List<WorkoutItemDraft>? = null,
+)
+
+@Serializable
+data class HabitTask(val id: String, val title: String)
+
+@Serializable
+data class HabitsResponse(val habits: List<HabitTask>)
+
+@Serializable
+data class HabitRequest(val title: String)
+
+@Serializable
+data class HabitResponse(val habit: HabitTask)
+
+@Serializable
+data class AssignHabitRequest(
+    val clientId: String,
+    val habitTaskId: String,
+    val weekStart: String? = null,
+)
+
+@Serializable
+data class KnowledgeCreateRequest(
+    val category: String,
+    val title: String,
+    val type: String,
+    val fileUrl: String? = null,
+    val unlockWeek: Int = 1,
+)
+
+@Serializable
+data class KnowledgeItemResponse(val item: KnowledgeItem)
+
+@Serializable
+data class KnowledgeAdminResponse(val items: List<KnowledgeItem>)
+
+@Serializable
+data class NewReportField(val label: String, val type: String, val order: Int? = null)
+
+@Serializable
+data class ReportFormCreateRequest(val name: String, val fields: List<NewReportField>)
+
+@Serializable
+data class ReportFormWithFields(
+    val id: String,
+    val name: String,
+    val fields: List<ReportField> = emptyList(),
+)
+
+@Serializable
+data class ReportFormsResponse(val forms: List<ReportFormWithFields>)
+
+@Serializable
+data class ReportFormResponse(val form: ReportForm)
+
+@Serializable
+data class FinancePayment(
+    val id: String,
+    val clientId: String,
+    val amount: Double,
+    val date: String,
+    val status: String,
+    val nextRenewalDate: String? = null,
+    val periodStart: String? = null,
+    val periodEnd: String? = null,
+    val clientName: String? = null,
+)
+
+@Serializable
+data class FinanceTotals(val paid: Double = 0.0, val overdue: Int = 0)
+
+@Serializable
+data class FinanceResponse(
+    val payments: List<FinancePayment> = emptyList(),
+    val totals: FinanceTotals = FinanceTotals(),
+)
+
+@Serializable
+data class PaymentCreateRequest(
+    val clientId: String,
+    val amount: Double,
+    val date: String,
+    val status: String = "paid",
+    val nextRenewalDate: String? = null,
+    val periodStart: String? = null,
+    val periodEnd: String? = null,
+)
+
+@Serializable
+data class PaymentResponse(val payment: FinancePayment)
 
 /* ---------------- Сводка клиента (/api/me/client) ---------------- */
 

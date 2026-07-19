@@ -142,6 +142,7 @@ final class TrainerClientsModel {
 
     var state: State = .loading
     var detail: ClientDetailResponse?
+    var formError: String?
 
     func load(api: APIClient) async {
         state = .loading
@@ -156,11 +157,26 @@ final class TrainerClientsModel {
     func loadDetail(api: APIClient, id: String) async -> ClientDetailResponse? {
         try? await api.get("/api/clients/\(id)")
     }
+
+    /// true = создан (закрыть форму). При 402 сервер шлёт текст лимита тарифа —
+    /// он попадёт в formError через APIError.message.
+    func createClient(api: APIClient, request: ClientUpsertRequest) async -> Bool {
+        do {
+            let _: TrainerClientResponse = try await api.post("/api/clients", body: request)
+            formError = nil
+            await load(api: api)
+            return true
+        } catch {
+            formError = error.localizedDescription
+            return false
+        }
+    }
 }
 
 struct TrainerClientsView: View {
     @Environment(AuthStore.self) private var auth
     @State private var model = TrainerClientsModel()
+    @State private var showAddClient = false
 
     var body: some View {
         NavigationStack {
@@ -205,15 +221,116 @@ struct TrainerClientsView: View {
             .navigationDestination(for: String.self) { id in
                 TrainerClientDetailView(clientId: id)
             }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showAddClient = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .tint(FPTheme.primary)
+                }
+            }
         }
         .task { await model.load(api: auth.api) }
+        .sheet(isPresented: $showAddClient) {
+            ClientFormSheet(initial: nil, errorText: model.formError) { request in
+                Task {
+                    if await model.createClient(api: auth.api, request: request) {
+                        showAddClient = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Порядок статусов воронки для диалогов (funnelLabels — словарь, порядок не задаёт).
+let funnelStatusOrder = [
+    "new", "profile_filled", "call", "awaiting_payment",
+    "active", "frozen", "ending", "archived",
+]
+
+/// Форма клиента: создание (initial == nil) и редактирование.
+struct ClientFormSheet: View {
+    let initial: TrainerClientCard?
+    let errorText: String?
+    let onSave: (ClientUpsertRequest) -> Void
+
+    @State private var name: String
+    @State private var goal: String
+    @State private var level: String
+    @State private var age = ""
+    @State private var startDate: String
+    @State private var supportEndDate: String
+
+    init(
+        initial: TrainerClientCard?,
+        errorText: String?,
+        onSave: @escaping (ClientUpsertRequest) -> Void
+    ) {
+        self.initial = initial
+        self.errorText = errorText
+        self.onSave = onSave
+        _name = State(initialValue: initial?.name ?? "")
+        _goal = State(initialValue: initial?.goal ?? "")
+        _level = State(initialValue: initial?.level ?? "")
+        _startDate = State(initialValue: initial?.startDate ?? "")
+        _supportEndDate = State(initialValue: initial?.supportEndDate ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Имя*", text: $name)
+                TextField("Цель", text: $goal)
+                TextField("Уровень (новичок/средний/опытный)", text: $level)
+                TextField("Возраст", text: $age).keyboardType(.numberPad)
+                TextField("Дата старта (ГГГГ-ММ-ДД)", text: $startDate)
+                TextField("Конец сопровождения (ГГГГ-ММ-ДД)", text: $supportEndDate)
+                if let errorText {
+                    Text(errorText).font(.footnote).foregroundStyle(FPTheme.destructiveSoft)
+                }
+            }
+            .navigationTitle(initial == nil ? "Новый клиент" : "Редактировать")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Сохранить") {
+                        onSave(
+                            ClientUpsertRequest(
+                                name: name.trimmingCharacters(in: .whitespaces),
+                                age: Int(age),
+                                goal: goal.isEmpty ? nil : goal,
+                                level: level.isEmpty ? nil : level,
+                                startDate: startDate.isEmpty ? nil : startDate,
+                                supportEndDate: supportEndDate.isEmpty ? nil : supportEndDate
+                            )
+                        )
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+        .presentationDetents([.large])
     }
 }
 
 struct TrainerClientDetailView: View {
     @Environment(AuthStore.self) private var auth
+    @Environment(\.dismiss) private var dismiss
     let clientId: String
     @State private var detail: ClientDetailResponse?
+
+    // Действия тренера над клиентом (Ф4).
+    @State private var inviteLink: String?
+    @State private var showStatusDialog = false
+    @State private var showNoteAlert = false
+    @State private var noteText = ""
+    @State private var showEdit = false
+    @State private var showMeasurement = false
+    @State private var showDeleteConfirm = false
+    @State private var actionError: String?
+    @State private var busy = false
 
     var body: some View {
         ZStack {
@@ -224,8 +341,11 @@ struct TrainerClientDetailView: View {
                         listCard(detail.client.name, [
                             detail.client.goal,
                             detail.client.level,
+                            funnelLabels[detail.client.funnelStatus],
                             "стрик \(detail.client.streakWeeks) нед.",
                         ].compactMap { $0 }.joined(separator: " · "))
+
+                        actionsSection(detail)
 
                         if !detail.measurements.isEmpty {
                             sectionTitle("Последние замеры")
@@ -258,8 +378,211 @@ struct TrainerClientDetailView: View {
             }
         }
         .navigationTitle("Карточка клиента")
-        .task {
-            detail = try? await auth.api.get("/api/clients/\(clientId)")
+        .task { await reload() }
+        .confirmationDialog("Статус воронки", isPresented: $showStatusDialog, titleVisibility: .visible) {
+            ForEach(funnelStatusOrder, id: \.self) { status in
+                Button(funnelLabels[status] ?? status) {
+                    Task { await setStatus(status) }
+                }
+            }
+            Button("Отмена", role: .cancel) {}
+        }
+        .alert("Новая заметка", isPresented: $showNoteAlert) {
+            TextField("Текст заметки", text: $noteText)
+            Button("Сохранить") {
+                Task { await addNote() }
+            }
+            Button("Отмена", role: .cancel) {}
+        }
+        .alert(
+            "Ошибка",
+            isPresented: Binding(
+                get: { actionError != nil },
+                set: { if !$0 { actionError = nil } }
+            )
+        ) {
+            Button("Ок", role: .cancel) {}
+        } message: {
+            Text(actionError ?? "")
+        }
+        .confirmationDialog("Удалить клиента?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+            Button("Удалить", role: .destructive) {
+                Task { await deleteClient() }
+            }
+            Button("Отмена", role: .cancel) {}
+        }
+        .sheet(isPresented: $showEdit) {
+            ClientFormSheet(initial: detail?.client, errorText: actionError) { request in
+                Task { await updateClient(request) }
+            }
+        }
+        .sheet(isPresented: $showMeasurement) {
+            // Та же форма замера, что у клиента, но с clientId — тренер вносит за клиента.
+            AddMeasurementSheet(errorText: actionError) { request in
+                Task { await addMeasurement(request) }
+            }
+        }
+    }
+
+    /* ------------------------------ Действия ------------------------------ */
+
+    @ViewBuilder
+    private func actionsSection(_ detail: ClientDetailResponse) -> some View {
+        sectionTitle("Действия")
+        VStack(spacing: 8) {
+            NavigationLink {
+                AssignWorkoutView(clientId: clientId, clientName: detail.client.name)
+            } label: {
+                actionLabel("Назначить тренировку", "dumbbell.fill")
+            }
+            if let inviteLink {
+                ShareLink(item: inviteLink) {
+                    actionLabel("Поделиться инвайт-ссылкой", "square.and.arrow.up")
+                }
+            } else {
+                Button {
+                    Task { await createInvite() }
+                } label: {
+                    actionLabel("Инвайт-ссылка", "link")
+                }
+            }
+            Button {
+                showStatusDialog = true
+            } label: {
+                actionLabel("Статус воронки", "arrow.triangle.branch")
+            }
+            Button {
+                noteText = ""
+                showNoteAlert = true
+            } label: {
+                actionLabel("Заметка", "note.text")
+            }
+            NavigationLink {
+                ClientProfileFormView(savePath: "/api/clients/\(clientId)/profile")
+            } label: {
+                actionLabel("Анкета", "list.clipboard")
+            }
+            Button {
+                showMeasurement = true
+            } label: {
+                actionLabel("Добавить замер", "ruler")
+            }
+            Button {
+                showEdit = true
+            } label: {
+                actionLabel("Редактировать", "pencil")
+            }
+            Button {
+                showDeleteConfirm = true
+            } label: {
+                actionLabel("Удалить клиента", "trash", tone: FPTheme.destructiveSoft)
+            }
+        }
+        .disabled(busy)
+    }
+
+    private func actionLabel(_ title: String, _ icon: String, tone: Color? = nil) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .frame(width: 24)
+            Text(title)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(FPTheme.mutedForeground)
+        }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(tone ?? FPTheme.foreground)
+        .padding(12)
+        .background(FPTheme.card)
+        .clipShape(RoundedRectangle(cornerRadius: FPTheme.Radius.md))
+    }
+
+    private func reload() async {
+        detail = try? await auth.api.get("/api/clients/\(clientId)")
+    }
+
+    private func createInvite() async {
+        busy = true
+        defer { busy = false }
+        do {
+            let res: InviteLinkResponse = try await auth.api.post(
+                "/api/clients/\(clientId)/invite", body: InviteCreateRequest()
+            )
+            inviteLink = res.link
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func setStatus(_ status: String) async {
+        busy = true
+        defer { busy = false }
+        do {
+            let _: TrainerClientResponse = try await auth.api.patch(
+                "/api/clients/\(clientId)/status", body: FunnelStatusRequest(status: status)
+            )
+            await reload()
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func addNote() async {
+        let text = noteText.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else { return }
+        busy = true
+        defer { busy = false }
+        do {
+            let _: NoteResponse = try await auth.api.post(
+                "/api/clients/\(clientId)/notes", body: NoteRequest(text: text)
+            )
+            await reload()
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func updateClient(_ request: ClientUpsertRequest) async {
+        busy = true
+        defer { busy = false }
+        do {
+            let _: TrainerClientResponse = try await auth.api.patch(
+                "/api/clients/\(clientId)", body: request
+            )
+            showEdit = false
+            actionError = nil
+            await reload()
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func addMeasurement(_ request: CreateMeasurementRequest) async {
+        busy = true
+        defer { busy = false }
+        var payload = request
+        payload.clientId = clientId
+        do {
+            let _: MeasurementResponse = try await auth.api.post("/api/measurements", body: payload)
+            showMeasurement = false
+            actionError = nil
+            await reload()
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func deleteClient() async {
+        busy = true
+        defer { busy = false }
+        do {
+            let _: OkResponse = try await auth.api.delete(
+                "/api/clients/\(clientId)", body: EmptyBody()
+            )
+            dismiss()
+        } catch {
+            actionError = error.localizedDescription
         }
     }
 }

@@ -1,18 +1,16 @@
 package com.oasixlab.fitpro.ui.home
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.Icon
@@ -21,13 +19,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.em
@@ -40,9 +36,9 @@ import com.oasixlab.fitpro.ui.client.TasksTab
 import com.oasixlab.fitpro.ui.client.WorkoutsTab
 import com.oasixlab.fitpro.ui.trainer.ClientsTab
 import com.oasixlab.fitpro.ui.trainer.DashboardTab
-import com.oasixlab.fitpro.ui.trainer.NotificationsTab
 import com.oasixlab.fitpro.ui.trainer.ReviewTab
-import com.oasixlab.fitpro.ui.theme.LocalExtraColors
+import com.oasixlab.fitpro.ui.trainer.StudioTab
+import com.oasixlab.fitpro.ui.trainer.TrainerProfileTab
 
 private data class Tab(val title: String, val icon: ImageVector)
 
@@ -102,7 +98,7 @@ private val TRAINER_TABS = listOf(
     Tab("Дашборд", Icons.Default.Dashboard),
     Tab("Клиенты", Icons.Default.Group),
     Tab("Проверка", Icons.Default.Description),
-    Tab("События", Icons.Default.Notifications),
+    Tab("Студия", Icons.Default.Construction),
     Tab("Профиль", Icons.Default.Person),
 )
 
@@ -131,18 +127,8 @@ fun TrainerHomeScreen(user: User, onLogout: () -> Unit) {
                 0 -> DashboardTab()
                 1 -> ClientsTab()
                 2 -> ReviewTab()
-                3 -> NotificationsTab()
-                else -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(user.name, style = MaterialTheme.typography.headlineMedium)
-                    Text(user.email, color = LocalExtraColors.current.mutedForeground)
-                    TextButton(onClick = onLogout) {
-                        Text("Выйти", color = LocalExtraColors.current.destructiveSoft)
-                    }
-                }
+                3 -> StudioTab()
+                else -> TrainerProfileTab(user, onLogout)
             }
         }
     }

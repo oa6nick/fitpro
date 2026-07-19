@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Кабинет тренера — Ф3: дежурные сценарии поверх реального API.
+/// Кабинет тренера — Ф3/Ф4: дежурные сценарии и конструкторы поверх реального API.
+/// «События» отдельной вкладкой больше нет — уведомления живут в профиле.
 struct TrainerHomeView: View {
     let user: User
 
@@ -12,9 +13,9 @@ struct TrainerHomeView: View {
                 .tabItem { Label("Клиенты", systemImage: "person.2.fill") }
             ReviewView()
                 .tabItem { Label("Проверка", systemImage: "doc.text.fill") }
-            TrainerNotificationsView()
-                .tabItem { Label("События", systemImage: "bell.fill") }
-            ProfileTab(user: user)
+            StudioView()
+                .tabItem { Label("Студия", systemImage: "hammer.fill") }
+            TrainerProfileView(user: user)
                 .tabItem { Label("Профиль", systemImage: "person.fill") }
         }
         .tint(FPTheme.primary)

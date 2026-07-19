@@ -95,6 +95,14 @@ struct ClientProfileView: View {
             }
             .listRowBackground(FPTheme.card)
 
+            Section("Анкета") {
+                NavigationLink("Заполнить / изменить") {
+                    ClientProfileFormView(savePath: "/api/me/profile")
+                }
+                .foregroundStyle(FPTheme.foreground)
+            }
+            .listRowBackground(FPTheme.card)
+
             if let payment = summary.payment {
                 Section("Оплата") {
                     infoRow("Оплачено до", formatDate(payment.paidUntil))
@@ -155,6 +163,86 @@ struct ClientProfileView: View {
             Text(label).foregroundStyle(FPTheme.mutedForeground)
             Spacer()
             Text(value).foregroundStyle(FPTheme.foreground)
+        }
+    }
+}
+
+/// Анкета клиента — общая форма: клиент шлёт PUT /api/me/profile,
+/// тренер — PUT /api/clients/{id}/profile (см. TrainerClientDetailView).
+/// TODO: форма открывается пустой — префилл появится, когда /api/me/client
+/// начнёт отдавать типизированный profile (сейчас GET-эндпоинта анкеты нет).
+struct ClientProfileFormView: View {
+    @Environment(AuthStore.self) private var auth
+    @Environment(\.dismiss) private var dismiss
+    let savePath: String
+
+    @State private var trainingExperience = ""
+    @State private var injuries = ""
+    @State private var lifestyle = ""
+    @State private var nutrition = ""
+    @State private var steps = ""
+    @State private var equipment = ""
+    @State private var preferences = ""
+    @State private var dislikes = ""
+    @State private var saveError: String?
+    @State private var busy = false
+
+    var body: some View {
+        Form {
+            Section("О тренировках") {
+                TextField("Опыт тренировок", text: $trainingExperience, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Травмы и ограничения", text: $injuries, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Оборудование (зал/дом)", text: $equipment, axis: .vertical)
+                    .lineLimit(1...3)
+            }
+            Section("Образ жизни") {
+                TextField("Образ жизни, работа, сон", text: $lifestyle, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Питание сейчас", text: $nutrition, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Шагов в день", text: $steps).keyboardType(.numberPad)
+            }
+            Section("Предпочтения") {
+                TextField("Что нравится", text: $preferences, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Что не нравится", text: $dislikes, axis: .vertical)
+                    .lineLimit(2...4)
+            }
+            if let saveError {
+                Text(saveError).font(.footnote).foregroundStyle(FPTheme.destructiveSoft)
+            }
+        }
+        .navigationTitle("Анкета")
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Сохранить") {
+                    Task { await save() }
+                }
+                .disabled(busy)
+            }
+        }
+    }
+
+    private func save() async {
+        busy = true
+        defer { busy = false }
+        let form = ClientProfileForm(
+            trainingExperience: trainingExperience.isEmpty ? nil : trainingExperience,
+            injuries: injuries.isEmpty ? nil : injuries,
+            lifestyle: lifestyle.isEmpty ? nil : lifestyle,
+            nutrition: nutrition.isEmpty ? nil : nutrition,
+            steps: Int(steps),
+            equipment: equipment.isEmpty ? nil : equipment,
+            preferences: preferences.isEmpty ? nil : preferences,
+            dislikes: dislikes.isEmpty ? nil : dislikes
+        )
+        do {
+            let _: ClientProfileResponse = try await auth.api.put(savePath, body: form)
+            dismiss()
+        } catch {
+            saveError = error.localizedDescription
         }
     }
 }

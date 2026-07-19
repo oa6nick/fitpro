@@ -37,4 +37,18 @@ class UploadRepository @Inject constructor(
         )
         apiCall { api.upload(part) }.url
     }
+
+    // Произвольный файл: сервер принимает image, application/pdf и video любых подтипов.
+    suspend fun uploadFile(uri: Uri): String = withContext(Dispatchers.IO) {
+        val resolver = context.contentResolver
+        val mime = resolver.getType(uri) ?: "application/octet-stream"
+        val bytes = resolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: throw IllegalStateException("Не удалось прочитать файл")
+        val part = MultipartBody.Part.createFormData(
+            name = "file",
+            filename = uri.lastPathSegment ?: "file",
+            body = bytes.toRequestBody(mime.toMediaTypeOrNull()),
+        )
+        apiCall { api.upload(part) }.url
+    }
 }
