@@ -31,8 +31,9 @@ workflows:
           test -n "$APP"
           ditto -c -k --keepParent "$APP" FitPro.app.zip
           if [ -n "$APPETIZE_TOKEN" ]; then
-            URL="https://api.appetize.io/v1/apps"
-            if [ -n "$APPETIZE_IOS_KEY" ]; then URL="$URL/$APPETIZE_IOS_KEY"; fi
+            # По умолчанию обновляем существующее iOS-приложение (ссылка стабильна).
+            KEY="${APPETIZE_IOS_KEY:-db6xlagy6c77kxbq4xgsz5dgyu}"
+            URL="https://api.appetize.io/v1/apps/$KEY"
             curl -sf -H "X-API-KEY: $APPETIZE_TOKEN" \
               -F "file=@FitPro.app.zip" -F "platform=ios" \
               -F "note=FitPro iOS Codemagic" "$URL"
