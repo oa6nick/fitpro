@@ -1,0 +1,44 @@
+# Сборка iOS на облачном Mac БЕЗ GitHub Actions (аккаунт залочен биллингом).
+# Codemagic бесплатный тариф: 500 macOS M-минут/мес — хватает с запасом.
+# Подключение: codemagic.io → войти через GitHub → добавить oa6nick/fitpro →
+# в переменных workflow задать APPETIZE_TOKEN (значение из СЕКРЕТЫ) → Start build.
+workflows:
+  ios-simulator:
+    name: FitPro iOS Simulator → Appetize
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      xcode: latest
+      vars:
+        # APPETIZE_TOKEN задать в UI Codemagic (Secret). Опционально APPETIZE_IOS_KEY
+        # для обновления того же приложения вместо создания нового.
+        APPETIZE_TOKEN: ""
+        APPETIZE_IOS_KEY: ""
+    scripts:
+      - name: Generate Xcode project (XcodeGen)
+        script: |
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          cd mobile/ios && xcodegen
+      - name: Build for iOS Simulator
+        script: |
+          set -o pipefail
+          cd mobile/ios
+          xcodebuild -project FitPro.xcodeproj -scheme FitPro \
+            -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Zip .app and upload to Appetize
+        script: |
+          cd mobile/ios
+          APP=$(find build -name "FitPro.app" -type d | head -1)
+          test -n "$APP"
+          ditto -c -k --keepParent "$APP" FitPro.app.zip
+          if [ -n "$APPETIZE_TOKEN" ]; then
+            URL="https://api.appetize.io/v1/apps"
+            if [ -n "$APPETIZE_IOS_KEY" ]; then URL="$URL/$APPETIZE_IOS_KEY"; fi
+            curl -sf -H "X-API-KEY: $APPETIZE_TOKEN" \
+              -F "file=@FitPro.app.zip" -F "platform=ios" \
+              -F "note=FitPro iOS Codemagic" "$URL"
+          fi
+    artifacts:
+      - mobile/ios/FitPro.app.zip
