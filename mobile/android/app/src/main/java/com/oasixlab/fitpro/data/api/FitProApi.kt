@@ -78,6 +78,14 @@ interface FitProApi {
     @GET("api/me/client")
     suspend fun clientSummary(): ClientSummaryResponse
 
+    /* Push-токены устройств */
+
+    @POST("api/push/device")
+    suspend fun registerDevice(@Body body: DeviceTokenRequest): OkResponse
+
+    @HTTP(method = "DELETE", path = "api/push/device", hasBody = true)
+    suspend fun unregisterDevice(@Body body: DeviceTokenRequest): OkResponse
+
     /* Кабинет тренера */
 
     @GET("api/dashboard")

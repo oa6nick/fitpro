@@ -11,6 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // «push выключен». env.pushEnabled — ленивый геттер, поэтому чистка здесь работает.
 delete process.env.VAPID_PUBLIC_KEY;
 delete process.env.VAPID_PRIVATE_KEY;
+delete process.env.FIREBASE_SERVICE_ACCOUNT;
+delete process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
 
 // Каждый тест-файл получает свежую in-memory БД (vitest-воркеры изолированы),
 // поэтому миграции применяем один раз на файл.

@@ -273,6 +273,11 @@ data class NotificationsResponse(
     val unread: Int = 0,
 )
 
+/* ---------------- Push-токены устройств ---------------- */
+
+@Serializable
+data class DeviceTokenRequest(val platform: String, val token: String)
+
 /* ---------------- Кабинет тренера ---------------- */
 
 @Serializable

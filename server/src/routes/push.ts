@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { pushSubscriptions } from "../db/schema.js";
+import { deviceTokens, pushSubscriptions } from "../db/schema.js";
 import { requireAuth } from "../auth/middleware.js";
 import { asyncH } from "../lib/http.js";
 import { env } from "../env.js";
@@ -48,6 +48,53 @@ pushRouter.post(
       auth: data.keys.auth,
     });
     res.status(201).json({ ok: true });
+  }),
+);
+
+/* Нативные токены мобильных приложений (FCM) */
+
+const deviceSchema = z.object({
+  platform: z.enum(["android", "ios"]),
+  token: z.string().min(10),
+});
+
+pushRouter.post(
+  "/device",
+  asyncH(async (req, res) => {
+    const data = deviceSchema.parse(req.body);
+    const userId = req.user!.sub;
+
+    // token уникален: то же устройство может перелогиниться под другим юзером.
+    const [existing] = await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.token, data.token));
+
+    if (existing) {
+      await db
+        .update(deviceTokens)
+        .set({ userId, platform: data.platform })
+        .where(eq(deviceTokens.id, existing.id));
+      return res.json({ ok: true, updated: true });
+    }
+
+    await db.insert(deviceTokens).values({
+      userId,
+      platform: data.platform,
+      token: data.token,
+    });
+    res.status(201).json({ ok: true });
+  }),
+);
+
+pushRouter.delete(
+  "/device",
+  asyncH(async (req, res) => {
+    const { token } = z.object({ token: z.string().min(10) }).parse(req.body);
+    await db
+      .delete(deviceTokens)
+      .where(and(eq(deviceTokens.token, token), eq(deviceTokens.userId, req.user!.sub)));
+    res.json({ ok: true });
   }),
 );
 

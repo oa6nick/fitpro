@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+// FCM активируется наличием google-services.json (из Firebase Console);
+// без файла сборка работает, push просто выключен.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+}
+
 android {
     namespace = "com.oasixlab.fitpro"
     compileSdk = 35
@@ -71,5 +77,8 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.kotlinx.coroutines.play.services)
     debugImplementation(libs.compose.ui.tooling)
 }

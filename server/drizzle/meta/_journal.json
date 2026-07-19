@@ -50,6 +50,13 @@
       "when": 1783680020664,
       "tag": "0006_thick_cyclops",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784433069177,
+      "tag": "0007_yummy_invaders",
+      "breakpoints": true
     }
   ]
 }

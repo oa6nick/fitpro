@@ -1,5 +1,6 @@
 package com.oasixlab.fitpro
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
 @HiltViewModel
 class SessionViewModel @Inject constructor(
     private val auth: AuthRepository,
+    private val pushManager: com.oasixlab.fitpro.data.push.PushManager,
 ) : ViewModel() {
 
     sealed interface Session {
@@ -66,15 +68,18 @@ class SessionViewModel @Inject constructor(
                 // Сеть недоступна — не разлогиниваем, просто показываем логин.
                 Session.LoggedOut
             }
+            if (_session.value is Session.Active) pushManager.registerToken()
         }
     }
 
     fun onLoggedIn(user: User) {
         _session.value = Session.Active(user)
+        viewModelScope.launch { pushManager.registerToken() }
     }
 
     fun logout() {
         viewModelScope.launch {
+            pushManager.unregisterToken()
             auth.logout()
             _session.value = Session.LoggedOut
         }
@@ -84,6 +89,16 @@ class SessionViewModel @Inject constructor(
 @Composable
 fun RootScreen(viewModel: SessionViewModel = hiltViewModel()) {
     val session by viewModel.session.collectAsState()
+
+    // Разрешение на уведомления (API 33+) — спрашиваем один раз при входе в кабинет.
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { }
+    androidx.compose.runtime.LaunchedEffect(session is SessionViewModel.Session.Active) {
+        if (session is SessionViewModel.Session.Active && Build.VERSION.SDK_INT >= 33) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     when (val s = session) {
         is SessionViewModel.Session.Loading ->

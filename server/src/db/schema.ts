@@ -543,6 +543,18 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Нативные push-токены (FCM) мобильных приложений; web-push живёт в pushSubscriptions. */
+export const deviceTokens = pgTable("device_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // 'android' | 'ios' — text, не enum (аддитивные миграции)
+  platform: text("platform").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** Приглашение клиента в кабинет: привязывает регистрацию к карточке clients. */
 export const clientInvites = pgTable("client_invites", {
   id: uuid("id").primaryKey().defaultRandom(),

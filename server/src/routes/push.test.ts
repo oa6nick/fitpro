@@ -3,7 +3,7 @@ import request from "supertest";
 import { eq } from "drizzle-orm";
 import { createApp } from "../app.js";
 import { db } from "../db/client.js";
-import { pushSubscriptions } from "../db/schema.js";
+import { deviceTokens, pushSubscriptions } from "../db/schema.js";
 
 const app = createApp();
 
@@ -65,6 +65,57 @@ describe("push-подписки", () => {
       .from(pushSubscriptions)
       .where(eq(pushSubscriptions.endpoint, endpoint));
     expect(rows).toHaveLength(0);
+  });
+
+  it("device: регистрация нативного токена, перепривязка и удаление", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/api/auth/register")
+      .send({ email: "push-device@test.ru", password: "secret1", name: "Д1" });
+
+    const created = await agent
+      .post("/api/push/device")
+      .send({ platform: "android", token: "fcm-token-1234567890" });
+    expect(created.status).toBe(201);
+
+    // То же устройство перелогинилось под другим юзером — токен перепривязывается.
+    const agent2 = request.agent(app);
+    const reg2 = await agent2
+      .post("/api/auth/register")
+      .send({ email: "push-device2@test.ru", password: "secret1", name: "Д2" });
+    const rebound = await agent2
+      .post("/api/push/device")
+      .send({ platform: "android", token: "fcm-token-1234567890" });
+    expect(rebound.status).toBe(200);
+    expect(rebound.body.updated).toBe(true);
+
+    const rows = await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.token, "fcm-token-1234567890"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.userId).toBe(reg2.body.user.id);
+
+    const removed = await agent2
+      .delete("/api/push/device")
+      .send({ token: "fcm-token-1234567890" });
+    expect(removed.status).toBe(200);
+    const after = await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.token, "fcm-token-1234567890"));
+    expect(after).toHaveLength(0);
+  });
+
+  it("device отклоняет неизвестную платформу", async () => {
+    const agent = request.agent(app);
+    await agent
+      .post("/api/auth/register")
+      .send({ email: "push-device3@test.ru", password: "secret1", name: "Д3" });
+    const res = await agent
+      .post("/api/push/device")
+      .send({ platform: "web", token: "fcm-token-0987654321" });
+    expect(res.status).toBe(400);
   });
 
   it("notify() не падает, когда push выключен (нет VAPID-ключей)", async () => {

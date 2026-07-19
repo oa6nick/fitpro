@@ -64,4 +64,13 @@ export const env = {
   get pushEnabled(): boolean {
     return Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
   },
+  // Нативный push (FCM): путь к service-account JSON или его base64.
+  // Без ключей выключен — dev и тесты не ломаются (та же модель, что VAPID).
+  firebaseServiceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT ?? "",
+  firebaseServiceAccountBase64: process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 ?? "",
+  get nativePushEnabled(): boolean {
+    return Boolean(
+      process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
+    );
+  },
 };
