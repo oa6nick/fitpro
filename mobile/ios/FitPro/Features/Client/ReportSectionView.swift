@@ -1,3 +1,4 @@
+import Foundation
 import PhotosUI
 import SwiftUI
 
@@ -46,7 +47,8 @@ final class ReportsModel {
         uploadingField = fieldId
         defer { uploadingField = nil }
         do {
-            guard let data = try await item.loadTransferable(type: Data.self) else { return }
+            // Foundation.Data явно: ReportsModel.Data (вложенный тип) перекрывает имя.
+            guard let data = try await item.loadTransferable(type: Foundation.Data.self) else { return }
             answers[fieldId] = try await api.upload(imageData: data)
             formError = nil
         } catch {
