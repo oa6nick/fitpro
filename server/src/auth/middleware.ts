@@ -10,8 +10,17 @@ declare global {
   }
 }
 
+/** Токен сессии: httpOnly-cookie (веб) или Authorization: Bearer (нативные iOS/Android). */
+export function tokenFromRequest(req: Request): string | undefined {
+  const cookieToken = req.cookies?.[AUTH_COOKIE];
+  if (cookieToken) return cookieToken;
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) return header.slice("Bearer ".length);
+  return undefined;
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.[AUTH_COOKIE];
+  const token = tokenFromRequest(req);
   const payload = token ? verifyToken(token) : null;
   if (!payload) {
     return res.status(401).json({ error: "Требуется авторизация" });

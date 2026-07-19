@@ -5,7 +5,7 @@ import { db } from "../db/client.js";
 import { clientInvites, clients, trainerSubscriptions, users } from "../db/schema.js";
 import { hashPassword, verifyPassword } from "../auth/password.js";
 import { signToken, verifyToken, AUTH_COOKIE, cookieOptions } from "../auth/jwt.js";
-import { requireAuth } from "../auth/middleware.js";
+import { requireAuth, tokenFromRequest } from "../auth/middleware.js";
 import { asyncH, HttpError } from "../lib/http.js";
 import { emailHtml, sendEmail } from "../services/email.js";
 import { consumeEmailCode, createEmailCode, hourlyLimited } from "../services/emailCodes.js";
@@ -27,6 +27,9 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  // Нативные iOS/Android не работают с httpOnly-cookie: им токен нужен в теле
+  // ответа, дальше они шлют его в Authorization: Bearer (см. tokenFromRequest).
+  mobile: z.boolean().optional(),
 });
 
 authRouter.post(
@@ -114,10 +117,12 @@ authRouter.post(
       name: user.name,
       email: user.email,
     });
+    const publicUser = { id: user.id, email: user.email, name: user.name, role: user.role };
+    if (data.mobile) {
+      return res.json({ token, user: publicUser });
+    }
     res.cookie(AUTH_COOKIE, token, cookieOptions);
-    res.json({
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    });
+    res.json({ user: publicUser });
   }),
 );
 
@@ -131,7 +136,7 @@ authRouter.post("/logout", (req, res) => {
 authRouter.get(
   "/me",
   asyncH(async (req, res) => {
-    const token = req.cookies?.[AUTH_COOKIE];
+    const token = tokenFromRequest(req);
     const u = token ? verifyToken(token) : null;
     if (!u) return res.json({ user: null });
 

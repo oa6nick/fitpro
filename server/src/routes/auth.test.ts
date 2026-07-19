@@ -62,6 +62,66 @@ describe("auth: регистрация тренера", () => {
   });
 });
 
+describe("auth: мобильные клиенты (bearer)", () => {
+  // Свой инстанс: строгий rate-limit auth-роутов (20/15мин) считается на инстанс,
+  // и на общем app эти тесты съедали бюджет соседних describe-блоков.
+  const app = createApp();
+
+  it("login с mobile:true возвращает token в теле и не ставит cookie", async () => {
+    await request(app)
+      .post("/api/auth/register")
+      .send({ email: "m1@test.ru", password: "secret1", name: "М1" });
+
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "m1@test.ru", password: "secret1", mobile: true });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeTruthy();
+    expect(res.body.user.email).toBe("m1@test.ru");
+    expect(res.headers["set-cookie"]).toBeUndefined();
+  });
+
+  it("bearer-токен принимается requireAuth и /me", async () => {
+    await request(app)
+      .post("/api/auth/register")
+      .send({ email: "m2@test.ru", password: "secret1", name: "М2" });
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "m2@test.ru", password: "secret1", mobile: true });
+
+    const me = await request(app)
+      .get("/api/auth/me")
+      .set("Authorization", `Bearer ${login.body.token}`);
+    expect(me.status).toBe(200);
+    expect(me.body.user.email).toBe("m2@test.ru");
+
+    // Защищённый requireAuth-роут (verify/request шлёт письмо: EMAIL_PROVIDER=off в тестах).
+    const protectedRes = await request(app)
+      .post("/api/auth/verify/request")
+      .set("Authorization", `Bearer ${login.body.token}`);
+    expect(protectedRes.status).toBe(200);
+  });
+
+  it("мусорный bearer-токен отклоняется", async () => {
+    const res = await request(app)
+      .post("/api/auth/verify/request")
+      .set("Authorization", "Bearer not-a-jwt");
+    expect(res.status).toBe(401);
+  });
+
+  it("обычный login без mobile по-прежнему ставит cookie и не отдаёт token", async () => {
+    await request(app)
+      .post("/api/auth/register")
+      .send({ email: "m3@test.ru", password: "secret1", name: "М3" });
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "m3@test.ru", password: "secret1" });
+    expect(res.status).toBe(200);
+    expect(res.headers["set-cookie"]?.[0]).toMatch(/token/i);
+    expect(res.body.token).toBeUndefined();
+  });
+});
+
 describe("auth: verify и reset", () => {
   it("verify/confirm проставляет emailVerifiedAt", async () => {
     const agent = request.agent(app);
