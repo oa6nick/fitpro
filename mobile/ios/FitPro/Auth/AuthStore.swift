@@ -1,6 +1,17 @@
 import Foundation
 import Observation
 
+/// Токен сессии в памяти, доступный из nonisolated-сети без actor-изоляции.
+/// Нужен, потому что Keychain у неподписанной сборки на симуляторе (Appetize)
+/// возвращает errSecMissingEntitlement — save молча падает, read даёт nil.
+/// Keychain остаётся как best-effort персистентность между запусками.
+final class TokenHolder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: String?
+    func get() -> String? { lock.lock(); defer { lock.unlock() }; return value }
+    func set(_ v: String?) { lock.lock(); defer { lock.unlock() }; value = v }
+}
+
 @MainActor
 @Observable
 final class AuthStore {
@@ -12,23 +23,27 @@ final class AuthStore {
 
     private(set) var session: Session = .loading
     private static let tokenKey = "fitpro_token"
+    private let tokenHolder = TokenHolder()
 
     var api: APIClient {
-        APIClient(tokenProvider: { Keychain.read(key: Self.tokenKey) })
+        APIClient(tokenProvider: { [tokenHolder] in
+            tokenHolder.get() ?? Keychain.read(key: Self.tokenKey)
+        })
     }
 
     /// На старте: токен из Keychain → /api/auth/me (протухший токен = user:null).
     func restore() async {
-        guard Keychain.read(key: Self.tokenKey) != nil else {
+        guard let saved = Keychain.read(key: Self.tokenKey) else {
             session = .loggedOut
             return
         }
+        tokenHolder.set(saved)
         do {
             let me: MeResponse = try await api.get("/api/auth/me")
             if let user = me.user {
                 session = .active(user)
             } else {
-                Keychain.delete(key: Self.tokenKey)
+                clearToken()
                 session = .loggedOut
             }
         } catch {
@@ -48,13 +63,24 @@ final class AuthStore {
                 mobile: true
             )
         )
-        Keychain.save(res.token, key: Self.tokenKey)
+        saveToken(res.token)
         session = .active(res.user)
     }
 
     func logout() {
-        Keychain.delete(key: Self.tokenKey)
+        clearToken()
         session = .loggedOut
+    }
+
+    /// Токен — сперва в память (надёжно на симуляторе), затем best-effort в Keychain.
+    private func saveToken(_ token: String) {
+        tokenHolder.set(token)
+        Keychain.save(token, key: Self.tokenKey)
+    }
+
+    private func clearToken() {
+        tokenHolder.set(nil)
+        Keychain.delete(key: Self.tokenKey)
     }
 
     /// Саморегистрация тренера. register отвечает cookie — bearer-токен добираем логином.
