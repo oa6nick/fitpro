@@ -102,23 +102,36 @@ struct APIClient {
     private func request<T: Decodable, B: Encodable>(
         _ path: String, method: String, body: B?
     ) async throws -> T {
-        var req = URLRequest(url: APIConfig.baseURL.appending(path: path))
+        // URL строкой, а не appending(path:) — исключаем любые сюрпризы кодирования.
+        guard let url = URL(string: APIConfig.baseURL.absoluteString + path) else {
+            throw APIError(status: 0, message: "Некорректный адрес запроса")
+        }
+        var req = URLRequest(url: url)
         req.httpMethod = method
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = tokenProvider() {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         if let body {
-            req.httpBody = try JSONEncoder().encode(body)
+            let encoded = try JSONEncoder().encode(body)
+            req.httpBody = encoded
+            // Content-Type/Length ставим ТОЛЬКО при наличии тела и явно —
+            // иначе POST уходил без тела и сервер отвечал 400 «поля обязательны».
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            req.setValue(String(encoded.count), forHTTPHeaderField: "Content-Length")
         }
 
         let (data, response) = try await URLSession.shared.data(for: req)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else {
-            // Сервер кладёт человекочитаемую ошибку в {"error": "..."} (по-русски).
-            let serverMessage = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
-            throw APIError(status: status, message: serverMessage ?? "Ошибка сети (\(status))")
+            throw APIError(status: status, message: serverErrorMessage(data) ?? "Ошибка сети (\(status))")
         }
         return try JSONDecoder().decode(T.self, from: data)
     }
+}
+
+/// Достаёт {"error": "..."} из ответа, игнорируя прочие поля (issues[] и т.п.).
+/// Раньше декод в [String:String] падал на массиве issues и прятал реальный текст.
+func serverErrorMessage(_ data: Data) -> String? {
+    struct ErrBody: Decodable { let error: String? }
+    return (try? JSONDecoder().decode(ErrBody.self, from: data))?.error
 }

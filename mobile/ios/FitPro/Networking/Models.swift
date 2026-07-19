@@ -17,6 +17,13 @@ struct User: Codable, Equatable, Identifiable {
 }
 
 /// POST /api/auth/login с mobile:true
+/// Тело логина: mobile:true → сервер вернёт token в теле (bearer), а не cookie.
+struct LoginRequestBody: Encodable {
+    let email: String
+    let password: String
+    let mobile: Bool
+}
+
 struct LoginResponse: Codable {
     let token: String
     let user: User

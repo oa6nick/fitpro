@@ -38,14 +38,15 @@ final class AuthStore {
     }
 
     func login(email: String, password: String) async throws {
-        struct Body: Encodable {
-            let email: String
-            let password: String
-            let mobile = true
-        }
+        // Явная top-level модель (LoginRequestBody) с явным mobile — исключаем
+        // любые сюрпризы кодирования локальной структуры с дефолтным полем.
         let res: LoginResponse = try await api.post(
             "/api/auth/login",
-            body: Body(email: email, password: password)
+            body: LoginRequestBody(
+                email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                password: password,
+                mobile: true
+            )
         )
         Keychain.save(res.token, key: Self.tokenKey)
         session = .active(res.user)
