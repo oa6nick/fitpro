@@ -32,6 +32,14 @@ open FitPro.xcodeproj
 В `Networking/APIClient.swift` заменить `APIConfig.baseURL` на `http://<IP ноутбука>:4000`
 (бэкенд: `npm run dev` в `server/`). Для http потребуется ATS-исключение в project.yml.
 
+## Push (когда появится Apple Developer)
+Сервер уже умеет FCM (`POST /api/push/device`, platform "ios"). Активация iOS-доставки:
+1. Apple Developer Program → ключ APNs (.p8) → добавить в Firebase-проект
+   (Project settings → Cloud Messaging → Apple app).
+2. Подключить `firebase-ios-sdk` (SPM в project.yml → FirebaseMessaging),
+   `UNUserNotificationCenter.requestAuthorization` + `Messaging.messaging().token`
+   → `POST /api/push/device`. Зеркалить `mobile/android/.../data/push/PushManager.kt`.
+
 ## Дальше (дорожная карта — knowledge-vault/atlas)
 Ф2 — кабинет клиента: дневник тренировок, таймер отдыха, замеры + фото, привычки, материалы.
 Ф3 — кабинет тренера. Ф4 — push (APNs; на сервере сейчас только web-push/VAPID).
