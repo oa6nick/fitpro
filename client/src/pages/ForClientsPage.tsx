@@ -23,6 +23,19 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StoreBadges } from "@/components/StoreBadges";
 import { ScreenshotGallery } from "@/components/ScreenshotGallery";
+import {
+  MktSplit,
+  MktFeatureList,
+  MktTimeline,
+  MktBand,
+  MktSection,
+  MktCardGrid,
+  MktCard,
+  MktFaq,
+  MktNote,
+  MktCtaBanner,
+  MktDemoAccess,
+} from "@/components/marketing";
 
 const CLIENT_FEATURES = [
   {
@@ -92,48 +105,51 @@ const BENEFITS = [
 
 const STEPS = [
   {
-    n: "1",
     title: "Тренер присылает ссылку",
     text: "Он создаёт вашу карточку в FitPro и копирует персональную ссылку (или отправляет её на почту). Без этой ссылки зарегистрироваться нельзя.",
-    detail: "Приглашение",
+    tip: "Приглашение",
   },
   {
-    n: "2",
     title: "Открываете ссылку и задаёте пароль",
     text: "Указываете email и пароль — открывается ваш кабинет. Анкету можно заполнить сразу: так тренеру проще собрать программу.",
-    detail: "Вход",
+    tip: "Вход",
   },
   {
-    n: "3",
     title: "Тренер назначает тренировку — вы ведёте дневник",
     text: "Когда программа появится в разделе «Тренировки», открываете её в зале, отмечаете подходы и завершаете. Это и есть первый дневник.",
-    detail: "Первая тренировка",
+    tip: "Первая тренировка",
   },
 ];
 
+/** Только кабинет клиента — на странице для клиентов */
 const CLIENT_SCREENS = [
   {
     src: "/screens/m-client-home.png",
+    role: "Клиент",
     title: "Главная",
     text: "Ближайшая тренировка под рукой",
   },
   {
     src: "/screens/m-client-workouts.png",
+    role: "Клиент",
     title: "Тренировки",
     text: "Что в плане и что уже сделано",
   },
   {
     src: "/screens/m-client-diary.png",
+    role: "Клиент",
     title: "Дневник",
     text: "Подходы, таймер, завершение",
   },
   {
     src: "/screens/m-client-progress.png",
+    role: "Клиент",
     title: "Прогресс",
     text: "Серия, тоннаж и замеры",
   },
   {
     src: "/screens/m-client-habits.png",
+    role: "Клиент",
     title: "Привычки",
     text: "Отметки по дням недели",
   },
@@ -179,7 +195,7 @@ const FAQ = [
   },
   {
     q: "Как попасть в кабинет?",
-    a: "Только по ссылке от тренера. Открываете приглашение, задаёте пароль — и можно пользоваться.",
+    a: "Только по ссылке от тренера. Открываете приглашение, задаёте пароль — и можно пользоваться. Либо зайдите в демо ниже.",
   },
   {
     q: "Нужно ставить приложение?",
@@ -192,6 +208,21 @@ const FAQ = [
   {
     q: "Тренер ещё не в FitPro. Что делать?",
     a: "Отправьте ему ссылку fitpro.oasixlab.com — у тренеров есть 14 дней бесплатного доступа.",
+  },
+];
+
+const DEMO_ACCOUNTS = [
+  {
+    role: "Клиент",
+    name: "Мария Соколова",
+    email: "client1@fitpro.ru",
+    password: "password123",
+  },
+  {
+    role: "Тренер",
+    name: "Алексей Тренеров",
+    email: "trainer@fitpro.ru",
+    password: "password123",
   },
 ];
 
@@ -219,6 +250,7 @@ export function ForClientsPage() {
               { href: "#features", label: "Что внутри" },
               { href: "#app", label: "Экраны" },
               { href: "#how", label: "Как начать" },
+              { href: "#demo", label: "Демо" },
               { href: "#plus", label: "FitPro+" },
               { href: "#faq", label: "Вопросы" },
             ].map((item) => (
@@ -277,23 +309,21 @@ export function ForClientsPage() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
               <Button size="lg" className="h-12 px-8" asChild>
-                <Link to="/login">
-                  Войти по ссылке тренера <ArrowRight className="h-4 w-4" />
-                </Link>
+                <a href="#demo">
+                  Смотреть демо <ArrowRight className="h-4 w-4" />
+                </a>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
                 <Link to="/">Я тренер</Link>
               </Button>
             </div>
             <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground md:justify-start">
-              {["Для вас бесплатно", "Вход только по приглашению", "Удобно с телефона"].map(
-                (t) => (
-                  <li key={t} className="inline-flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-primary" />
-                    {t}
-                  </li>
-                ),
-              )}
+              {["Для вас бесплатно", "Вход по приглашению", "Удобно с телефона"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-primary" />
+                  {t}
+                </li>
+              ))}
             </ul>
           </div>
           <div className="relative mx-auto w-[min(100%,260px)] md:w-[280px]">
@@ -321,229 +351,111 @@ export function ForClientsPage() {
         </div>
       </section>
 
-      {/* Benefits strip */}
       <section className="border-y border-border/60">
-        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
-          {BENEFITS.map((b) => (
-            <div
-              key={b.title}
-              className="rounded-2xl border border-border bg-card p-5 shadow-surface transition-colors hover:border-primary/30"
-            >
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                <b.icon className="h-5 w-5" />
-              </div>
-              <p className="font-semibold tracking-tight">{b.title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{b.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features — список, не плитки */}
-      <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
-          <div>
-            <p className="type-eyebrow mb-3">Что внутри</p>
-            <h2 className="type-section-title text-balance">
-              Всё для тренировок — не в чате с тренером
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-              Программа, веса, замеры и короткие отчёты живут в кабинете. Вы тренируетесь — тренер
-              видит факты, а не скриншоты.
-            </p>
-          </div>
-          <ul className="divide-y divide-border border-y border-border">
-            {CLIENT_FEATURES.map((f) => (
-              <li key={f.title} className="flex gap-4 py-5 sm:gap-5 sm:py-6">
-                <f.icon
-                  className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-                <div>
-                  <h3 className="font-semibold tracking-tight">{f.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.95rem]">
-                    {f.text}
-                  </p>
-                </div>
-              </li>
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <MktCardGrid cols={4}>
+            {BENEFITS.map((b) => (
+              <MktCard key={b.title} icon={b.icon} title={b.title} text={b.text} />
             ))}
-          </ul>
+          </MktCardGrid>
         </div>
       </section>
 
-      {/* Screens + lightbox */}
-      <section id="app" className="scroll-mt-20 border-y border-border/60 bg-muted/30">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <div className="mb-10 text-center">
-            <p className="type-eyebrow mb-3">Как выглядит</p>
-            <h2 className="type-section-title text-balance">Пять экранов — откройте любой крупно</h2>
-            <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">
-              Нажмите на телефон: можно рассмотреть интерфейс без прищуривания.
+      <MktSplit
+        id="features"
+        eyebrow="Что внутри"
+        title="Всё для тренировок — не в чате с тренером"
+        subtitle="Программа, веса, замеры и короткие отчёты живут в кабинете. Вы тренируетесь — тренер видит факты, а не скриншоты."
+      >
+        <MktFeatureList items={CLIENT_FEATURES} />
+      </MktSplit>
+
+      <MktBand>
+        <MktSection
+          id="app"
+          eyebrow="Кабинет клиента"
+          title="Экраны, с которых вы тренируетесь"
+          subtitle="Реальные кадры с телефона. Нажмите на любой — откроется крупнее."
+        >
+          <ScreenshotGallery screens={CLIENT_SCREENS} />
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Кабинет тренера —{" "}
+            <Link to="/#app" className="font-medium text-primary hover:underline">
+              на главной странице
+            </Link>
+            .
+          </p>
+        </MktSection>
+      </MktBand>
+
+      <MktSection
+        id="how"
+        eyebrow="Как начать"
+        title="От ссылки тренера до первой отметки в дневнике"
+        subtitle="Сами зарегистрироваться нельзя — кабинет открывает только ваш тренер. Вот что происходит дальше."
+        narrow
+      >
+        <MktTimeline steps={STEPS} />
+        <div className="mt-10">
+          <MktNote title="Как устроена ссылка-приглашение">
+            <p>
+              Тренер создаёт вашу карточку и копирует персональную ссылку (или присылает письмом).
+              Вы открываете её, указываете email и пароль — появляется кабинет. Дальше тренер
+              назначает программу, и вы отмечаете первую тренировку в дневнике. Без ссылки войти
+              «с улицы» нельзя — кроме демо-аккаунта ниже.
+            </p>
+          </MktNote>
+        </div>
+      </MktSection>
+
+      <MktDemoAccess
+        accounts={DEMO_ACCOUNTS}
+        subtitle="Зайдите как клиент Мария — увидите программу, дневник и прогресс. Пароль один для обоих аккаунтов."
+      />
+
+      <MktSection id="plus" eyebrow="FitPro+" title="Дополнительно — когда захотите больше">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-card p-8 shadow-panel sm:p-10">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative mb-8 max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold tracking-wide text-primary">
+                В разработке
+              </span>
+            </div>
+            <p className="text-base leading-relaxed text-muted-foreground">
+              Необязательные возможности «на вырост». Обычный кабинет останется бесплатным для
+              клиента.
             </p>
           </div>
-          <ScreenshotGallery screens={CLIENT_SCREENS} />
-        </div>
-      </section>
-
-      {/* Как начать — лента + понятный сценарий приглашения */}
-      <section id="how" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
-        <div className="mb-12 text-center">
-          <p className="type-eyebrow mb-3">Как начать</p>
-          <h2 className="type-section-title text-balance">
-            От ссылки тренера до первой отметки в дневнике
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
-            Сами зарегистрироваться нельзя — кабинет открывает только ваш тренер. Вот что
-            происходит дальше.
-          </p>
-        </div>
-
-        <ol className="relative space-y-0">
-          <span
-            className="absolute bottom-4 left-[0.95rem] top-4 w-px bg-border"
-            aria-hidden
-          />
-          {STEPS.map((s, i) => (
-            <li key={s.n} className="relative flex gap-5 pb-10 last:pb-0 md:gap-6">
-              <span className="relative z-[1] flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-bold text-primary">
-                {i + 1}
-              </span>
-              <div className="min-w-0 pt-0.5">
-                <p className="text-xs font-medium text-muted-foreground">{s.detail}</p>
-                <h3 className="mt-1 text-lg font-semibold tracking-tight">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  {s.text}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <div className="mt-10 rounded-2xl border border-border bg-muted/40 px-5 py-5 text-sm leading-relaxed text-muted-foreground sm:px-6">
-          <p className="font-medium text-foreground">Как устроена ссылка-приглашение</p>
-          <p className="mt-2">
-            Тренер создаёт вашу карточку и копирует персональную ссылку (или присылает письмом).
-            Вы открываете её, указываете email и пароль — появляется кабинет. Дальше тренер
-            назначает программу, и вы отмечаете первую тренировку в дневнике. Без ссылки войти
-            «с улицы» нельзя.
-          </p>
-        </div>
-
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" asChild>
-            <Link to="/login">
-              У меня уже есть ссылка <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link to="/">Показать страницу тренеру</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* FitPro+ */}
-      <section id="plus" className="scroll-mt-20 border-y border-border/60">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-card p-8 shadow-panel sm:p-10 md:p-12">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-            <div className="relative mb-10 max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-semibold tracking-wide text-primary">
-                  FitPro+ · в разработке
-                </span>
-              </div>
-              <h2 className="type-section-title text-balance">Дополнительно — когда захотите больше</h2>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                Это необязательные возможности «на вырост». Обычный кабинет останется бесплатным
-                для клиента.
-              </p>
-            </div>
-            <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="relative">
+            <MktCardGrid cols={3}>
               {PLUS_FEATURES.map((f) => (
-                <div
-                  key={f.title}
-                  className="rounded-2xl border border-border bg-card p-5 shadow-surface transition-colors hover:border-primary/30"
-                >
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                      <f.icon className="h-5 w-5" />
-                    </div>
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                      Скоро
-                    </span>
-                  </div>
-                  <h3 className="font-semibold tracking-tight">{f.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
-                </div>
+                <MktCard key={f.title} icon={f.icon} title={f.title} text={f.text} badge="Скоро" />
               ))}
-            </div>
+            </MktCardGrid>
           </div>
         </div>
-      </section>
+      </MktSection>
 
-      {/* FAQ */}
-      <section id="faq" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
-        <div className="mb-10 text-center">
-          <p className="type-eyebrow mb-3">Вопросы</p>
-          <h2 className="type-section-title">Коротко и по делу</h2>
-        </div>
-        <div className="space-y-3">
-          {FAQ.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-surface open:shadow-panel"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden">
-                <span className="pr-2">{item.q}</span>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 border-t border-border/60 pt-3 text-sm leading-relaxed text-muted-foreground">
-                {item.a}
-              </p>
-            </details>
-          ))}
-        </div>
-      </section>
+      <MktSection id="faq" eyebrow="Вопросы" title="Коротко и по делу" narrow>
+        <MktFaq items={FAQ} />
+      </MktSection>
 
-      {/* CTA */}
-      <section className="px-4 pb-16 md:pb-20">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-hero border border-border bg-card shadow-panel">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 50% 80% at 0% 50%, hsl(var(--primary) / 0.12), transparent 55%)",
-            }}
-            aria-hidden
-          />
-          <div className="relative flex flex-col items-start justify-between gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-14">
-            <div className="max-w-xl">
-              <p className="type-eyebrow mb-3">Готовы начать</p>
-              <h2 className="type-section-title text-balance">
-                Попросите тренера перейти в FitPro
-              </h2>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                Если ссылка уже есть — входите. Если нет — отправьте тренеру fitpro.oasixlab.com:
-                у него 14 дней бесплатно, у вас — удобный кабинет.
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-3">
-              <Button size="lg" className="h-12 px-8" asChild>
-                <Link to="/login">
-                  Войти <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 px-7" asChild>
-                <Link to="/">Страница для тренера</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MktCtaBanner
+        eyebrow="Готовы начать"
+        title="Попросите тренера перейти в FitPro"
+        subtitle="Если ссылка уже есть — входите. Если нет — отправьте тренеру fitpro.oasixlab.com: у него 14 дней бесплатно, у вас — удобный кабинет."
+      >
+        <Button size="lg" className="h-12 px-8" asChild>
+          <Link to="/login">
+            Войти <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+        <Button size="lg" variant="outline" className="h-12 px-7" asChild>
+          <Link to="/">Страница для тренера</Link>
+        </Button>
+      </MktCtaBanner>
 
       <section className="border-t border-border/50 bg-muted/25">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
@@ -562,6 +474,17 @@ export function ForClientsPage() {
               <Dumbbell className="h-3.5 w-3.5" />
             </div>
             <span className="font-semibold text-foreground">FitPro Platform</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Для тренера
+            </Link>
+            <a href="#demo" className="transition-colors hover:text-foreground">
+              Демо
+            </a>
+            <a href="#faq" className="transition-colors hover:text-foreground">
+              FAQ
+            </a>
           </div>
           <p className="text-xs">© 2026 FitPro · для спортсменов и тренеров</p>
         </div>

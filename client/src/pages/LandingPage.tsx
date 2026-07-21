@@ -21,6 +21,18 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StoreBadges } from "@/components/StoreBadges";
 import { ScreenshotGallery } from "@/components/ScreenshotGallery";
+import {
+  MktSplit,
+  MktFeatureList,
+  MktTimeline,
+  MktBand,
+  MktSection,
+  MktCardGrid,
+  MktCard,
+  MktFaq,
+  MktCtaBanner,
+  MktDemoAccess,
+} from "@/components/marketing";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
@@ -68,25 +80,21 @@ const FEATURES = [
 
 const STEPS = [
   {
-    n: "01",
     title: "Добавьте клиента",
     text: "Создайте карточку и отправьте ссылку. Анкету человек заполнит сам.",
     tip: "Пара минут",
   },
   {
-    n: "02",
     title: "Соберите программу",
     text: "Из упражнений и шаблонов — назначьте на нужную дату.",
     tip: "Конструктор",
   },
   {
-    n: "03",
     title: "Клиент тренируется",
     text: "Ведёт дневник, сдаёт замеры и отчёты с телефона. Вы видите это сразу.",
     tip: "В зале",
   },
   {
-    n: "04",
     title: "Смотрите результат",
     text: "Графики, риски и проверка тренировок — всё на одном экране.",
     tip: "Аналитика",
@@ -118,7 +126,8 @@ const AUDIENCE = [
   },
 ];
 
-const APP_SCREENS = [
+/** Только кабинет тренера — на странице для тренеров */
+const TRAINER_SCREENS = [
   {
     src: "/screens/m-trainer-home.png",
     role: "Тренер",
@@ -132,22 +141,22 @@ const APP_SCREENS = [
     text: "Воронка от заявки до активного",
   },
   {
+    src: "/screens/m-trainer-client.png",
+    role: "Тренер",
+    title: "Карточка клиента",
+    text: "Программа, дневники и статусы в одном месте",
+  },
+  {
     src: "/screens/m-trainer-analytics.png",
     role: "Тренер",
     title: "Аналитика",
     text: "Веса, тоннаж и динамика по человеку",
   },
   {
-    src: "/screens/m-client-diary.png",
-    role: "Клиент",
-    title: "Дневник",
-    text: "Подходы и таймер прямо в зале",
-  },
-  {
-    src: "/screens/m-client-progress.png",
-    role: "Клиент",
-    title: "Прогресс",
-    text: "Серия недель, тоннаж и замеры",
+    src: "/screens/m-trainer-templates.png",
+    role: "Тренер",
+    title: "Шаблоны",
+    text: "Библиотека программ и быстрый повтор",
   },
 ];
 
@@ -178,6 +187,21 @@ const FAQ = [
   },
 ];
 
+const DEMO_ACCOUNTS = [
+  {
+    role: "Тренер",
+    name: "Алексей Тренеров",
+    email: "trainer@fitpro.ru",
+    password: "password123",
+  },
+  {
+    role: "Клиент",
+    name: "Мария Соколова",
+    email: "client1@fitpro.ru",
+    password: "password123",
+  },
+];
+
 const STATS = [
   { icon: Zap, label: "Назначить программу", value: "за минуту" },
   { icon: Smartphone, label: "Кабинет клиента", value: "с телефона" },
@@ -187,7 +211,7 @@ const STATS = [
 
 function LogoMark({ size = "md" }: { size?: "sm" | "md" }) {
   const box = size === "sm" ? "h-6 w-6 rounded-md" : "h-9 w-9 rounded-xl";
-  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4.5 w-4.5 h-[18px] w-[18px]";
+  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-[18px] w-[18px]";
   return (
     <div
       className={cn(
@@ -200,39 +224,9 @@ function LogoMark({ size = "md" }: { size?: "sm" | "md" }) {
   );
 }
 
-function SectionHeading({
-  eyebrow,
-  title,
-  subtitle,
-  align = "center",
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle?: string;
-  align?: "center" | "left";
-}) {
-  return (
-    <div className={cn("mb-10 md:mb-12", align === "center" ? "text-center" : "text-left")}>
-      <p className="type-eyebrow mb-3">{eyebrow}</p>
-      <h2 className="type-section-title text-balance">{title}</h2>
-      {subtitle && (
-        <p
-          className={cn(
-            "mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-[1.05rem]",
-            align === "center" && "mx-auto",
-          )}
-        >
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
-
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">
-      {/* Навигация */}
       <header className="glass-header sticky top-0 z-40 border-b border-border/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
@@ -243,8 +237,9 @@ export function LandingPage() {
             {[
               { href: "#features", label: "Возможности" },
               { href: "#how", label: "Как это работает" },
-              { href: "#app", label: "Приложение" },
+              { href: "#app", label: "Экраны" },
               { href: "#pricing", label: "Тарифы" },
+              { href: "#demo", label: "Демо" },
               { href: "#faq", label: "Вопросы" },
             ].map((item) => (
               <a
@@ -269,14 +264,14 @@ export function LandingPage() {
             </Button>
             <Button size="sm" asChild>
               <Link to="/register">
-                Попробовать <ArrowRight className="h-3.5 w-3.5" />
+                14 дней <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero — единственный «захват» до финального баннера */}
       <section className="relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 -z-10"
@@ -316,10 +311,7 @@ export function LandingPage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7 text-base" asChild>
-                <Link to="/login">Войти</Link>
-              </Button>
-              <Button size="lg" variant="ghost" className="h-12 text-base" asChild>
-                <Link to="/for-clients">Я клиент</Link>
+                <a href="#demo">Смотреть демо</a>
               </Button>
             </div>
 
@@ -338,7 +330,6 @@ export function LandingPage() {
 
           <div className="relative animate-scale-in [animation-delay:120ms]">
             <DashboardMock />
-            {/* floating chips */}
             <div className="pointer-events-none absolute -left-2 top-8 hidden animate-slide-up sm:block lg:-left-6">
               <div className="glass-elevated flex items-center gap-2 rounded-full px-3 py-2 shadow-panel">
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive/15 text-destructive">
@@ -365,17 +356,14 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Метрики */}
       <section className="relative border-y border-border/50">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 py-8 md:grid-cols-4 md:gap-4 md:py-10">
-          {STATS.map((s, i) => (
+          {STATS.map((s) => (
             <div
               key={s.label}
               className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 text-center shadow-surface transition-colors hover:border-primary/30"
-              style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <s.icon className="h-5 w-5 text-primary" />
               </div>
               <p className="text-lg font-semibold tracking-tight sm:text-xl">{s.value}</p>
@@ -385,104 +373,49 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Возможности — editorial list, не «иконка в карточке» */}
-      <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="type-eyebrow mb-3">Возможности</p>
-            <h2 className="type-section-title text-balance">
-              Всё, чем вы сейчас ведёте клиентов — в одном кабинете
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-              Не мессенджер, не Excel и не папка с PDF. Клиенты, программы, дневники, отчёты и
-              оплаты — там, где вы реально работаете.
-            </p>
-            <Button className="mt-8 hidden lg:inline-flex" asChild>
-              <Link to="/register">
-                Попробовать 14 дней <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <ul className="divide-y divide-border border-y border-border">
-            {FEATURES.map((f) => (
-              <li
-                key={f.title}
-                className="flex gap-4 py-5 first:pt-0 last:pb-0 sm:gap-6 sm:py-6"
-              >
-                <f.icon
-                  className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-                <div className="min-w-0">
-                  <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">
-                    {f.title}
-                  </h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.95rem]">
-                    {f.text}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <MktSplit
+        id="features"
+        eyebrow="Возможности"
+        title="Всё, чем вы сейчас ведёте клиентов — в одном кабинете"
+        subtitle="Не мессенджер, не Excel и не папка с PDF. Клиенты, программы, дневники, отчёты и оплаты — там, где вы реально работаете."
+      >
+        <MktFeatureList items={FEATURES} />
+      </MktSplit>
 
-      {/* Как это работает — вертикальная лента, не 4 одинаковые плитки */}
-      <section id="how" className="scroll-mt-20 border-y border-border/60 bg-muted/30">
-        <div className="mx-auto max-w-3xl px-4 py-20 md:py-24">
-          <div className="mb-12 text-center">
-            <p className="type-eyebrow mb-3">Как это работает</p>
-            <h2 className="type-section-title text-balance">
-              От первого клиента до понятного прогресса
-            </h2>
-            <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
-              Короткий цикл без лишних сервисов. Ниже — то, что происходит на практике.
-            </p>
-          </div>
-          <ol className="relative space-y-0">
-            <span
-              className="absolute bottom-3 left-[0.95rem] top-3 w-px bg-border md:left-[1.05rem]"
-              aria-hidden
-            />
-            {STEPS.map((s, i) => (
-              <li key={s.n} className="relative flex gap-5 pb-10 last:pb-0 md:gap-7">
-                <span className="relative z-[1] flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-xs font-bold text-primary md:h-9 md:w-9">
-                  {i + 1}
-                </span>
-                <div className="min-w-0 pt-0.5">
-                  <p className="text-xs font-medium text-muted-foreground">{s.tip}</p>
-                  <h3 className="mt-1 text-lg font-semibold tracking-tight">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    {s.text}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      <MktBand>
+        <MktSection
+          id="how"
+          eyebrow="Как это работает"
+          title="От первого клиента до понятного прогресса"
+          subtitle="Короткий цикл без лишних сервисов. Ниже — то, что происходит на практике."
+          narrow
+        >
+          <MktTimeline steps={STEPS} />
+        </MktSection>
+      </MktBand>
 
-      {/* Приложение — 5 mobile + lightbox */}
-      <section id="app" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
-        <SectionHeading
-          eyebrow="Как выглядит"
-          title="Откройте экраны крупно"
-          subtitle="Пять реальных кадров с телефона. Нажмите на любой — откроется на весь экран."
-        />
-        <ScreenshotGallery screens={APP_SCREENS} />
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Кабинет уже открывается в браузере телефона. Приложения — в блоке ниже.
+      <MktSection
+        id="app"
+        eyebrow="Кабинет тренера"
+        title="Экраны, с которых ведёте клиентов"
+        subtitle="Реальные кадры с телефона. Нажмите на любой — откроется крупнее."
+      >
+        <ScreenshotGallery screens={TRAINER_SCREENS} />
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Кабинет клиента —{" "}
+          <Link to="/for-clients#app" className="font-medium text-primary hover:underline">
+            на отдельной странице
+          </Link>
+          . Веб уже открывается с телефона.
         </p>
-      </section>
+      </MktSection>
 
-      {/* Тарифы */}
-      <section id="pricing" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
-        <SectionHeading
-          eyebrow="Тарифы"
-          title="Платите за число клиентов"
-          subtitle="Набор функций одинаковый на всех тарифах. Меняется только лимит человек в ведении."
-        />
+      <MktSection
+        id="pricing"
+        eyebrow="Тарифы"
+        title="Платите за число клиентов"
+        subtitle="Набор функций одинаковый на всех тарифах. Меняется только лимит человек в ведении."
+      >
         <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-3 sm:items-stretch">
           {PRICING.map((p) => (
             <div
@@ -527,7 +460,7 @@ export function LandingPage() {
                 asChild
               >
                 <Link to={`/register?plan=${p.id}`}>
-                  Попробовать 14 дней
+                  14 дней на {p.name}
                   {p.popular && <ArrowRight className="h-4 w-4" />}
                 </Link>
               </Button>
@@ -538,92 +471,43 @@ export function LandingPage() {
           На любом тарифе сначала 14 дней бесплатно. Онлайн-оплату подключаем — до этого тариф
           включаем вручную по запросу.
         </p>
-      </section>
+      </MktSection>
 
-      {/* Для кого */}
-      <section className="border-y border-border/60 bg-muted/30">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <SectionHeading
-            eyebrow="Кому подойдёт"
-            title="Если ведёте людей, а не только «чат»"
-            subtitle="FitPro для тех, у кого клиенты и сопровождение — основная работа, а не хобби в переписке."
-          />
-          <div className="grid gap-4 md:grid-cols-3">
+      <MktBand>
+        <MktSection
+          eyebrow="Кому подойдёт"
+          title="Если ведёте людей, а не только «чат»"
+          subtitle="FitPro для тех, у кого клиенты и сопровождение — основная работа, а не хобби в переписке."
+        >
+          <MktCardGrid cols={3}>
             {AUDIENCE.map((a) => (
-              <div
-                key={a.title}
-                className="rounded-2xl border border-border bg-card p-6 shadow-surface transition-colors hover:border-primary/30"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                  <a.icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-semibold tracking-tight">{a.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{a.text}</p>
-              </div>
+              <MktCard key={a.title} icon={a.icon} title={a.title} text={a.text} />
             ))}
-          </div>
-        </div>
-      </section>
+          </MktCardGrid>
+        </MktSection>
+      </MktBand>
 
-      {/* FAQ */}
-      <section id="faq" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
-        <SectionHeading eyebrow="Вопросы" title="Коротко по делу" />
-        <div className="space-y-3">
-          {FAQ.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-surface open:shadow-panel"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium tracking-tight [&::-webkit-details-marker]:hidden">
-                <span className="pr-2 text-left">{item.q}</span>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">
-                {item.a}
-              </p>
-            </details>
-          ))}
-        </div>
-      </section>
+      <MktDemoAccess accounts={DEMO_ACCOUNTS} />
 
-      {/* CTA */}
-      <section className="px-4 pb-16 md:pb-20">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 55% 80% at 0% 50%, hsl(var(--primary) / 0.1), transparent 55%)",
-            }}
-            aria-hidden
-          />
-          <div className="relative flex flex-col items-start justify-between gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-14">
-            <div className="max-w-xl">
-              <p className="type-eyebrow mb-3">Попробуйте</p>
-              <h2 className="type-section-title text-balance">
-                Заведите кабинет и пригласите первого клиента
-              </h2>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                Регистрация занимает минуту. 14 дней — полный доступ, карта не нужна.
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-3">
-              <Button size="lg" className="h-12 px-8" asChild>
-                <Link to="/register">
-                  Создать кабинет тренера <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 px-7" asChild>
-                <Link to="/login">Уже есть аккаунт</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MktSection id="faq" eyebrow="Вопросы" title="Коротко по делу" narrow>
+        <MktFaq items={FAQ} />
+      </MktSection>
 
-      {/* Сторы */}
+      <MktCtaBanner
+        eyebrow="Попробуйте"
+        title="Заведите кабинет и пригласите первого клиента"
+        subtitle="Регистрация занимает минуту. 14 дней — полный доступ, карта не нужна."
+      >
+        <Button size="lg" className="h-12 px-8" asChild>
+          <Link to="/register">
+            Создать кабинет <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+        <Button size="lg" variant="outline" className="h-12 px-7" asChild>
+          <Link to="/login">Уже есть аккаунт</Link>
+        </Button>
+      </MktCtaBanner>
+
       <section className="border-t border-border/60 bg-muted/25">
         <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
           <div className="flex flex-col items-center gap-6 text-center">
@@ -638,20 +522,10 @@ export function LandingPage() {
               </p>
             </div>
             <StoreBadges />
-            <p className="text-xs text-muted-foreground">
-              Сейчас удобнее всего зайти на{" "}
-              <a
-                href="https://fitpro.oasixlab.com"
-                className="font-medium text-primary hover:underline"
-              >
-                fitpro.oasixlab.com
-              </a>
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Футер */}
       <footer className="border-t border-border/50">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 px-4 py-10 text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2.5">
@@ -660,16 +534,16 @@ export function LandingPage() {
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link to="/for-clients" className="transition-colors hover:text-foreground">
-              FitPro для клиента
+              Для клиента
             </Link>
+            <a href="#demo" className="transition-colors hover:text-foreground">
+              Демо
+            </a>
             <a href="#pricing" className="transition-colors hover:text-foreground">
               Тарифы
             </a>
             <a href="#faq" className="transition-colors hover:text-foreground">
               FAQ
-            </a>
-            <a href="#app" className="transition-colors hover:text-foreground">
-              Экраны
             </a>
           </div>
           <p className="text-xs">© 2026 FitPro · для тренеров и их клиентов</p>
@@ -679,11 +553,9 @@ export function LandingPage() {
   );
 }
 
-/** Декоративный CSS-макет дашборда (без внешних картинок), в стеклянной эстетике. */
 function DashboardMock() {
   return (
     <div className="relative mx-auto max-w-lg lg:max-w-none">
-      {/* ambient glow behind mock */}
       <div
         className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] opacity-70 blur-2xl"
         style={{
@@ -726,10 +598,7 @@ function DashboardMock() {
             { title: "Зона риска", badge: "warning" as const, rows: ["Мария С.", "Павел Д."] },
             { title: "Лучший прогресс", badge: "success" as const, rows: ["Елена В.", "Артём Н."] },
           ].map((t) => (
-            <div
-              key={t.title}
-              className="rounded-xl border border-border/50 bg-card/70 p-3"
-            >
+            <div key={t.title} className="rounded-xl border border-border/50 bg-card/70 p-3">
               <div className="mb-2.5 flex items-center justify-between gap-2">
                 <p className="truncate text-xs font-semibold">{t.title}</p>
                 <Badge variant={t.badge} className="shrink-0 px-1.5 py-0 text-[10px]">
