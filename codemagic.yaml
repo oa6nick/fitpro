@@ -42,9 +42,13 @@ workflows:
       - mobile/ios/FitPro.app.zip
 
   # Релизная сборка в TestFlight. Требует в Codemagic UI интеграцию
-  # App Store Connect API с именем РОВНО `appstore_key` (Settings → Integrations →
-  # Developer Portal). Сертификат распространения и provisioning profile
-  # Codemagic выпускает сам через этот ключ — руками в Apple Developer не лезем.
+  # App Store Connect API с именем РОВНО `appstore_key`
+  # (Settings → Integrations → Developer Portal).
+  #
+  # Подпись собираем скриптом, а не блоком `ios_signing`: автоматический режим
+  # умеет только ИСКАТЬ готовый profile и падает с «No matching profiles found»,
+  # если App ID ещё не заведён. `fetch-signing-files --create` создаёт в Apple
+  # и App ID, и сертификат, и профиль — руками в Developer Portal лезть не нужно.
   ios-release:
     name: Coachly iOS TestFlight
     instance_type: mac_mini_m2
@@ -52,9 +56,8 @@ workflows:
     integrations:
       app_store_connect: appstore_key
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.oasixlab.fitpro
+      vars:
+        BUNDLE_ID: "com.oasixlab.fitpro"
       xcode: latest
     scripts:
       - name: Generate Xcode project (XcodeGen)
@@ -65,6 +68,13 @@ workflows:
           # повторную загрузку с тем же CURRENT_PROJECT_VERSION.
           sed -i '' "s/CURRENT_PROJECT_VERSION: \"1\"/CURRENT_PROJECT_VERSION: \"$BUILD_NUMBER\"/" project.yml
           xcodegen
+      - name: Fetch or create signing files
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
