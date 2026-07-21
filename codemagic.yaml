@@ -68,13 +68,26 @@ workflows:
           # повторную загрузку с тем же CURRENT_PROJECT_VERSION.
           sed -i '' "s/CURRENT_PROJECT_VERSION: \"1\"/CURRENT_PROJECT_VERSION: \"$BUILD_NUMBER\"/" project.yml
           xcodegen
+      # Сертификат распространения = публичная часть в Apple + приватный ключ у нас.
+      # Ключ хранится в переменной CERTIFICATE_PRIVATE_KEY (Codemagic UI → Environment
+      # variables, отметить Secure). Если её нет — генерируем разовый, но тогда КАЖДАЯ
+      # сборка выпускает НОВЫЙ сертификат, а у Apple лимит 2–3 на аккаунт.
       - name: Fetch or create signing files
         script: |
           keychain initialize
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            printf '%s' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key.pem
+          else
+            echo "⚠️  CERTIFICATE_PRIVATE_KEY не задана — выпускаю разовый сертификат."
+            echo "⚠️  Добавьте переменную, иначе упрётесь в лимит сертификатов Apple."
+            openssl genrsa -out /tmp/cert_key.pem 2048
+          fi
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/cert_key.pem \
             --create
           keychain add-certificates
+          rm -f /tmp/cert_key.pem
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
