@@ -36,7 +36,7 @@ export function LoginPage() {
     <AuthShell>
       <AuthCard>
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="type-page-title">Вход в FitPro</CardTitle>
+          <CardTitle className="type-page-title">Вход в Coachly</CardTitle>
           <CardDescription className="text-balance leading-relaxed">
             Кабинет тренера или клиента — в зависимости от вашего аккаунта.
           </CardDescription>

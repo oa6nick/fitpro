@@ -5,10 +5,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "FitPro", body: event.data ? event.data.text() : "Новое уведомление" };
+    data = { title: "Coachly", body: event.data ? event.data.text() : "Новое уведомление" };
   }
 
-  const title = data.title || "FitPro";
+  const title = data.title || "Coachly";
   const options = {
     body: data.body || "Новое уведомление",
     icon: "/favicon.svg",

@@ -21,7 +21,7 @@ targets:
         SWIFT_VERSION: "5.10"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_CFBundleDisplayName: FitPro
+        INFOPLIST_KEY_CFBundleDisplayName: Coachly
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         # Geist подключается после добавления TTF в FitPro/Resources/Fonts (см. README).
         # INFOPLIST_KEY_UIAppFonts: ...

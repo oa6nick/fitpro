@@ -106,7 +106,7 @@ const BENEFITS = [
 const STEPS = [
   {
     title: "Тренер присылает ссылку",
-    text: "Он создаёт вашу карточку в FitPro и копирует персональную ссылку (или отправляет её на почту). Без этой ссылки зарегистрироваться нельзя.",
+    text: "Он создаёт вашу карточку в Coachly и копирует персональную ссылку (или отправляет её на почту). Без этой ссылки зарегистрироваться нельзя.",
     tip: "Приглашение",
   },
   {
@@ -191,7 +191,7 @@ const PLUS_FEATURES = [
 const FAQ = [
   {
     q: "Сколько это стоит?",
-    a: "Для вас — бесплатно. Платформу оплачивает тренер. Дополнительные опции FitPro+ появятся позже и будут по желанию.",
+    a: "Для вас — бесплатно. Платформу оплачивает тренер. Дополнительные опции Coachly+ появятся позже и будут по желанию.",
   },
   {
     q: "Как попасть в кабинет?",
@@ -206,7 +206,7 @@ const FAQ = [
     a: "Только ваш тренер. Фото и замеры не попадают в общий доступ.",
   },
   {
-    q: "Тренер ещё не в FitPro. Что делать?",
+    q: "Тренер ещё не в Coachly. Что делать?",
     a: "Отправьте ему ссылку fitpro.oasixlab.com — у тренеров есть 14 дней бесплатного доступа.",
   },
 ];
@@ -229,7 +229,7 @@ const DEMO_ACCOUNTS = [
 export function ForClientsPage() {
   useEffect(() => {
     const prev = document.title;
-    document.title = "FitPro для клиента — тренировки, прогресс и тренер в одном кабинете";
+    document.title = "Coachly для клиента — тренировки, прогресс и тренер в одном кабинете";
     return () => {
       document.title = prev;
     };
@@ -243,7 +243,7 @@ export function ForClientsPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Dumbbell className="h-[18px] w-[18px]" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">FitPro</span>
+            <span className="text-lg font-semibold tracking-tight">Coachly</span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm font-medium text-muted-foreground lg:flex">
             {[
@@ -251,7 +251,7 @@ export function ForClientsPage() {
               { href: "#app", label: "Экраны" },
               { href: "#how", label: "Как начать" },
               { href: "#demo", label: "Демо" },
-              { href: "#plus", label: "FitPro+" },
+              { href: "#plus", label: "Coachly+" },
               { href: "#faq", label: "Вопросы" },
             ].map((item) => (
               <a
@@ -341,7 +341,7 @@ export function ForClientsPage() {
               </div>
               <img
                 src="/screens/m-client-home.png"
-                alt="Главная клиента FitPro"
+                alt="Главная клиента Coachly"
                 className="aspect-[9/19.5] w-full rounded-[1.55rem] object-cover object-top"
                 width={780}
                 height={1688}
@@ -413,7 +413,7 @@ export function ForClientsPage() {
         subtitle="Зайдите как клиент Мария — увидите программу, дневник и прогресс. Пароль один для обоих аккаунтов."
       />
 
-      <MktSection id="plus" eyebrow="FitPro+" title="Дополнительно — когда захотите больше">
+      <MktSection id="plus" eyebrow="Coachly+" title="Дополнительно — когда захотите больше">
         <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-card p-8 shadow-panel sm:p-10">
           <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative mb-8 max-w-2xl">
@@ -444,7 +444,7 @@ export function ForClientsPage() {
 
       <MktCtaBanner
         eyebrow="Готовы начать"
-        title="Попросите тренера перейти в FitPro"
+        title="Попросите тренера перейти в Coachly"
         subtitle="Если ссылка уже есть — входите. Если нет — отправьте тренеру fitpro.oasixlab.com: у него 14 дней бесплатно, у вас — удобный кабинет."
       >
         <Button size="lg" className="h-12 px-8" asChild>
@@ -461,7 +461,7 @@ export function ForClientsPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
           <div>
             <p className="type-eyebrow mb-2">Скачать</p>
-            <h2 className="text-xl font-semibold tracking-tight">FitPro в магазинах</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Coachly в магазинах</h2>
           </div>
           <StoreBadges />
         </div>
@@ -473,7 +473,7 @@ export function ForClientsPage() {
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Dumbbell className="h-3.5 w-3.5" />
             </div>
-            <span className="font-semibold text-foreground">FitPro Platform</span>
+            <span className="font-semibold text-foreground">Coachly</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link to="/" className="transition-colors hover:text-foreground">
@@ -486,7 +486,7 @@ export function ForClientsPage() {
               FAQ
             </a>
           </div>
-          <p className="text-xs">© 2026 FitPro · для спортсменов и тренеров</p>
+          <p className="text-xs">© 2026 Coachly · для спортсменов и тренеров</p>
         </div>
       </footer>
     </div>

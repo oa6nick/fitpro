@@ -231,7 +231,7 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
             <LogoMark />
-            <span className="text-lg font-semibold tracking-tight">FitPro</span>
+            <span className="text-lg font-semibold tracking-tight">Coachly</span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm font-medium text-muted-foreground lg:flex">
             {[
@@ -477,7 +477,7 @@ export function LandingPage() {
         <MktSection
           eyebrow="Кому подойдёт"
           title="Если ведёте людей, а не только «чат»"
-          subtitle="FitPro для тех, у кого клиенты и сопровождение — основная работа, а не хобби в переписке."
+          subtitle="Coachly для тех, у кого клиенты и сопровождение — основная работа, а не хобби в переписке."
         >
           <MktCardGrid cols={3}>
             {AUDIENCE.map((a) => (
@@ -530,7 +530,7 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 px-4 py-10 text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2.5">
             <LogoMark size="sm" />
-            <span className="font-semibold text-foreground">FitPro Platform</span>
+            <span className="font-semibold text-foreground">Coachly</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link to="/for-clients" className="transition-colors hover:text-foreground">
@@ -546,7 +546,7 @@ export function LandingPage() {
               FAQ
             </a>
           </div>
-          <p className="text-xs">© 2026 FitPro · для тренеров и их клиентов</p>
+          <p className="text-xs">© 2026 Coachly · для тренеров и их клиентов</p>
         </div>
       </footer>
     </div>

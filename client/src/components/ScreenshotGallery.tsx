@@ -73,7 +73,7 @@ export function ScreenshotGallery({
                 <div className="overflow-hidden rounded-[1.4rem] bg-muted/30">
                   <img
                     src={s.src}
-                    alt={`${s.title} — экран FitPro`}
+                    alt={`${s.title} — экран Coachly`}
                     loading="lazy"
                     width={780}
                     height={1688}

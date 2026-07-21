@@ -20,7 +20,7 @@ function main() {
   const app = createApp();
   app.listen(env.port, env.host, () => {
     console.log(
-      `🏋️  FitPro server слушает http://${env.host}:${env.port} (БД: ${env.dbDriver}, env: ${env.nodeEnv}, фронт: ${env.serveClient ? "встроен" : "отдельно"})`,
+      `🏋️  Coachly server слушает http://${env.host}:${env.port} (БД: ${env.dbDriver}, env: ${env.nodeEnv}, фронт: ${env.serveClient ? "встроен" : "отдельно"})`,
     );
   });
 }

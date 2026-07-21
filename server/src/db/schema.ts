@@ -596,7 +596,7 @@ export const clientInvites = pgTable("client_invites", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Подписка тренера на FitPro (trial при регистрации; оплата — позже, ЮKassa). */
+/** Подписка тренера на Coachly (trial при регистрации; оплата — позже, ЮKassa). */
 export const trainerSubscriptions = pgTable("trainer_subscriptions", {
   id: uuid("id").primaryKey().defaultRandom(),
   trainerId: uuid("trainer_id")

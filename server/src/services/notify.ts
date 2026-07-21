@@ -10,7 +10,7 @@ export async function notify(userId: string, text: string, link?: string) {
   if (!userId) return;
   await db.insert(notifications).values({ userId, text, link });
 
-  void sendPushToUsers([userId], "FitPro", text, link ?? "/").catch((err) =>
+  void sendPushToUsers([userId], "Coachly", text, link ?? "/").catch((err) =>
     console.error("notify: push:", err),
   );
 }

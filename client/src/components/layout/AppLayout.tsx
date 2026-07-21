@@ -289,7 +289,7 @@ function Brand({ compact }: { compact?: boolean }) {
         <Dumbbell className="h-[18px] w-[18px]" />
       </div>
       <div className="min-w-0">
-        <p className="text-base font-bold tracking-tight">FitPro</p>
+        <p className="text-base font-bold tracking-tight">Coachly</p>
         {!compact && (
           <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
             Platform

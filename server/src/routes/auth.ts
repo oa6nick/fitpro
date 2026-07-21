@@ -75,15 +75,15 @@ authRouter.post(
       const code = await createEmailCode(user.email, "verify");
       await sendEmail({
         to: user.email,
-        subject: "Добро пожаловать в FitPro",
+        subject: "Добро пожаловать в Coachly",
         html: emailHtml({
           title: `Здравствуйте, ${user.name}!`,
           intro: `Аккаунт тренера создан, пробный период — ${TRIAL_DAYS} дней. Чтобы подтвердить почту, введите код в личном кабинете:`,
           code,
-          ctaText: "Открыть FitPro",
+          ctaText: "Открыть Coachly",
           ctaUrl: env.publicUrl,
         }),
-        text: `Добро пожаловать в FitPro! Код подтверждения почты: ${code}`,
+        text: `Добро пожаловать в Coachly! Код подтверждения почты: ${code}`,
       });
     })().catch((err) => console.error("register: welcome email:", err));
 
@@ -172,13 +172,13 @@ authRouter.post(
     const code = await createEmailCode(email, "verify");
     await sendEmail({
       to: email,
-      subject: "Подтверждение почты — FitPro",
+      subject: "Подтверждение почты — Coachly",
       html: emailHtml({
         title: "Подтвердите адрес почты",
-        intro: "Введите этот код в личном кабинете FitPro:",
+        intro: "Введите этот код в личном кабинете Coachly:",
         code,
       }),
-      text: `Код подтверждения почты FitPro: ${code} (действует 15 минут)`,
+      text: `Код подтверждения почты Coachly: ${code} (действует 15 минут)`,
     });
     res.json({ ok: true });
   }),
@@ -212,14 +212,14 @@ authRouter.post(
         const code = await createEmailCode(normalized, "reset");
         await sendEmail({
           to: normalized,
-          subject: "Сброс пароля — FitPro",
+          subject: "Сброс пароля — Coachly",
           html: emailHtml({
             title: "Сброс пароля",
             intro:
-              "Вы запросили сброс пароля в FitPro. Введите этот код на странице восстановления:",
+              "Вы запросили сброс пароля в Coachly. Введите этот код на странице восстановления:",
             code,
           }),
-          text: `Код сброса пароля FitPro: ${code} (действует 15 минут)`,
+          text: `Код сброса пароля Coachly: ${code} (действует 15 минут)`,
         });
       }
     }

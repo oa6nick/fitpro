@@ -101,7 +101,7 @@ export function TrainerDashboard() {
                 <div>
                   <p className="type-eyebrow mb-2">Старт за 10 минут</p>
                   <h2 className="text-lg font-semibold tracking-tight">
-                    Добро пожаловать в FitPro
+                    Добро пожаловать в Coachly
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Четыре шага — и вы ведёте клиентов лучше, чем в чатах и таблицах.

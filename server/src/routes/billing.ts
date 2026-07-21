@@ -49,7 +49,7 @@ billingRouter.post(
 
     const payment = await createPayment({
       amountRub: info.priceRub,
-      description: `FitPro, тариф «${info.title}», 30 дней`,
+      description: `Coachly, тариф «${info.title}», 30 дней`,
       returnUrl: `${env.publicUrl}/t?payment=done`,
       metadata: { trainerId: req.user!.sub, plan },
     });

@@ -34,7 +34,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <Dumbbell className="h-5 w-5" />
         </div>
         <div>
-          <span className="block text-lg font-semibold tracking-tight leading-none">FitPro</span>
+          <span className="block text-lg font-semibold tracking-tight leading-none">Coachly</span>
           <span className="mt-1 block text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
             Platform
           </span>

@@ -132,14 +132,14 @@ clientsRouter.post(
         .where(eq(users.id, trainerId));
       void sendEmail({
         to: email,
-        subject: "Приглашение в FitPro",
+        subject: "Приглашение в Coachly",
         html: emailHtml({
-          title: "Вас приглашают в FitPro",
-          intro: `Тренер ${escapeHtml(trainer?.name ?? "")} приглашает вас (${escapeHtml(client.name)}) в личный кабинет FitPro: тренировки, дневник, замеры и отчёты в одном месте.`,
+          title: "Вас приглашают в Coachly",
+          intro: `Тренер ${escapeHtml(trainer?.name ?? "")} приглашает вас (${escapeHtml(client.name)}) в личный кабинет Coachly: тренировки, дневник, замеры и отчёты в одном месте.`,
           ctaText: "Принять приглашение",
           ctaUrl: link,
         }),
-        text: `Тренер приглашает вас в FitPro. Ссылка: ${link} (действует 7 дней)`,
+        text: `Тренер приглашает вас в Coachly. Ссылка: ${link} (действует 7 дней)`,
       }).catch((err) => console.error("invite email:", err));
     }
 

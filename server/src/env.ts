@@ -51,7 +51,7 @@ export const env = {
   trustProxy: bool("TRUST_PROXY", isProd),
   // Почта: off — письма не шлются, коды логируются в консоль (dev без ключей).
   emailProvider: str("EMAIL_PROVIDER", "off") as "resend" | "smtp" | "off",
-  emailFrom: str("EMAIL_FROM", "FitPro <hello@oasixlab.com>"),
+  emailFrom: str("EMAIL_FROM", "Coachly <hello@oasixlab.com>"),
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   smtpHost: process.env.SMTP_HOST ?? "",
   smtpPort: num("SMTP_PORT", 465),

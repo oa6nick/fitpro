@@ -58,7 +58,7 @@ export function JoinPage() {
       <AuthCard>
         <CardHeader className="space-y-2 text-center">
           <CardTitle className="type-page-title">
-            {invite ? `Привет, ${invite.clientName}!` : "Приглашение в FitPro"}
+            {invite ? `Привет, ${invite.clientName}!` : "Приглашение в Coachly"}
           </CardTitle>
           <CardDescription className="text-balance leading-relaxed">
             {notFound ? (
