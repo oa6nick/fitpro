@@ -40,3 +40,42 @@ workflows:
           fi
     artifacts:
       - mobile/ios/FitPro.app.zip
+
+  # Релизная сборка в TestFlight. Требует в Codemagic UI интеграцию
+  # App Store Connect API с именем РОВНО `appstore_key` (Settings → Integrations →
+  # Developer Portal). Сертификат распространения и provisioning profile
+  # Codemagic выпускает сам через этот ключ — руками в Apple Developer не лезем.
+  ios-release:
+    name: Coachly iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: appstore_key
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.oasixlab.fitpro
+      xcode: latest
+    scripts:
+      - name: Generate Xcode project (XcodeGen)
+        script: |
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          cd mobile/ios
+          # Номер сборки должен быть уникальным: App Store Connect отклоняет
+          # повторную загрузку с тем же CURRENT_PROJECT_VERSION.
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \"1\"/CURRENT_PROJECT_VERSION: \"$BUILD_NUMBER\"/" project.yml
+          xcodegen
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --project "mobile/ios/FitPro.xcodeproj" \
+            --scheme "FitPro"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
