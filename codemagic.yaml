@@ -4,7 +4,7 @@
 # в переменных workflow задать APPETIZE_TOKEN (значение из СЕКРЕТЫ) → Start build.
 workflows:
   ios-simulator:
-    name: FitPro iOS Simulator → Appetize
+    name: "ДЕМО: симулятор в браузере (Appetize) — НЕ для TestFlight"
     instance_type: mac_mini_m2
     max_build_duration: 30
     # APPETIZE_TOKEN (Secret) и опц. APPETIZE_IOS_KEY задаются в UI Codemagic
@@ -50,7 +50,7 @@ workflows:
   # если App ID ещё не заведён. `fetch-signing-files --create` создаёт в Apple
   # и App ID, и сертификат, и профиль — руками в Developer Portal лезть не нужно.
   ios-release:
-    name: Coachly iOS TestFlight
+    name: "РЕЛИЗ: Coachly → App Store Connect / TestFlight"
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
