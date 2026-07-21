@@ -16,6 +16,12 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.oasixlab.fitpro
+        # Только iPhone. Иначе Apple требует все четыре ориентации ради
+        # iPad-мультитаскинга (ошибка 90474), а интерфейс у нас портретный.
+        TARGETED_DEVICE_FAMILY: "1"
+        # Иконка приложения из Assets.xcassets: без неё загрузка отклоняется
+        # с «Missing Info.plist value CFBundleIconName» (ошибка 90713).
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.10"
