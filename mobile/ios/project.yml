@@ -33,5 +33,8 @@ targets:
         # статусом «Missing Compliance» и не раздаётся тестировщикам.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        # Приложение открывает галерею (фото прогресса в замерах и фото в отчётах).
+        # Без пояснения Apple отклоняет загрузку: ITMS-90683 Missing Purpose String.
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Чтобы прикрепить фото прогресса к замерам и отчётам. Их видит только ваш тренер."
         # Geist подключается после добавления TTF в FitPro/Resources/Fonts (см. README).
         # INFOPLIST_KEY_UIAppFonts: ...
