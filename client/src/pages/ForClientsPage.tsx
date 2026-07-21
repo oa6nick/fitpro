@@ -18,51 +18,62 @@ import {
   Activity,
   Archive,
   Snowflake,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StoreBadges } from "@/components/StoreBadges";
+import { ScreenshotGallery } from "@/components/ScreenshotGallery";
+import { cn } from "@/lib/utils";
 
 const CLIENT_FEATURES = [
   {
     icon: Dumbbell,
     title: "Программа всегда с собой",
-    text: "Тренировки от тренера — в телефоне: упражнения с техникой и видео, суперсеты, равноценные замены. Никаких скриншотов и PDF в переписке.",
+    text: "Упражнения с техникой и видео, суперсеты и замены — без скриншотов в переписке.",
+    wide: true,
   },
   {
     icon: Timer,
     title: "Дневник в два тапа",
-    text: "Отмечайте вес, повторы и ощущения прямо между подходами. Таймер отдыха сам подскажет паузу, «отметить все» — когда всё по плану.",
+    text: "Вес, повторы и ощущения между подходами. Таймер отдыха и «отметить все».",
+    wide: false,
   },
   {
-    icon: Ruler,
-    title: "Замеры и фото «до/после»",
-    text: "Вес, талия, бёдра и рабочие веса — на графиках. Фото прогресса хранятся рядом и видны только вашему тренеру.",
+    icon: LineChart,
+    title: "Прогресс на графиках",
+    text: "Тоннаж, оценка 1ПМ, серия недель и замеры — видно, что работает.",
+    wide: false,
   },
   {
     icon: CheckSquare,
     title: "Привычки недели",
-    text: "Шаги, вода, сон — отметки по дням, процент соблюдения считается сам. Видно, что действительно даёт результат.",
+    text: "Шаги, вода, сон — отметки по дням, % соблюдения считается сам.",
+    wide: false,
   },
   {
     icon: FileText,
     title: "Отчёты без нервов",
-    text: "Раз в неделю — короткая форма от тренера вместо длинного сообщения. Статус «проверен» и комментарий приходят в кабинет.",
+    text: "Короткая форма раз в неделю вместо длинного сообщения тренеру.",
+    wide: false,
   },
   {
     icon: BookOpen,
     title: "Материалы по этапам",
-    text: "Гайды и разборы от тренера открываются по неделям сопровождения — ровно тогда, когда они вам нужны.",
+    text: "Гайды открываются по неделям — ровно когда нужны.",
+    wide: false,
   },
   {
     icon: Award,
-    title: "Стрики и достижения",
-    text: "Бейджи за регулярность и серия недель без пропусков — маленькая победа каждую неделю держит мотивацию.",
+    title: "Стрики и бейджи",
+    text: "Серия недель и маленькие победы держат мотивацию.",
+    wide: false,
   },
   {
     icon: Bell,
     title: "Ничего не забудете",
-    text: "Напоминания о тренировке, отчёте и продлении — в кабинете и пушем в браузер.",
+    text: "Напоминания о тренировке, отчёте и продлении — в кабинете.",
+    wide: false,
   },
 ];
 
@@ -70,22 +81,22 @@ const BENEFITS = [
   {
     icon: MessageCircle,
     title: "Тренер реагирует вовремя",
-    text: "Тренер видит ваш дневник и динамику сразу, а не «в конце месяца» — план корректируется, пока это важно.",
+    text: "Дневник и динамика видны сразу — план корректируется, пока это важно.",
   },
   {
     icon: LineChart,
     title: "Прогресс видно глазами",
-    text: "Графики весов и замеров показывают результат, даже когда кажется, что «ничего не меняется».",
+    text: "Графики показывают результат, даже когда кажется, что «ничего не меняется».",
   },
   {
     icon: Timer,
     title: "2 минуты в день",
-    text: "Вся отчётность — отметки по ходу тренировки и короткая форма раз в неделю. Остальное платформа делает сама.",
+    text: "Отметки по ходу тренировки и короткая форма раз в неделю.",
   },
   {
     icon: Smartphone,
     title: "Ничего не теряется",
-    text: "Программа не в скриншотах, замеры не в заметках, оплата не в голове — всё в одном кабинете.",
+    text: "Программа, замеры и оплата — в одном кабинете, не в чатах.",
   },
 ];
 
@@ -93,21 +104,23 @@ const STEPS = [
   {
     n: "1",
     title: "Тренер присылает ссылку",
-    text: "Кабинет клиента создаёт ваш тренер — попросите у него ссылку-приглашение.",
+    text: "Кабинет создаёт ваш тренер. Попросите у него приглашение.",
+    detail: "1 минута",
   },
   {
     n: "2",
     title: "Придумываете пароль",
-    text: "Минута на вход — и анкета, программа и материалы уже на месте.",
+    text: "Вход по ссылке — и анкета с программой уже на месте.",
+    detail: "Без карты",
   },
   {
     n: "3",
     title: "Тренируетесь и отмечаете",
-    text: "Ведёте дневник и сдаёте замеры с телефона — тренер видит прогресс и ведёт вас к цели.",
+    text: "Дневник и замеры с телефона. Тренер видит прогресс и ведёт к цели.",
+    detail: "В зале",
   },
 ];
 
-// Только мобильные экраны кабинета клиента.
 const CLIENT_SCREENS = [
   {
     src: "/screens/m-client-home.png",
@@ -136,60 +149,59 @@ const CLIENT_SCREENS = [
   },
 ];
 
-// Тизер платных доп-возможностей клиента — пока «скоро», без цен.
 const PLUS_FEATURES = [
   {
     icon: LineChart,
     title: "Расширенная аналитика",
-    text: "Оценка 1ПМ, тоннаж по неделям и сравнение периодов «до/после».",
+    text: "1ПМ, тоннаж по неделям и сравнение периодов «до/после».",
   },
   {
     icon: Camera,
     title: "PDF-книга прогресса",
-    text: "Красивый отчёт с фото «до/после» и графиками — сохранить или показать.",
+    text: "Отчёт с фото и графиками — сохранить или показать.",
   },
   {
     icon: Activity,
     title: "Apple Health и Garmin",
-    text: "Шаги и сон подтягиваются сами — привычки отмечаются без рук.",
+    text: "Шаги и сон подтягиваются сами.",
   },
   {
     icon: Sparkles,
     title: "AI-разбор техники",
-    text: "Загрузите видео упражнения — получите разбор, который увидит и тренер.",
+    text: "Видео упражнения → разбор, который видит и тренер.",
   },
   {
     icon: Snowflake,
     title: "Заморозка стрика",
-    text: "Отпуск или болезнь не обнулят серию — стрик можно поставить на паузу.",
+    text: "Отпуск не обнулит серию — стрик на паузу.",
   },
   {
     icon: Archive,
     title: "Архив после сопровождения",
-    text: "Доступ к своей истории тренировок и замеров даже после окончания работы с тренером.",
+    text: "История тренировок остаётся с вами.",
   },
 ];
 
 const FAQ = [
   {
     q: "Сколько это стоит для меня?",
-    a: "Кабинет клиента бесплатный — платформу оплачивает ваш тренер. Дополнительные возможности FitPro+ появятся позже и будут по желанию.",
+    a: "Кабинет клиента бесплатный — платформу оплачивает ваш тренер. FitPro+ появится позже и будет по желанию.",
   },
   {
     q: "Как получить доступ?",
-    a: "Только через тренера: он создаёт вашу карточку и присылает ссылку-приглашение. По ней вы придумываете пароль — и кабинет готов.",
+    a: "Только через тренера: ссылка-приглашение → пароль → кабинет готов.",
   },
   {
     q: "Нужно ли ставить приложение?",
-    a: "Нет — кабинет работает в браузере телефона по ссылке. Нативное iOS-приложение уже в разработке и скоро появится в App Store.",
+    a: "Нет — веб в браузере телефона. Нативные приложения — в RuStore и скоро в App Store / Google Play.",
   },
   {
     q: "Кто видит мои данные и фото?",
-    a: "Только ваш тренер. Фото и замеры хранятся в изолированной базе, доступ в кабинет — по защищённой сессии.",
+    a: "Только ваш тренер. Доступ по защищённой сессии.",
   },
   {
-    q: "Мой тренер ещё не в FitPro. Что делать?",
-    a: "Покажите ему платформу: у тренера есть 14 дней бесплатного полного доступа. Вам достаточно отправить ссылку на главную страницу.",
+    q: "Мой тренер ещё не в FitPro?",
+    a: "Отправьте ему fitpro.oasixlab.com — 14 дней бесплатно для тренера.",
   },
 ];
 
@@ -204,11 +216,10 @@ export function ForClientsPage() {
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">
-      {/* Навигация */}
       <header className="glass-header sticky top-0 z-40 border-b border-border/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-glow">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Dumbbell className="h-[18px] w-[18px]" />
             </div>
             <span className="text-lg font-semibold tracking-tight">FitPro</span>
@@ -216,6 +227,7 @@ export function ForClientsPage() {
           <nav className="hidden items-center gap-1 text-sm font-medium text-muted-foreground lg:flex">
             {[
               { href: "#features", label: "Что внутри" },
+              { href: "#app", label: "Экраны" },
               { href: "#how", label: "Как начать" },
               { href: "#plus", label: "FitPro+" },
               { href: "#faq", label: "Вопросы" },
@@ -223,21 +235,21 @@ export function ForClientsPage() {
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
+                className="rounded-lg px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
             <Link
               to="/"
-              className="rounded-full px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
             >
               Я тренер
             </Link>
           </nav>
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
-            <Button size="sm" className="shadow-glow" asChild>
+            <Button size="sm" asChild>
               <Link to="/login">
                 Войти <ArrowRight className="h-3.5 w-3.5" />
               </Link>
@@ -248,125 +260,136 @@ export function ForClientsPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-mesh" aria-hidden />
-        <div className="mx-auto max-w-6xl px-4 py-20 text-center md:py-28">
-          <div className="glass-card mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 shadow-surface">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15">
-              <Smartphone className="h-3 w-3 text-primary" />
-            </span>
-            <span className="type-eyebrow !tracking-[0.16em]">Кабинет клиента FitPro</span>
+        <div
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% -10%, hsl(var(--primary) / 0.12), transparent 55%), linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted) / 0.35) 100%)",
+          }}
+          aria-hidden
+        />
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-[1.05fr_0.95fr] md:py-24 lg:gap-14">
+          <div className="text-center md:text-left">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-surface">
+              <Smartphone className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Кабинет клиента
+              </span>
+            </div>
+            <h1 className="type-display mx-auto max-w-xl text-balance md:mx-0">
+              Тренируйтесь по плану —{" "}
+              <span className="text-primary">без хаоса в чатах</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg md:mx-0">
+              Программа, дневник, замеры и отчёты — в телефоне. Вы отмечаете подходы, тренер
+              видит прогресс и вовремя правит план.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
+              <Button size="lg" className="h-12 px-8" asChild>
+                <Link to="/login">
+                  Войти по приглашению <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 px-7" asChild>
+                <Link to="/">Я тренер</Link>
+              </Button>
+            </div>
+            <ul className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground md:justify-start">
+              {["Для клиента бесплатно", "Доступ по ссылке тренера", "Работает в браузере"].map(
+                (t) => (
+                  <li key={t} className="inline-flex items-center gap-1.5">
+                    <Check className="h-3.5 w-3.5 text-primary" />
+                    {t}
+                  </li>
+                ),
+              )}
+            </ul>
           </div>
-          <h1 className="type-display mx-auto max-w-3xl text-balance">
-            Ваш тренер —{" "}
-            <span className="bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent">
-              в одном кабинете
-            </span>{" "}
-            с вами
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-[1.75] text-muted-foreground sm:text-lg">
-            Программа, дневник тренировок, замеры, отчёты и материалы — в телефоне,
-            а не в переписке. Вы тренируетесь и отмечаете — тренер видит прогресс
-            и вовремя корректирует план.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button size="lg" className="h-12 px-8 shadow-glow" asChild>
-              <Link to="/login">
-                Войти по приглашению <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="h-12 px-7" asChild>
-              <Link to="/">Я тренер — мне сюда</Link>
-            </Button>
+          <div className="relative mx-auto w-[min(100%,260px)] md:w-[280px]">
+            <div
+              className="pointer-events-none absolute -inset-8 -z-10 rounded-full opacity-60 blur-3xl"
+              style={{
+                background:
+                  "radial-gradient(circle, hsl(var(--primary) / 0.25), transparent 65%)",
+              }}
+              aria-hidden
+            />
+            <div className="overflow-hidden rounded-[2rem] border border-border bg-card p-2 shadow-panel ring-1 ring-black/5 dark:ring-white/5">
+              <div className="absolute inset-x-0 top-0 z-10 flex justify-center pt-4">
+                <div className="h-1.5 w-16 rounded-full bg-foreground/12" />
+              </div>
+              <img
+                src="/screens/m-client-home.png"
+                alt="Главная клиента FitPro"
+                className="aspect-[9/19.5] w-full rounded-[1.55rem] object-cover object-top"
+                width={780}
+                height={1688}
+              />
+            </div>
           </div>
-          <p className="mt-5 text-xs text-muted-foreground">
-            Для клиента бесплатно · доступ по ссылке-приглашению от тренера
-          </p>
         </div>
       </section>
 
-      {/* Бенефиты-строка */}
-      <section className="border-y border-border/50">
-        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-10 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+      {/* Benefits strip */}
+      <section className="border-y border-border/60">
+        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
           {BENEFITS.map((b) => (
             <div
               key={b.title}
-              className="group relative overflow-hidden rounded-panel border border-border/60 bg-card/70 p-5 shadow-surface backdrop-blur-sm transition-all duration-300 ease-spring hover:-translate-y-1 hover:border-primary/25 hover:shadow-panel"
+              className="rounded-2xl border border-border bg-card p-5 shadow-surface transition-colors hover:border-primary/30"
             >
-              <div className="icon-well mb-3 h-10 w-10">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
                 <b.icon className="h-5 w-5" />
               </div>
-              <p className="font-semibold">{b.title}</p>
+              <p className="font-semibold tracking-tight">{b.title}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{b.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Возможности клиента */}
+      {/* Features bento */}
       <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <div className="mb-12 text-center">
           <p className="type-eyebrow mb-3">Что внутри</p>
           <h2 className="type-section-title">Всё для результата — без хаоса</h2>
-          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-            Восемь инструментов, которые заменяют скриншоты программ, заметки с весами
-            и длинные отчёты в мессенджере.
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            Инструменты, которые заменяют скриншоты программ, заметки с весами и длинные отчёты в
+            мессенджере.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {CLIENT_FEATURES.map((f) => (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {CLIENT_FEATURES.map((f, i) => (
             <div
               key={f.title}
-              className="group relative overflow-hidden rounded-panel border border-border/70 bg-card p-5 shadow-surface transition-all duration-300 ease-spring hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-panel"
+              className={cn(
+                "group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-surface transition-all hover:border-primary/30 hover:shadow-panel",
+                f.wide && "sm:col-span-2 lg:col-span-2",
+                i === 0 && "bg-gradient-to-br from-primary/[0.08] via-card to-card",
+              )}
             >
-              <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
-              <div className="icon-well mb-4 h-11 w-11">
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/12 text-primary">
                 <f.icon className="h-5 w-5" />
               </div>
-              <h3 className="font-semibold leading-snug">{f.title}</h3>
+              <h3 className="font-semibold tracking-tight">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+              <div className="mt-4 h-0.5 w-8 rounded-full bg-primary/40 transition-all group-hover:w-12 group-hover:bg-primary" />
             </div>
           ))}
         </div>
       </section>
 
-      {/* Скриншоты клиентской части */}
-      <section className="border-y border-border/50 bg-muted/30">
+      {/* Screens + lightbox */}
+      <section id="app" className="scroll-mt-20 border-y border-border/60 bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <div className="mb-12 text-center">
+          <div className="mb-10 text-center">
             <p className="type-eyebrow mb-3">В телефоне</p>
-            <h2 className="type-section-title">Кабинет, который приятно открывать</h2>
-            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-              Живые мобильные экраны. Веб уже работает с телефона; приложения — в RuStore и
-              скоро в App Store / Google Play.
+            <h2 className="type-section-title">Нажмите — откроется крупно</h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+              Пять живых экранов кабинета. Клик по телефону — полноэкранный просмотр.
             </p>
           </div>
-          <div className="scroll-rail -mx-4 overflow-x-auto px-4 pb-3">
-            <div className="flex snap-x snap-mandatory gap-5 md:justify-center md:gap-6">
-              {CLIENT_SCREENS.map((s) => (
-                <figure key={s.src} className="w-[200px] shrink-0 snap-center sm:w-[210px]">
-                  <div className="group relative overflow-hidden rounded-[1.85rem] border border-border bg-card p-1.5 shadow-panel ring-1 ring-black/5 transition-transform duration-300 hover:-translate-y-1 dark:ring-white/5">
-                    <div className="absolute inset-x-0 top-0 z-10 flex justify-center pt-2.5">
-                      <div className="h-1.5 w-16 rounded-full bg-foreground/12" />
-                    </div>
-                    <div className="overflow-hidden rounded-[1.4rem] bg-muted/30">
-                      <img
-                        src={s.src}
-                        alt={`${s.title} — мобильный экран FitPro`}
-                        loading="lazy"
-                        width={780}
-                        height={1688}
-                        className="block aspect-[9/19.5] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                  </div>
-                  <figcaption className="mt-3.5 text-center">
-                    <p className="text-sm font-semibold">{s.title}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{s.text}</p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
+          <ScreenshotGallery screens={CLIENT_SCREENS} />
         </div>
       </section>
 
@@ -376,58 +399,75 @@ export function ForClientsPage() {
           <p className="type-eyebrow mb-3">Как начать</p>
           <h2 className="type-section-title">Три шага до первого дневника</h2>
         </div>
-        <div className="relative mx-auto grid max-w-4xl gap-4 md:grid-cols-3 md:gap-5">
-          <div
-            className="pointer-events-none absolute left-[16%] right-[16%] top-8 hidden h-px bg-gradient-to-r from-primary/10 via-primary/40 to-primary/10 md:block"
-            aria-hidden
-          />
-          {STEPS.map((s) => (
-            <div
-              key={s.n}
-              className="glass-card relative rounded-panel p-6 transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-panel"
-            >
-              <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-glow">
-                0{s.n}
+        <ol className="mx-auto grid max-w-4xl gap-4 md:grid-cols-3">
+          {STEPS.map((s, i) => (
+            <li key={s.n} className="relative">
+              <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-surface">
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
+                    {s.n}
+                  </span>
+                  <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {s.detail}
+                  </span>
+                </div>
+                <h3 className="text-lg font-semibold tracking-tight">{s.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
+                {i < STEPS.length - 1 && (
+                  <p className="mt-4 hidden text-xs font-medium text-primary md:block">
+                    далее →
+                  </p>
+                )}
               </div>
-              <h3 className="font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
-            </div>
+            </li>
           ))}
+        </ol>
+        <div className="mt-10 text-center">
+          <Button size="lg" asChild>
+            <Link to="/login">
+              У меня уже есть ссылка <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
       {/* FitPro+ */}
-      <section id="plus" className="scroll-mt-20 border-y border-border/50 bg-muted/30">
+      <section id="plus" className="scroll-mt-20 border-y border-border/60">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <div className="mb-12 text-center">
-            <div className="glass-card mx-auto mb-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 shadow-surface">
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span className="type-eyebrow">FitPro+ · скоро</span>
-            </div>
-            <h2 className="type-section-title">Больше, чем дневник</h2>
-            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-              Необязательные платные возможности для тех, кто хочет выжать из данных максимум.
-              Базовый кабинет был и останется бесплатным.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {PLUS_FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="glass-card rounded-panel p-5 transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-panel"
-              >
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="icon-well h-10 w-10">
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                    скоро
-                  </span>
-                </div>
-                <h3 className="font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+          <div className="relative overflow-hidden rounded-hero border border-primary/20 bg-gradient-to-br from-primary/[0.09] via-card to-card p-8 shadow-panel sm:p-10 md:p-12">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative mb-10 max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  FitPro+ · скоро
+                </span>
               </div>
-            ))}
+              <h2 className="type-section-title">Больше, чем дневник</h2>
+              <p className="mt-3 leading-relaxed text-muted-foreground">
+                Необязательные возможности для тех, кто хочет выжать из данных максимум. Базовый
+                кабинет был и останется бесплатным.
+              </p>
+            </div>
+            <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {PLUS_FEATURES.map((f) => (
+                <div
+                  key={f.title}
+                  className="rounded-2xl border border-border/80 bg-card/90 p-5 shadow-surface backdrop-blur-sm transition-colors hover:border-primary/30"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                      <f.icon className="h-5 w-5" />
+                    </div>
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      скоро
+                    </span>
+                  </div>
+                  <h3 className="font-semibold tracking-tight">{f.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -436,21 +476,21 @@ export function ForClientsPage() {
       <section id="faq" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
         <div className="mb-10 text-center">
           <p className="type-eyebrow mb-3">FAQ</p>
-          <h2 className="type-section-title">Частые вопросы клиентов</h2>
+          <h2 className="type-section-title">Частые вопросы</h2>
         </div>
         <div className="space-y-3">
           {FAQ.map((item) => (
             <details
               key={item.q}
-              className="group glass-card rounded-panel px-5 py-4 transition-shadow open:shadow-panel"
+              className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-surface open:shadow-panel"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden">
                 <span className="pr-2">{item.q}</span>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground transition-all duration-200 group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
                   +
                 </span>
               </summary>
-              <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 border-t border-border/60 pt-3 text-sm leading-relaxed text-muted-foreground">
                 {item.a}
               </p>
             </details>
@@ -459,20 +499,27 @@ export function ForClientsPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-4 pb-20 md:pb-24">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-hero border border-border/60 bg-card shadow-panel">
-          <div className="pointer-events-none absolute inset-0 bg-mesh" aria-hidden />
+      <section className="px-4 pb-16 md:pb-20">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-hero border border-border bg-card shadow-panel">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 50% 80% at 0% 50%, hsl(var(--primary) / 0.12), transparent 55%)",
+            }}
+            aria-hidden
+          />
           <div className="relative flex flex-col items-start justify-between gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-14">
             <div className="max-w-xl">
               <p className="type-eyebrow mb-3">Начните сегодня</p>
               <h2 className="type-section-title">Попросите тренера про FitPro</h2>
               <p className="mt-3 leading-relaxed text-muted-foreground">
-                Есть ссылка-приглашение — входите и тренируйтесь. Нет — отправьте тренеру
-                ссылку на FitPro: у него будет 14 дней бесплатно, а у вас — нормальный кабинет.
+                Есть ссылка — входите. Нет — отправьте тренеру fitpro.oasixlab.com: 14 дней
+                бесплатно ему, нормальный кабинет — вам.
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
-              <Button size="lg" className="h-12 px-8 shadow-glow" asChild>
+              <Button size="lg" className="h-12 px-8" asChild>
                 <Link to="/login">
                   Войти в кабинет <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -485,7 +532,6 @@ export function ForClientsPage() {
         </div>
       </section>
 
-      {/* Сторы */}
       <section className="border-t border-border/50 bg-muted/25">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
           <div>
@@ -496,7 +542,6 @@ export function ForClientsPage() {
         </div>
       </section>
 
-      {/* Футер */}
       <footer className="border-t border-border/50">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2.5">
@@ -505,7 +550,7 @@ export function ForClientsPage() {
             </div>
             <span className="font-semibold text-foreground">FitPro Platform</span>
           </div>
-          <p className="text-xs">© 2026 FitPro · ОС для онлайн-тренера</p>
+          <p className="text-xs">© 2026 FitPro · для спортсменов и тренеров</p>
         </div>
       </footer>
     </div>

@@ -21,56 +21,85 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StoreBadges } from "@/components/StoreBadges";
+import { ScreenshotGallery } from "@/components/ScreenshotGallery";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
   {
     icon: Users,
-    title: "CRM и воронка клиентов",
-    text: "Канбан по статусам: заявка → анкета → созвон → оплата → активный. Авто-метка «зона риска» при 7+ днях без активности.",
+    title: "CRM и воронка",
+    text: "Канбан: заявка → анкета → созвон → оплата → активный. Авто-метка «зона риска» при 7+ днях без активности.",
+    span: "lg:col-span-2",
   },
   {
     icon: ClipboardList,
-    title: "Конструктор тренировок",
-    text: "Библиотека упражнений с техникой и видео. Соберите программу и назначьте клиенту в один клик.",
+    title: "Конструктор программ",
+    text: "Библиотека с техникой и видео. Суперсеты, отдых 30с–5м, назначение в один клик.",
+    span: "",
   },
   {
     icon: Dumbbell,
-    title: "Кабинет и дневник клиента",
-    text: "Клиент видит программу, вводит подходы, вес и ощущения, отмечает выполнение — прямо с телефона.",
+    title: "Дневник в зале",
+    text: "Клиент вводит подходы, вес и ощущения с телефона. Таймер отдыха и sticky «Завершить».",
+    span: "",
   },
   {
     icon: LineChart,
-    title: "Аналитика прогресса",
-    text: "Прогрессия рабочих весов, посещаемость, % плана, субъективная тяжесть и динамика замеров.",
+    title: "Аналитика",
+    text: "Тоннаж, оценка 1ПМ, рост рабочих весов, посещаемость и замеры — для тренера и клиента.",
+    span: "lg:col-span-2",
   },
   {
     icon: FileText,
-    title: "Отчёты-конструктор",
-    text: "Своя форма еженедельного отчёта. Статусы «ожидает проверки / проверен / пропущен» — ничего не теряется.",
+    title: "Отчёты",
+    text: "Своя форма недели. Статусы проверки — ничего не теряется в чатах.",
+    span: "",
   },
   {
     icon: CheckSquare,
-    title: "Задачи и привычки",
-    text: "Недельные привычки (шаги, вода, сон) с отметками по дням и автоматическим % соблюдения.",
+    title: "Привычки",
+    text: "Шаги, вода, сон — отметки по дням и % соблюдения автоматически.",
+    span: "",
   },
   {
     icon: BookOpen,
     title: "База знаний",
-    text: "Материалы по категориям с поэтапным открытием по неделям сопровождения.",
+    text: "Материалы с поэтапным открытием по неделям сопровождения.",
+    span: "",
   },
   {
     icon: Wallet,
     title: "Финансы",
-    text: "История оплат, статусы и продления, напоминания клиенту — без сторонних таблиц.",
+    text: "Оплаты, продления и напоминания — без сторонних таблиц.",
+    span: "",
   },
 ];
 
 const STEPS = [
-  { n: "01", title: "Заводите клиента", text: "Создаёте карточку, клиент заполняет анкету в своём кабинете." },
-  { n: "02", title: "Собираете программу", text: "Из библиотеки упражнений и шаблонов — назначаете в один клик." },
-  { n: "03", title: "Клиент тренируется", text: "Ведёт дневник, сдаёт замеры, фото и отчёты со смартфона." },
-  { n: "04", title: "Видите прогресс", text: "Графики, посещаемость и сводка рисков — на одном экране." },
+  {
+    n: "01",
+    title: "Заводите клиента",
+    text: "Карточка + ссылка-приглашение. Клиент заполняет анкету сам.",
+    tip: "2 минуты",
+  },
+  {
+    n: "02",
+    title: "Собираете программу",
+    text: "Из библиотеки упражнений — шаблон и назначение в один клик.",
+    tip: "Конструктор",
+  },
+  {
+    n: "03",
+    title: "Клиент тренируется",
+    text: "Дневник, замеры и отчёты со смартфона. Вы видите логи сразу.",
+    tip: "В зале",
+  },
+  {
+    n: "04",
+    title: "Корректируете план",
+    text: "Графики, зона риска и проверка тренировок — на одном экране.",
+    tip: "Аналитика",
+  },
 ];
 
 // Цифры синхронизированы с серверным прайсом (server/src/services/plans.ts).
@@ -98,7 +127,7 @@ const AUDIENCE = [
   },
 ];
 
-// Только мобильные экраны (390×844) — галерея в phone-frame.
+// 5 лучших мобильных экранов + lightbox.
 const APP_SCREENS = [
   {
     src: "/screens/m-trainer-home.png",
@@ -109,14 +138,8 @@ const APP_SCREENS = [
   {
     src: "/screens/m-trainer-clients.png",
     role: "Тренер",
-    title: "Клиенты",
-    text: "CRM и статусы воронки",
-  },
-  {
-    src: "/screens/m-trainer-client.png",
-    role: "Тренер",
-    title: "Карточка",
-    text: "Клиент, шаги воронки, программа",
+    title: "CRM",
+    text: "Воронка клиентов в кармане",
   },
   {
     src: "/screens/m-trainer-analytics.png",
@@ -125,34 +148,16 @@ const APP_SCREENS = [
     text: "Тоннаж, 1ПМ, динамика весов",
   },
   {
-    src: "/screens/m-trainer-templates.png",
-    role: "Тренер",
-    title: "Программы",
-    text: "Конструктор с отдыхом и суперсетами",
-  },
-  {
-    src: "/screens/m-client-home.png",
-    role: "Клиент",
-    title: "Главная",
-    text: "Ближайшая тренировка под рукой",
-  },
-  {
-    src: "/screens/m-client-workouts.png",
-    role: "Клиент",
-    title: "Тренировки",
-    text: "План и история со статусами",
-  },
-  {
     src: "/screens/m-client-diary.png",
     role: "Клиент",
     title: "Дневник",
-    text: "Подходы, таймер, завершить",
+    text: "Подходы и таймер — прямо в зале",
   },
   {
     src: "/screens/m-client-progress.png",
     role: "Клиент",
     title: "Прогресс",
-    text: "Тоннаж, серия, замеры",
+    text: "Тоннаж, серия и замеры",
   },
 ];
 
@@ -400,102 +405,85 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Возможности */}
+      {/* Возможности — bento */}
       <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
           eyebrow="Возможности"
-          title="Всё, что нужно онлайн-тренеру"
-          subtitle="Восемь модулей вместо десятка разрозненных инструментов. Чисто, быстро, на русском."
+          title="Один кабинет вместо десяти инструментов"
+          subtitle="CRM, программы, дневник, аналитика и финансы — на русском, без хаоса в Telegram и таблицах."
         />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, i) => (
             <div
               key={f.title}
-              className="group relative flex flex-col overflow-hidden rounded-panel border border-border/70 bg-card p-5 shadow-surface transition-all duration-300 ease-spring hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-panel"
+              className={cn(
+                "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-surface transition-all duration-200 hover:border-primary/35 hover:shadow-panel",
+                f.span,
+                i === 0 && "bg-gradient-to-br from-primary/[0.07] via-card to-card",
+                i === 3 && "bg-gradient-to-br from-card via-card to-primary/[0.06]",
+              )}
             >
-              <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 transition-all group-hover:from-primary/20 group-hover:shadow-glow">
-                <f.icon className="h-5 w-5 text-primary" />
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/12 text-primary ring-1 ring-primary/10">
+                  <f.icon className="h-5 w-5" />
+                </div>
+                <span className="text-[11px] font-bold tabular-nums text-muted-foreground/50">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
               </div>
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
-                {String(i + 1).padStart(2, "0")}
-              </p>
-              <h3 className="font-semibold leading-snug">{f.title}</h3>
+              <h3 className="text-base font-semibold tracking-tight">{f.title}</h3>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+              <div className="mt-4 h-0.5 w-8 rounded-full bg-primary/40 transition-all group-hover:w-14 group-hover:bg-primary" />
             </div>
           ))}
         </div>
       </section>
 
       {/* Как это работает */}
-      <section id="how" className="scroll-mt-20 border-y border-border/50 bg-muted/30">
+      <section id="how" className="scroll-mt-20 border-y border-border/60 bg-muted/35">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
           <SectionHeading
             eyebrow="Как это работает"
-            title="Сквозной сценарий тренер ↔ клиент"
-            subtitle="От заявки до прогресса на графиках — без переключения между сервисами."
+            title="От заявки до прогресса — четыре шага"
+            subtitle="Сквозной сценарий тренер ↔ клиент без переключений между сервисами."
           />
-          <div className="relative grid gap-4 md:grid-cols-4 md:gap-5">
-            {/* connector line desktop */}
-            <div
-              className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-8 hidden h-px bg-gradient-to-r from-primary/10 via-primary/40 to-primary/10 md:block"
-              aria-hidden
-            />
-            {STEPS.map((s) => (
-              <div
-                key={s.n}
-                className="glass-card relative rounded-panel p-6 transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-panel"
-              >
-                <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-bold tracking-wide text-primary-foreground shadow-glow">
-                  {s.n}
+          <ol className="grid gap-4 md:grid-cols-4 md:gap-0">
+            {STEPS.map((s, i) => (
+              <li key={s.n} className="relative flex md:block">
+                {i < STEPS.length - 1 && (
+                  <span
+                    className="absolute left-6 top-14 hidden h-[calc(100%-2rem)] w-px bg-border md:left-auto md:right-0 md:top-8 md:h-px md:w-full md:bg-gradient-to-r md:from-primary/40 md:to-primary/10"
+                    aria-hidden
+                  />
+                )}
+                <div className="relative z-[1] flex w-full flex-col rounded-2xl border border-border bg-card p-5 shadow-surface md:mx-1.5 md:min-h-[220px]">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
+                      {s.n}
+                    </span>
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {s.tip}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-semibold tracking-tight">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
                 </div>
-                <h3 className="font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* Приложение — только mobile screens */}
+      {/* Приложение — 5 mobile + lightbox */}
       <section id="app" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
           eyebrow="В телефоне"
-          title="FitPro в зале — с экрана смартфона"
-          subtitle="Живые мобильные экраны кабинета тренера и клиента. Листайте вбок."
+          title="Нажмите на экран — откроется крупно"
+          subtitle="Пять живых мобильных кадров. Клик или «Открыть крупно» — полноэкранный просмотр."
         />
-        <div className="scroll-rail -mx-4 overflow-x-auto px-4 pb-3">
-          <div className="flex snap-x snap-mandatory gap-5 md:gap-6">
-            {APP_SCREENS.map((s) => (
-              <figure key={s.src} className="w-[200px] shrink-0 snap-center sm:w-[220px]">
-                <div className="group relative mx-auto w-full overflow-hidden rounded-[1.85rem] border border-border bg-card p-1.5 shadow-panel ring-1 ring-black/5 transition-transform duration-300 hover:-translate-y-1 dark:ring-white/5">
-                  <div className="absolute inset-x-0 top-0 z-10 flex justify-center pt-2.5">
-                    <div className="h-1.5 w-16 rounded-full bg-foreground/12" />
-                  </div>
-                  <div className="overflow-hidden rounded-[1.4rem] bg-muted/30">
-                    <img
-                      src={s.src}
-                      alt={`${s.title} — мобильный экран FitPro`}
-                      loading="lazy"
-                      width={780}
-                      height={1688}
-                      className="block aspect-[9/19.5] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                    />
-                  </div>
-                </div>
-                <figcaption className="mt-3.5 text-center">
-                  <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                    {s.role}
-                  </span>
-                  <p className="mt-1.5 text-sm font-semibold">{s.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{s.text}</p>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          Веб уже открывается с телефона · нативные приложения — ниже
+        <ScreenshotGallery screens={APP_SCREENS} />
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Веб уже работает с телефона · нативные приложения — в блоке «Скачать»
         </p>
       </section>
 
