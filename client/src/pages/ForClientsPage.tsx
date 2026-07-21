@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StoreBadges } from "@/components/StoreBadges";
 import { ScreenshotGallery } from "@/components/ScreenshotGallery";
-import { cn } from "@/lib/utils";
 
 const CLIENT_FEATURES = [
   {
