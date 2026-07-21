@@ -41,7 +41,7 @@ export function KnowledgePage() {
       <PageHeader
         eyebrow="Материалы"
         title="База знаний"
-        description="Материалы по категориям с поэтапным открытием по неделям сопровождения."
+        description="Гайды и видео с поэтапным открытием по неделям сопровождения."
         action={
           <Button onClick={() => setCreating(true)}>
             <Plus className="h-4 w-4" /> Материал
@@ -51,7 +51,7 @@ export function KnowledgePage() {
       {loading && <Spinner />}
       {data &&
         (data.items.length === 0 ? (
-          <EmptyState text="Загрузите первый материал." />
+          <EmptyState text="Материалов пока нет" hint="Загрузите гайд, видео или чек-лист — клиент увидит его в кабинете." />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.items.map((it) => {

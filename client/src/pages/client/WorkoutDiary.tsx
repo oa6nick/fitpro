@@ -11,7 +11,7 @@ import {
   Repeat,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import { PageHeader, Spinner, useAsync, ErrorBanner, EmptyState, Callout } from "@/components/common";
 import { RestTimer } from "@/components/RestTimer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,7 +79,9 @@ export function WorkoutDiary() {
   const [finishOpen, setFinishOpen] = useState(false);
 
   if (loading) return <Spinner />;
-  if (error || !data) return <p className="text-sm text-destructive">{error ?? "Не найдено"}</p>;
+  if (error || !data) {
+    return <ErrorBanner message={error ?? "Тренировка не найдена"} />;
+  }
 
   const { workout, items } = data;
   const done = workout.status === "completed";
@@ -93,50 +95,80 @@ export function WorkoutDiary() {
     (sum, it) => sum + it.logs.reduce((s, l) => s + (l.weight ?? 0) * (l.reps ?? 0), 0),
     0,
   );
+  const totalPlanned = items.reduce((sum, it) => sum + (it.sets ?? 0), 0);
+  const totalDone = items.reduce((sum, it) => sum + it.logs.length, 0);
+  const progressPct =
+    totalPlanned > 0 ? Math.min(100, Math.round((totalDone / totalPlanned) * 100)) : 0;
 
   return (
-    <div>
+    <div className={done ? undefined : "pb-24"}>
       <Link
         to="/c/workouts"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> К тренировкам
       </Link>
       <PageHeader
         eyebrow="Дневник"
         title={workout.title ?? "Тренировка"}
-        description={workout.date ?? undefined}
+        description={
+          workout.date
+            ? `${workout.date}${!done ? " · вес и повторы — между подходами" : ""}`
+            : undefined
+        }
         action={
           done ? (
-            <Badge variant="success" className="gap-1">
+            <Badge variant="success" className="gap-1 px-3 py-1">
               <Check className="h-3 w-3" /> Выполнена
             </Badge>
           ) : (
-            <Button onClick={() => setFinishOpen(true)}>
-              <Check className="h-4 w-4" /> Завершить тренировку
+            <Button onClick={() => setFinishOpen(true)} className="hidden sm:inline-flex">
+              <Check className="h-4 w-4" /> Завершить
             </Button>
           )
         }
       />
 
-      {(done || liveTonnage > 0) && (
-        <Card className="mb-4">
+      {!done && totalPlanned > 0 && (
+        <div className="mb-4 overflow-hidden rounded-full bg-muted/70">
+          <div
+            className="h-1.5 rounded-full bg-primary transition-all duration-500 ease-spring"
+            style={{ width: `${progressPct}%` }}
+            role="progressbar"
+            aria-valuenow={progressPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
+        </div>
+      )}
+
+      {(done || liveTonnage > 0 || (!done && missing > 0)) && (
+        <Card className="mb-4 border-primary/10 bg-primary/[0.03]">
           <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 p-4 text-sm">
             <span className="flex items-center gap-2">
-              <Dumbbell className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">Тоннаж:</span>
+              <span className="icon-well h-8 w-8">
+                <Dumbbell className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-muted-foreground">Тоннаж</span>
               <b className="tabular-nums">
                 {Math.round(workout.tonnage ?? liveTonnage).toLocaleString("ru-RU")} кг
               </b>
             </span>
             {workout.clientFeeling && (
               <span className="text-muted-foreground">
-                Самочувствие: <b className="text-foreground">{FEELING_LABELS[workout.clientFeeling]}</b>
+                Самочувствие:{" "}
+                <b className="text-foreground">{FEELING_LABELS[workout.clientFeeling]}</b>
               </span>
             )}
             {!done && missing > 0 && (
               <span className="text-muted-foreground">
-                Осталось подходов: <b className="text-foreground tabular-nums">{missing}</b>
+                Осталось подходов:{" "}
+                <b className="text-foreground tabular-nums">{missing}</b>
+              </span>
+            )}
+            {!done && totalPlanned > 0 && (
+              <span className="text-muted-foreground">
+                Прогресс: <b className="text-foreground tabular-nums">{progressPct}%</b>
               </span>
             )}
           </CardContent>
@@ -144,29 +176,27 @@ export function WorkoutDiary() {
       )}
 
       {workout.reviewStatus === "reviewed" && (
-        <Card className="mb-4 border-success/40 bg-success/5">
-          <CardContent className="p-4 text-sm">
-            <p className="type-caption mb-1 flex items-center gap-1.5 text-success">
-              <BadgeCheck className="h-3.5 w-3.5" /> Тренер проверил тренировку
-            </p>
-            <p>
-              {workout.trainerComment || (
-                <span className="text-muted-foreground">Без комментария</span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
+        <Callout
+          tone="success"
+          icon={BadgeCheck}
+          title="Тренер проверил тренировку"
+          className="mb-4"
+        >
+          {workout.trainerComment || "Без комментария — всё ок."}
+        </Callout>
       )}
 
       {workout.status === "completed" && workout.reviewStatus === "pending" && (
-        <p className="mb-4 text-sm text-muted-foreground">Тренировка отправлена тренеру на проверку.</p>
+        <Callout tone="info" title="На проверке у тренера" className="mb-4">
+          Тренировка отправлена. Комментарий появится здесь после проверки.
+        </Callout>
       )}
 
       {workout.clientComment && (
         <Card className="mb-4">
           <CardContent className="p-4 text-sm">
             <p className="type-caption mb-1">Ваш комментарий</p>
-            <p>{workout.clientComment}</p>
+            <p className="leading-relaxed">{workout.clientComment}</p>
           </CardContent>
         </Card>
       )}
@@ -176,10 +206,10 @@ export function WorkoutDiary() {
           group.groupKey ? (
             <div
               key={group.groupKey}
-              className="rounded-hero border-2 border-dashed border-primary/30 p-3"
+              className="rounded-hero border-2 border-dashed border-primary/30 bg-primary/[0.03] p-3 sm:p-4"
             >
-              <p className="type-caption mb-2 text-primary">
-                {GROUP_LABELS[group.groupType ?? "superset"]} · выполняйте по кругу без отдыха
+              <p className="type-caption mb-3 text-primary">
+                {GROUP_LABELS[group.groupType ?? "superset"]} · по кругу, без отдыха между
               </p>
               <div className="space-y-3">
                 {group.items.map((item) => (
@@ -206,7 +236,11 @@ export function WorkoutDiary() {
           ),
         )}
         {items.length === 0 && (
-          <p className="text-sm text-muted-foreground">В тренировке нет упражнений.</p>
+          <EmptyState
+            icon={Dumbbell}
+            text="В тренировке нет упражнений"
+            hint="Тренер ещё не добавил упражнения в эту программу."
+          />
         )}
       </div>
 
@@ -218,6 +252,29 @@ export function WorkoutDiary() {
         tonnage={liveTonnage}
         onDone={reload}
       />
+
+      {/* Sticky bar for gym phone use */}
+      {!done && (
+        <div className="fixed inset-x-0 bottom-16 z-20 border-t border-border bg-card/95 px-4 py-3 backdrop-blur-md md:bottom-0">
+          <div className="mx-auto flex max-w-6xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">
+                {progressPct}% · тоннаж {Math.round(liveTonnage).toLocaleString("ru-RU")} кг
+                {missing > 0 ? ` · ещё ${missing} подх.` : ""}
+              </p>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+            <Button size="lg" className="shrink-0 px-6" onClick={() => setFinishOpen(true)}>
+              <Check className="h-4 w-4" /> Завершить
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -364,10 +421,10 @@ function ExerciseBlock({
   }
 
   return (
-    <Card>
-      <CardHeader className="gap-2">
+    <Card className="overflow-hidden">
+      <CardHeader className="gap-2 bg-muted/20">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-base">{item.exercise.name}</CardTitle>
+          <CardTitle className="text-base leading-snug">{item.exercise.name}</CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant={doneCount >= (item.sets ?? 0) && doneCount > 0 ? "success" : "neutral"}>
               {doneCount} / {item.sets ?? slots.length}
@@ -508,7 +565,7 @@ function ReplaceExercise({
                   key={a.id}
                   onClick={() => replace(a.id)}
                   disabled={busy}
-                  className="flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent disabled:opacity-50"
+                  className="surface-interactive flex w-full items-center justify-between px-3 py-2.5 text-left text-sm disabled:opacity-50"
                 >
                   <span className="font-medium">{a.name}</span>
                   {a.muscles && (
@@ -539,63 +596,87 @@ function SlotRow({
 }) {
   return (
     <div
-      className={`flex flex-wrap items-center gap-2 rounded-xl border p-2 transition-colors ${
-        slot.done ? "border-success/40 bg-success/5" : "border-border"
+      className={`grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-2 rounded-xl border p-2.5 transition-colors sm:flex sm:flex-wrap ${
+        slot.done ? "border-success/50 bg-success/10" : "border-border bg-card"
       }`}
     >
-      <span className="w-16 shrink-0 text-xs text-muted-foreground">
-        Подход {slot.setNumber}
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold tabular-nums text-foreground sm:w-12">
+        {slot.setNumber}
       </span>
-      <Input
-        type="number"
-        inputMode="decimal"
-        value={slot.weight}
-        onChange={(e) => onChange({ weight: e.target.value })}
-        placeholder="кг"
-        disabled={readOnly}
-        aria-label={`Вес, подход ${slot.setNumber}`}
-        className="h-9 w-20"
-      />
-      <span className="text-muted-foreground">×</span>
-      <Input
-        type="number"
-        inputMode="numeric"
-        value={slot.reps}
-        onChange={(e) => onChange({ reps: e.target.value })}
-        placeholder="повт."
-        disabled={readOnly}
-        aria-label={`Повторы, подход ${slot.setNumber}`}
-        className="h-9 w-20"
-      />
-      <Select
-        value={slot.feeling}
-        onValueChange={(v) => onChange({ feeling: v as Feeling })}
-        disabled={readOnly}
-      >
-        <SelectTrigger className="h-9 w-32" aria-label={`Ощущения, подход ${slot.setNumber}`}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(FEELING_LABELS).map(([k, v]) => (
-            <SelectItem key={k} value={k}>
-              {v}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {!readOnly && (
-        <Button
-          size="icon"
-          variant={slot.done ? "default" : "outline"}
-          onClick={onToggle}
-          disabled={busy}
-          aria-label={slot.done ? `Снять отметку подхода ${slot.setNumber}` : `Отметить подход ${slot.setNumber} выполненным`}
-          aria-pressed={slot.done}
-          className="ml-auto"
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-      )}
+      <div className="min-w-0 sm:w-24">
+        <label className="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          кг
+        </label>
+        <Input
+          type="number"
+          inputMode="decimal"
+          value={slot.weight}
+          onChange={(e) => onChange({ weight: e.target.value })}
+          placeholder="0"
+          disabled={readOnly}
+          aria-label={`Вес, подход ${slot.setNumber}`}
+          className="h-11 text-base font-semibold tabular-nums"
+        />
+      </div>
+      <span className="hidden text-muted-foreground sm:inline">×</span>
+      <div className="min-w-0 sm:w-24">
+        <label className="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          повт
+        </label>
+        <Input
+          type="number"
+          inputMode="numeric"
+          value={slot.reps}
+          onChange={(e) => onChange({ reps: e.target.value })}
+          placeholder="0"
+          disabled={readOnly}
+          aria-label={`Повторы, подход ${slot.setNumber}`}
+          className="h-11 text-base font-semibold tabular-nums"
+        />
+      </div>
+      <div className="col-span-5 flex items-end gap-2 sm:col-span-1 sm:ml-auto sm:w-auto">
+        <div className="min-w-0 flex-1 sm:w-36 sm:flex-none">
+          <label className="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            ощущения
+          </label>
+          <Select
+            value={slot.feeling}
+            onValueChange={(v) => onChange({ feeling: v as Feeling })}
+            disabled={readOnly}
+          >
+            <SelectTrigger
+              className="h-11"
+              aria-label={`Ощущения, подход ${slot.setNumber}`}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(FEELING_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {!readOnly && (
+          <Button
+            size="icon"
+            variant={slot.done ? "default" : "outline"}
+            onClick={onToggle}
+            disabled={busy}
+            aria-label={
+              slot.done
+                ? `Снять отметку подхода ${slot.setNumber}`
+                : `Отметить подход ${slot.setNumber}`
+            }
+            aria-pressed={slot.done}
+            className="h-11 w-11 shrink-0"
+          >
+            <Check className="h-5 w-5" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

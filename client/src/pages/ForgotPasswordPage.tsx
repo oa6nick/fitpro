@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { KeyRound } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,64 +47,78 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full max-w-sm rounded-hero border-0 shadow-panel">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <KeyRound className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-xl">Восстановление пароля</CardTitle>
-          <CardDescription>
+      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-xl tracking-tight">Восстановление пароля</CardTitle>
+          <CardDescription className="text-balance leading-relaxed">
             {step === 1
-              ? "Укажите email — если аккаунт существует, пришлём код"
-              : `Код отправлен на ${email}`}
+              ? "Укажите email аккаунта — если он есть, пришлём код для смены пароля."
+              : `Код отправлен на ${email}. Введите его и придумайте новый пароль.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {step === 1 ? (
             <form onSubmit={requestCode} className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
+                  placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={busy}>
+              {error && (
+                <p
+                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
+              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
                 {busy ? "Отправляем…" : "Получить код"}
               </Button>
             </form>
           ) : (
             <form onSubmit={confirmReset} className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="code">Код из письма</Label>
                 <Input
                   id="code"
                   inputMode="numeric"
                   maxLength={6}
+                  placeholder="6 цифр"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   required
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="password">Новый пароль</Label>
                 <Input
                   id="password"
                   type="password"
                   autoComplete="new-password"
+                  placeholder="Минимум 6 символов"
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={busy}>
+              {error && (
+                <p
+                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
+              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
                 {busy ? "Сохраняем…" : "Сменить пароль"}
               </Button>
               <Button
@@ -119,7 +132,7 @@ export function ForgotPasswordPage() {
               </Button>
             </form>
           )}
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-5 border-t border-border/60 pt-5 text-center text-sm text-muted-foreground">
             Вспомнили пароль?{" "}
             <Link to="/login" className="font-medium text-primary hover:underline">
               Войти

@@ -22,7 +22,7 @@ export function TasksPage() {
       <PageHeader
         eyebrow="Сопровождение"
         title="Задачи и привычки"
-        description="Недельные привычки клиента и контроль % соблюдения."
+        description="Привычки на неделю: шаги, вода, сон — с автоматическим % соблюдения."
       />
       <Tabs defaultValue="assign">
         <TabsList>
@@ -72,7 +72,7 @@ function LibraryTab() {
       {loading && <Spinner />}
       {data &&
         (data.habits.length === 0 ? (
-          <EmptyState text="Добавьте привычки в библиотеку." />
+          <EmptyState text="Библиотека пуста" hint="Добавьте привычки (шаги, вода, сон), затем назначьте клиенту на неделю." />
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
             {data.habits.map((h) => (
@@ -187,7 +187,7 @@ function ComplianceList({ clientId }: { clientId: string }) {
     [clientId],
   );
   if (loading) return <Spinner />;
-  if (!data || data.tasks.length === 0) return <EmptyState text="На эту неделю задач нет." />;
+  if (!data || data.tasks.length === 0) return <EmptyState text="На эту неделю задач нет" hint="Назначьте привычки клиенту — % соблюдения появится здесь." />;
   return (
     <Card>
       <CardHeader>

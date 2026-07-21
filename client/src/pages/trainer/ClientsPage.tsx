@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, LayoutGrid, List as ListIcon, AlertTriangle, ChevronRight } from "lucide-react";
+import { Plus, LayoutGrid, List as ListIcon, AlertTriangle, ChevronRight, Users } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, useIsMobile } from "@/components/common";
+import {
+  PageHeader,
+  Spinner,
+  useAsync,
+  useIsMobile,
+  ErrorBanner,
+  EmptyState,
+  Avatar,
+} from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,35 +51,46 @@ export function ClientsPage() {
       <PageHeader
         eyebrow="CRM"
         title="Клиенты"
-        description="Воронка по статусам — от заявки до архива. Цветом отмечена зона риска."
+        description="Воронка от заявки до архива. Зона риска подсвечена — не теряйте тех, кто затих."
         action={
           <div className="flex items-center gap-2">
-            <Button
-              variant={view === "board" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setView("board")}
-              aria-label="Вид: доска"
-              aria-pressed={view === "board"}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === "list" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setView("list")}
-              aria-label="Вид: список"
-              aria-pressed={view === "list"}
-            >
-              <ListIcon className="h-4 w-4" />
-            </Button>
+            <div className="flex rounded-full border border-border/70 bg-card/80 p-0.5 shadow-sm">
+              <Button
+                variant={view === "board" ? "default" : "ghost"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView("board")}
+                aria-label="Вид: доска"
+                aria-pressed={view === "board"}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === "list" ? "default" : "ghost"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView("list")}
+                aria-label="Вид: список"
+                aria-pressed={view === "list"}
+              >
+                <ListIcon className="h-4 w-4" />
+              </Button>
+            </div>
             <NewClientDialog onCreated={reload} />
           </div>
         }
       />
       {loading && <Spinner />}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
-        (view === "board" ? (
+        (data.clients.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            text="Клиентов пока нет"
+            hint="Создайте карточку, отправьте приглашение — клиент заполнит анкету сам, а вы соберёте программу."
+            action={<NewClientDialog onCreated={reload} />}
+          />
+        ) : view === "board" ? (
           <Board clients={data.clients} />
         ) : (
           <ClientList clients={data.clients} />
@@ -87,34 +106,42 @@ function Board({ clients }: { clients: Client[] }) {
         const list = clients.filter((c) => c.funnelStatus === status);
         return (
           <div key={status} className="w-[78vw] shrink-0 snap-start sm:w-64">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <span className="type-caption">{FUNNEL_LABELS[status]}</span>
+            <div className="mb-2.5 flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-2.5 py-2">
+              <span className="type-caption !tracking-[0.12em]">{FUNNEL_LABELS[status]}</span>
               <Badge variant={FUNNEL_TONES[status]}>{list.length}</Badge>
             </div>
-            <div className="space-y-2">
+            <div className="min-h-[4.5rem] space-y-2 rounded-panel border border-dashed border-border/50 bg-muted/15 p-1.5">
               {list.map((c) => (
                 <Link
                   key={c.id}
                   to={`/t/clients/${c.id}`}
                   className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Card className="rounded-xl transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-panel">
+                  <Card className="rounded-xl border-border/60 transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-panel">
                     <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{c.name}</span>
-                        {c.riskFlag && c.funnelStatus === "active" && (
-                          <AlertTriangle className="h-4 w-4 text-destructive" aria-label="Зона риска" />
-                        )}
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={c.name} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="truncate font-medium">{c.name}</span>
+                            {c.riskFlag && c.funnelStatus === "active" && (
+                              <AlertTriangle
+                                className="h-3.5 w-3.5 shrink-0 text-destructive"
+                                aria-label="Зона риска"
+                              />
+                            )}
+                          </div>
+                          {c.goal && (
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">{c.goal}</p>
+                          )}
+                        </div>
                       </div>
-                      {c.goal && (
-                        <p className="mt-1 truncate text-xs text-muted-foreground">{c.goal}</p>
-                      )}
                     </CardContent>
                   </Card>
                 </Link>
               ))}
               {list.length === 0 && (
-                <p className="px-1 text-xs text-muted-foreground">—</p>
+                <p className="px-2 py-6 text-center text-xs text-muted-foreground">Пусто</p>
               )}
             </div>
           </div>
@@ -141,9 +168,13 @@ function ClientList({ clients }: { clients: Client[] }) {
           </thead>
           <tbody>
             {clients.map((c) => (
-              <tr key={c.id} className="border-b last:border-0 hover:bg-accent/50">
+              <tr key={c.id} className="border-b last:border-0 hover:bg-accent/40">
                 <td className="p-3">
-                  <Link to={`/t/clients/${c.id}`} className="font-medium hover:underline">
+                  <Link
+                    to={`/t/clients/${c.id}`}
+                    className="inline-flex items-center gap-2.5 font-medium hover:underline"
+                  >
+                    <Avatar name={c.name} size="sm" />
                     {c.name}
                   </Link>
                 </td>
@@ -173,27 +204,27 @@ function ClientList({ clients }: { clients: Client[] }) {
                 to={`/t/clients/${c.id}`}
                 className="flex items-start justify-between gap-3 p-4 transition-colors hover:bg-accent/50"
               >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{c.name}</p>
-                  {c.goal && (
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{c.goal}</p>
-                  )}
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <Badge variant={FUNNEL_TONES[c.funnelStatus]}>
-                      {FUNNEL_LABELS[c.funnelStatus]}
-                    </Badge>
-                    {c.riskFlag && c.funnelStatus === "active" && (
-                      <Badge variant="destructive">риск</Badge>
+                <div className="flex min-w-0 items-start gap-3">
+                  <Avatar name={c.name} />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{c.name}</p>
+                    {c.goal && (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{c.goal}</p>
                     )}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <Badge variant={FUNNEL_TONES[c.funnelStatus]}>
+                        {FUNNEL_LABELS[c.funnelStatus]}
+                      </Badge>
+                      {c.riskFlag && c.funnelStatus === "active" && (
+                        <Badge variant="destructive">риск</Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               </Link>
             </li>
           ))}
-          {clients.length === 0 && (
-            <li className="p-6 text-center text-sm text-muted-foreground">Клиентов пока нет</li>
-          )}
         </ul>
       </CardContent>
     </Card>

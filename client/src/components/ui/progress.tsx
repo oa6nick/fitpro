@@ -18,11 +18,11 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         aria-valuenow={Math.round(clamped)}
         aria-valuemin={0}
         aria-valuemax={100}
-        className={cn("h-2 w-full overflow-hidden rounded-full bg-muted", className)}
+        className={cn("h-2.5 w-full overflow-hidden rounded-full bg-muted/80", className)}
         {...props}
       >
         <div
-          className="h-full rounded-full bg-primary transition-all ease-spring"
+          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_0_12px_hsl(var(--primary)/0.35)] transition-all duration-500 ease-spring"
           style={{ width: `${clamped}%` }}
         />
       </div>

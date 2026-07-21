@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Trash2, ClipboardList, GripVertical, Link2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +50,7 @@ export function TemplatesPage() {
       <PageHeader
         eyebrow="Конструктор"
         title="Шаблоны тренировок"
-        description="Шаблоны программ по целям: собираются из упражнений и назначаются клиенту в один клик."
+        description="Соберите программу из упражнений и назначьте клиенту в один клик."
         action={
           <Button onClick={() => setBuilding(true)}>
             <Plus className="h-4 w-4" /> Шаблон
@@ -58,10 +58,10 @@ export function TemplatesPage() {
         }
       />
       {loading && <Spinner />}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <ErrorBanner message={error} />}
       {data &&
         (data.templates.length === 0 ? (
-          <EmptyState text="Шаблонов пока нет — соберите первую программу." />
+          <EmptyState text="Шаблонов пока нет" hint="Соберите первую программу из библиотеки — потом назначайте её клиентам за минуту." />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.templates.map((t) => (
@@ -270,6 +270,28 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
                   onChange={(e) => update(i, { weight: e.target.value })}
                   placeholder="вес"
                 />
+                <Select
+                  value={r.rest ?? "90 сек"}
+                  onValueChange={(v) => update(i, { rest: v })}
+                >
+                  <SelectTrigger className="h-10 w-[7.25rem]" aria-label="Отдых">
+                    <SelectValue placeholder="отдых" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      { v: "30 сек", l: "30с · изол." },
+                      { v: "60 сек", l: "1м · гипертр." },
+                      { v: "90 сек", l: "1.5м · база" },
+                      { v: "120 сек", l: "2м · сила" },
+                      { v: "180 сек", l: "3м · тяж." },
+                      { v: "300 сек", l: "5м · 1ПМ" },
+                    ].map((o) => (
+                      <SelectItem key={o.v} value={o.v}>
+                        {o.l}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button variant="ghost" size="icon" onClick={() => remove(i)} aria-label="Убрать упражнение">
                   <Trash2 className="h-4 w-4" />
                 </Button>

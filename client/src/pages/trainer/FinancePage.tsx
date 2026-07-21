@@ -36,7 +36,7 @@ export function FinancePage() {
       <PageHeader
         eyebrow="Деньги"
         title="Финансы"
-        description="История оплат, статусы и продления. Без реального эквайринга (учёт вручную)."
+        description="Оплаты, статусы и продления — без сторонних таблиц."
         action={
           <Button onClick={() => setAdding(true)}>
             <Plus className="h-4 w-4" /> Оплата
@@ -61,7 +61,7 @@ export function FinancePage() {
             />
           </div>
           {data.payments.length === 0 ? (
-            <EmptyState text="Оплат пока нет." />
+            <EmptyState text="Оплат пока нет" hint="История платежей клиентов появится здесь, как только вы начнёте фиксировать оплаты." />
           ) : (
             <Card>
               <CardContent className="p-0">

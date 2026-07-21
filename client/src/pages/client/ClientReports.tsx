@@ -1,6 +1,15 @@
 import { useState } from "react";
+import { ClipboardList, Send, History } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import {
+  PageHeader,
+  Spinner,
+  useAsync,
+  EmptyState,
+  ErrorBanner,
+  SectionTitle,
+  Callout,
+} from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,21 +38,28 @@ export function ClientReports() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function submit() {
     if (!form.data?.form) return;
     setBusy(true);
-    await api.post("/reports/submit", {
-      formId: form.data.form.id,
-      weekStart: currentWeekStart(),
-      answers: Object.entries(answers)
-        .filter(([, v]) => v)
-        .map(([fieldId, value]) => ({ fieldId, value })),
-    });
-    setBusy(false);
-    setDone(true);
-    setAnswers({});
-    history.reload();
+    setSubmitError(null);
+    try {
+      await api.post("/reports/submit", {
+        formId: form.data.form.id,
+        weekStart: currentWeekStart(),
+        answers: Object.entries(answers)
+          .filter(([, v]) => v)
+          .map(([fieldId, value]) => ({ fieldId, value })),
+      });
+      setDone(true);
+      setAnswers({});
+      history.reload();
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Не удалось отправить");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -51,54 +67,94 @@ export function ClientReports() {
       <PageHeader
         eyebrow="Обратная связь"
         title="Отчёты"
-        description="Заполните еженедельный отчёт тренеру."
+        description="Короткая форма раз в неделю — тренер видит, как прошла неделя, без длинных переписок."
       />
       {form.loading ? (
         <Spinner />
+      ) : form.error ? (
+        <ErrorBanner message={form.error} onRetry={form.reload} />
       ) : !form.data?.form ? (
-        <EmptyState text="Тренер ещё не настроил форму отчёта." />
+        <EmptyState
+          icon={ClipboardList}
+          text="Форма отчёта ещё не настроена"
+          hint="Тренер создаст еженедельную форму — после этого вы сможете отправлять отчёты прямо отсюда."
+        />
       ) : (
-        <Card className="mb-6">
+        <Card className="mb-6 border-primary/15">
           <CardHeader>
-            <CardTitle className="text-base">{form.data.form.name}</CardTitle>
+            <div className="flex items-start gap-3">
+              <span className="icon-well h-10 w-10">
+                <Send className="h-4 w-4" />
+              </span>
+              <div>
+                <CardTitle className="text-base">{form.data.form.name}</CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Неделя с {currentWeekStart()} · заполните честно, это помогает корректировать план
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {form.data.fields.map((f) => (
-              <div key={f.id}>
-                <Label>{f.label}</Label>
+              <div key={f.id} className="space-y-1.5">
+                <Label htmlFor={`field-${f.id}`}>{f.label}</Label>
                 {f.type === "text" ? (
                   <Textarea
+                    id={`field-${f.id}`}
                     value={answers[f.id] ?? ""}
                     onChange={(e) => setAnswers((a) => ({ ...a, [f.id]: e.target.value }))}
+                    placeholder="Ваш ответ…"
+                    className="min-h-[88px]"
                   />
                 ) : (
                   <Input
+                    id={`field-${f.id}`}
                     type={f.type === "number" ? "number" : "text"}
                     value={answers[f.id] ?? ""}
                     onChange={(e) => setAnswers((a) => ({ ...a, [f.id]: e.target.value }))}
+                    placeholder={f.type === "number" ? "0" : "Ваш ответ…"}
                   />
                 )}
               </div>
             ))}
-            <div className="flex items-center gap-3">
-              <Button onClick={submit} disabled={busy}>
-                {busy ? "Отправляем…" : "Отправить отчёт"}
-              </Button>
-              {done && <span className="text-sm text-success" role="status">Отправлено ✓</span>}
-            </div>
+            {submitError && (
+              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {submitError}
+              </p>
+            )}
+            {done && (
+              <Callout tone="success" title="Отчёт отправлен">
+                Тренер получит уведомление и проверит его.
+              </Callout>
+            )}
+            <Button onClick={submit} disabled={busy} className="w-full sm:w-auto">
+              <Send className="h-4 w-4" />
+              {busy ? "Отправляем…" : "Отправить отчёт"}
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      <h2 className="mb-2 text-sm font-semibold text-muted-foreground">История отчётов</h2>
+      <SectionTitle
+        title="История отчётов"
+        description="Статусы: ожидает проверки, проверен, пропущен"
+      />
       {history.loading ? (
         <Spinner />
       ) : history.data && history.data.submissions.length > 0 ? (
         <div className="space-y-2">
           {history.data.submissions.map((s) => (
-            <Card key={s.id}>
-              <CardContent className="flex items-center justify-between py-3">
-                <span className="text-sm">Неделя с {s.weekStart}</span>
+            <Card key={s.id} className="transition-colors hover:border-border">
+              <CardContent className="flex items-center justify-between gap-3 p-4">
+                <div className="flex items-center gap-3">
+                  <span className="icon-well h-9 w-9">
+                    <History className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium">Неделя с {s.weekStart}</p>
+                    <p className="text-xs text-muted-foreground">Еженедельный отчёт</p>
+                  </div>
+                </div>
                 <Badge
                   variant={
                     s.status === "reviewed"
@@ -115,7 +171,11 @@ export function ClientReports() {
           ))}
         </div>
       ) : (
-        <EmptyState text="Вы ещё не отправляли отчёты." />
+        <EmptyState
+          icon={History}
+          text="Вы ещё не отправляли отчёты"
+          hint="После первой отправки здесь появится история со статусами проверки."
+        />
       )}
     </div>
   );

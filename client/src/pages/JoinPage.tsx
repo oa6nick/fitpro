@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Dumbbell } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -54,23 +53,22 @@ export function JoinPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full max-w-sm rounded-hero border-0 shadow-panel">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Dumbbell className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-xl">Приглашение в FitPro</CardTitle>
-          <CardDescription>
+      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-xl tracking-tight">
+            {invite ? `Привет, ${invite.clientName}!` : "Приглашение в FitPro"}
+          </CardTitle>
+          <CardDescription className="text-balance leading-relaxed">
             {notFound
               ? "Приглашение не найдено или устарело"
               : invite
-                ? `Тренер ${invite.trainerName} приглашает вас (${invite.clientName}) в личный кабинет`
+                ? `Тренер ${invite.trainerName} приглашает вас в личный кабинет: тренировки, дневник и прогресс.`
                 : "Проверяем приглашение…"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {notFound ? (
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="rounded-panel bg-muted/40 px-4 py-5 text-center text-sm leading-relaxed text-muted-foreground">
               Попросите тренера прислать новую ссылку.{" "}
               <Link to="/" className="font-medium text-primary hover:underline">
                 На главную
@@ -78,33 +76,45 @@ export function JoinPage() {
             </p>
           ) : invite ? (
             <form onSubmit={onSubmit} className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
+                  placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="password">Придумайте пароль</Label>
                 <Input
                   id="password"
                   type="password"
                   autoComplete="new-password"
+                  placeholder="Минимум 6 символов"
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={busy}>
-                {busy ? "Создаём кабинет…" : "Создать кабинет"}
+              {error && (
+                <p
+                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
+              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
+                {busy ? "Создаём кабинет…" : "Открыть мой кабинет"}
               </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                После входа вы увидите программу, дневник и материалы от тренера
+              </p>
             </form>
           ) : null}
         </CardContent>

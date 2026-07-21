@@ -1,30 +1,64 @@
 import { useState } from "react";
+import { Check, UserCircle } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import {
+  PageHeader,
+  Spinner,
+  useAsync,
+  ErrorBanner,
+  Callout,
+} from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Client, ClientProfile } from "@/lib/domain";
 
-const FIELDS: { key: keyof ClientProfile; label: string }[] = [
-  { key: "trainingExperience", label: "Опыт тренировок" },
-  { key: "injuries", label: "Травмы / ограничения" },
-  { key: "lifestyle", label: "Образ жизни (работа, сон, стресс)" },
-  { key: "nutrition", label: "Питание" },
-  { key: "equipment", label: "Доступное оборудование" },
-  { key: "preferences", label: "Что нравится в тренировках" },
-  { key: "dislikes", label: "Что не нравится" },
+const FIELDS: { key: keyof ClientProfile; label: string; hint?: string }[] = [
+  {
+    key: "trainingExperience",
+    label: "Опыт тренировок",
+    hint: "Сколько лет/месяцев, какие виды нагрузки",
+  },
+  {
+    key: "injuries",
+    label: "Травмы и ограничения",
+    hint: "Всё, что тренеру важно учесть при составлении программы",
+  },
+  {
+    key: "lifestyle",
+    label: "Образ жизни",
+    hint: "Работа, сон, стресс, сколько времени на тренировки",
+  },
+  { key: "nutrition", label: "Питание", hint: "Режим, предпочтения, ограничения" },
+  {
+    key: "equipment",
+    label: "Доступное оборудование",
+    hint: "Зал, дом, гантели, турник…",
+  },
+  {
+    key: "preferences",
+    label: "Что нравится в тренировках",
+    hint: "Любимые упражнения и форматы",
+  },
+  {
+    key: "dislikes",
+    label: "Что не нравится",
+    hint: "Что лучше избегать",
+  },
 ];
 
 export function ClientProfilePage() {
-  const { data, loading, error } = useAsync<{ client: Client; profile: ClientProfile | null }>(
-    () => api.get("/me/client"),
-  );
+  const { data, loading, error, reload } = useAsync<{
+    client: Client;
+    profile: ClientProfile | null;
+  }>(() => api.get("/me/client"));
 
   if (loading) return <Spinner />;
-  if (error || !data) return <p className="text-sm text-destructive">{error ?? "Ошибка"}</p>;
+  if (error || !data) {
+    return <ErrorBanner message={error ?? "Ошибка загрузки"} onRetry={reload} />;
+  }
 
   return <ProfileForm profile={data.profile} />;
 }
@@ -38,16 +72,25 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
   });
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const isNew = !profile;
 
   async function save() {
     setBusy(true);
     setSaved(false);
-    const payload: Record<string, unknown> = {};
-    for (const { key } of FIELDS) if (form[key]) payload[key] = form[key];
-    if (form.steps) payload.steps = Number(form.steps);
-    await api.put("/me/profile", payload);
-    setBusy(false);
-    setSaved(true);
+    setSaveError(null);
+    try {
+      const payload: Record<string, unknown> = {};
+      for (const { key } of FIELDS) if (form[key]) payload[key] = form[key];
+      if (form.steps) payload.steps = Number(form.steps);
+      await api.put("/me/profile", payload);
+      setSaved(true);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Не удалось сохранить");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -55,33 +98,75 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
       <PageHeader
         eyebrow="О себе"
         title="Анкета"
-        description="Расскажите о себе — тренер составит программу под ваши цели и ограничения."
+        description="Чем подробнее заполните — тем точнее тренер составит программу под ваши цели и ограничения."
       />
+
+      {isNew && (
+        <Callout
+          tone="info"
+          icon={UserCircle}
+          title="Первый шаг — рассказать о себе"
+          className="mb-5"
+        >
+          Анкета видна только вашему тренеру. Можно заполнять постепенно и сохранять.
+        </Callout>
+      )}
+
       <Card>
-        <CardContent className="space-y-3 pt-6">
-          {FIELDS.map(({ key, label }) => (
-            <div key={key}>
-              <Label>{label}</Label>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <span className="icon-well h-9 w-9">
+              <UserCircle className="h-4 w-4" />
+            </span>
+            Ваши данные
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-2">
+          {FIELDS.map(({ key, label, hint }) => (
+            <div key={key} className="space-y-1.5">
+              <Label htmlFor={key}>{label}</Label>
+              {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
               <Textarea
+                id={key}
                 value={form[key] ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="min-h-[60px]"
+                className="min-h-[72px]"
+                placeholder="Напишите своими словами…"
               />
             </div>
           ))}
-          <div className="max-w-xs">
-            <Label>Шагов в день</Label>
+          <div className="max-w-xs space-y-1.5">
+            <Label htmlFor="steps">Шагов в день (примерно)</Label>
             <Input
+              id="steps"
               type="number"
               value={form.steps ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, steps: e.target.value }))}
+              placeholder="например, 8000"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={save} disabled={busy}>
-              {busy ? "Сохраняем…" : "Сохранить анкету"}
+
+          {saveError && (
+            <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {saveError}
+            </p>
+          )}
+          {saved && (
+            <Callout tone="success" title="Анкета сохранена">
+              Тренер увидит обновления в вашей карточке.
+            </Callout>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Button onClick={save} disabled={busy} className="min-w-[10rem]">
+              {busy ? "Сохраняем…" : saved ? (
+                <>
+                  <Check className="h-4 w-4" /> Сохранено
+                </>
+              ) : (
+                "Сохранить анкету"
+              )}
             </Button>
-            {saved && <span className="text-sm text-success" role="status">Сохранено ✓</span>}
           </div>
         </CardContent>
       </Card>

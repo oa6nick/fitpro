@@ -11,7 +11,14 @@ import {
   CartesianGrid,
 } from "recharts";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState, TableScroll } from "@/components/common";
+import {
+  Spinner,
+  useAsync,
+  EmptyState,
+  TableScroll,
+  ErrorBanner,
+  Avatar,
+} from "@/components/common";
 import { ChartTooltip } from "@/components/ChartTooltip";
 import { useChartColors, CHART_AXIS } from "@/lib/chartTheme";
 import { Button } from "@/components/ui/button";
@@ -36,8 +43,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  FUNNEL_ORDER,
   FUNNEL_LABELS,
+  FUNNEL_TONES,
+  FUNNEL_NEXT_HINT,
+  funnelAllowedTargets,
   type Client,
   type ClientProfile,
   type TrainerNote,
@@ -64,7 +73,7 @@ export function ClientCardPage() {
   );
 
   if (loading) return <Spinner />;
-  if (error || !data) return <p className="text-sm text-destructive">{error ?? "Не найдено"}</p>;
+  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} />;
 
   const { client } = data;
 
@@ -72,26 +81,31 @@ export function ClientCardPage() {
     <div>
       <Link
         to="/t/clients"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-4 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> К списку клиентов
       </Link>
-      <PageHeader
-        eyebrow="Карточка клиента"
-        title={client.name}
-        description={client.goal ?? undefined}
-        action={
-          <>
-            {client.isDemo && <Badge variant="info">Демо</Badge>}
-            {client.riskFlag && client.funnelStatus === "active" && (
-              <Badge variant="destructive" className="gap-1">
-                <AlertTriangle className="h-3 w-3" /> Зона риска
-              </Badge>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3.5">
+          <Avatar name={client.name} size="lg" className="mt-0.5" />
+          <div className="min-w-0">
+            <p className="type-eyebrow mb-1.5">Карточка клиента</p>
+            <h1 className="type-page-title text-balance">{client.name}</h1>
+            {client.goal && (
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{client.goal}</p>
             )}
-            <DeleteClientButton clientId={client.id} name={client.name} />
-          </>
-        }
-      />
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {client.isDemo && <Badge variant="info">Демо</Badge>}
+          {client.riskFlag && client.funnelStatus === "active" && (
+            <Badge variant="destructive" className="gap-1">
+              <AlertTriangle className="h-3 w-3" /> Зона риска
+            </Badge>
+          )}
+          <DeleteClientButton clientId={client.id} name={client.name} />
+        </div>
+      </div>
 
       {!client.userId && <InviteBlock clientId={client.id} />}
 
@@ -197,6 +211,7 @@ function InviteBlock({ clientId }: { clientId: string }) {
 
 function MainTab({ client, onChange }: { client: Client; onChange: () => void }) {
   const [status, setStatus] = useState<FunnelStatus>(client.funnelStatus);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const fields: [string, string | number | null][] = [
     ["Возраст", client.age],
     ["Рост, см", client.height],
@@ -207,40 +222,81 @@ function MainTab({ client, onChange }: { client: Client; onChange: () => void })
     ["Окончание сопровождения", client.supportEndDate],
   ];
 
+  const allowed = funnelAllowedTargets(status);
+
   async function changeStatus(v: string) {
+    setStatusError(null);
+    const prev = status;
     setStatus(v as FunnelStatus);
-    await api.patch(`/clients/${client.id}/status`, { status: v });
-    onChange();
+    try {
+      await api.patch(`/clients/${client.id}/status`, { status: v });
+      onChange();
+    } catch (e) {
+      setStatus(prev);
+      setStatusError(e instanceof Error ? e.message : "Не удалось сменить статус");
+    }
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <div className="max-w-xs">
-          <Label>Статус воронки</Label>
-          <Select value={status} onValueChange={changeStatus}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {FUNNEL_ORDER.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {FUNNEL_LABELS[s]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-          {fields.map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="text-sm font-medium">{value ?? "—"}</dd>
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <div>
+            <Label>Статус воронки</Label>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {FUNNEL_NEXT_HINT[status] ?? "Выберите следующий шаг пайплайна"}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={FUNNEL_TONES[status]} className="px-3 py-1">
+                Сейчас: {FUNNEL_LABELS[status]}
+              </Badge>
             </div>
-          ))}
-        </dl>
-      </CardContent>
-    </Card>
+            {allowed.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {allowed.map((s) => (
+                  <Button
+                    key={s}
+                    size="sm"
+                    variant={s === "archived" ? "outline" : "secondary"}
+                    onClick={() => changeStatus(s)}
+                  >
+                    → {FUNNEL_LABELS[s]}
+                  </Button>
+                ))}
+              </div>
+            )}
+            <div className="mt-3 max-w-xs">
+              <Select value={status} onValueChange={changeStatus}>
+                <SelectTrigger aria-label="Статус воронки">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Текущий + допустимые — без «прыжков» через всю воронку */}
+                  {[status, ...allowed.filter((s) => s !== status)].map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {FUNNEL_LABELS[s]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {statusError && (
+              <p className="mt-2 text-sm text-destructive" role="alert">
+                {statusError}
+              </p>
+            )}
+          </div>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+            {fields.map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-xs text-muted-foreground">{label}</dt>
+                <dd className="text-sm font-medium">{value ?? "—"}</dd>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -345,7 +401,7 @@ function NotesTab({
         </CardContent>
       </Card>
       {notes.length === 0 ? (
-        <EmptyState text="Заметок пока нет" />
+        <EmptyState text="Заметок пока нет" hint="Личные заметки по клиенту видны только вам." />
       ) : (
         notes.map((n) => (
           <Card key={n.id}>
@@ -388,7 +444,7 @@ function WorkoutsTab({
         <AssignWorkoutDialog clientId={clientId} onAssigned={onChange} />
       </div>
       {workouts.length === 0 ? (
-        <EmptyState text="Тренировки ещё не назначены" />
+        <EmptyState text="Тренировки ещё не назначены" hint="Соберите программу в конструкторе и назначьте клиенту." />
       ) : (
         workouts.map((w) => (
           <Link
@@ -512,7 +568,7 @@ function AssignWorkoutDialog({
 
 function ProgressTab({ measurements }: { measurements: Measurement[] }) {
   const colors = useChartColors();
-  if (measurements.length === 0) return <EmptyState text="Замеров пока нет" />;
+  if (measurements.length === 0) return <EmptyState text="Замеров пока нет" hint="Клиент добавит замеры в своём кабинете — они появятся здесь." />;
   const chartData = [...measurements]
     .reverse()
     .map((m) => ({ date: m.date, Вес: m.weight, Талия: m.waist }));

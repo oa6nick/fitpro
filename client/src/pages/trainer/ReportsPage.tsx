@@ -37,7 +37,7 @@ export function ReportsPage() {
       <PageHeader
         eyebrow="Обратная связь"
         title="Отчёты"
-        description="Конструктор еженедельной формы и проверка заполнений клиентов."
+        description="Своя форма отчёта и проверка заполнений — ничего не теряется в переписке."
       />
       <Tabs defaultValue="submissions">
         <TabsList>
@@ -81,7 +81,7 @@ function Submissions() {
       {loading && <Spinner />}
       {data &&
         (data.submissions.length === 0 ? (
-          <EmptyState text="Заполнений нет." />
+          <EmptyState text="Заполнений пока нет" hint="Когда клиенты отправят отчёты, они появятся здесь со статусами." />
         ) : (
           <div className="space-y-2">
             {data.submissions.map((s) => (
@@ -173,7 +173,7 @@ function Forms() {
       {loading && <Spinner />}
       {data &&
         (data.forms.length === 0 ? (
-          <EmptyState text="Создайте форму еженедельного отчёта." />
+          <EmptyState text="Формы ещё нет" hint="Создайте еженедельную форму — клиенты будут заполнять её в своём кабинете." />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {data.forms.map((f) => (

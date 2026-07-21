@@ -44,7 +44,7 @@ export function EmailVerifyBanner() {
 
   return (
     <div
-      className="mb-4 rounded-panel border border-warning/30 bg-warning/10 px-3 py-2.5 text-sm"
+      className="mb-5 rounded-panel border border-warning/35 bg-warning/10 px-3.5 py-3 text-sm shadow-sm backdrop-blur-sm"
       role="status"
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">

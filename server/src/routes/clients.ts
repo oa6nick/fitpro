@@ -201,12 +201,34 @@ clientsRouter.patch(
   }),
 );
 
-// Смена статуса воронки.
+/** Разрешённые переходы — синхрон с client/src/lib/domain.ts FUNNEL_NEXT. */
+const FUNNEL_NEXT: Record<(typeof FUNNEL)[number], (typeof FUNNEL)[number][]> = {
+  new: ["profile_filled", "call", "archived"],
+  profile_filled: ["call", "awaiting_payment", "archived"],
+  call: ["awaiting_payment", "active", "archived"],
+  awaiting_payment: ["active", "call", "archived"],
+  active: ["frozen", "ending", "archived"],
+  frozen: ["active", "ending", "archived"],
+  ending: ["active", "archived"],
+  archived: ["active", "new"],
+};
+
+// Смена статуса воронки (только допустимые переходы).
 clientsRouter.patch(
   "/:id/status",
   asyncH(async (req, res) => {
-    await assertTrainerClient(req.user!.sub, req.params.id);
+    const client = await assertTrainerClient(req.user!.sub, req.params.id);
     const { status } = z.object({ status: z.enum(FUNNEL) }).parse(req.body);
+    const from = client.funnelStatus as (typeof FUNNEL)[number];
+    if (status !== from) {
+      const allowed = FUNNEL_NEXT[from] ?? [];
+      if (!allowed.includes(status)) {
+        throw new HttpError(
+          400,
+          `Нельзя перевести из «${from}» в «${status}». Допустимо: ${allowed.join(", ") || "—"}.`,
+        );
+      }
+    }
     const [updated] = await db
       .update(clients)
       .set({ funnelStatus: status })

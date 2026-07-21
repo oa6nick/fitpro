@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Dumbbell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,54 +33,70 @@ export function LoginPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full max-w-sm rounded-hero border-0 shadow-panel">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Dumbbell className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-xl">Вход в FitPro</CardTitle>
-          <CardDescription>Платформа для онлайн-тренера и его клиентов</CardDescription>
+      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-xl tracking-tight">С возвращением</CardTitle>
+          <CardDescription className="text-balance leading-relaxed">
+            Войдите в кабинет тренера или спортсмена — всё на своих местах.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 autoComplete="email"
+                placeholder="you@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="password">Пароль</Label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="password">Пароль</Label>
+                <Link
+                  to="/forgot"
+                  className="text-xs font-medium text-muted-foreground hover:text-primary"
+                >
+                  Забыли?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={busy}>
-              {busy ? "Входим…" : "Войти"}
+            {error && (
+              <p
+                className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+            <Button type="submit" className="w-full shadow-glow" disabled={busy}>
+              {busy ? "Входим…" : "Войти в кабинет"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Нет аккаунта?{" "}
-            <Link to="/register" className="font-medium text-primary hover:underline">
-              Зарегистрироваться
-            </Link>
-          </p>
-          <p className="mt-2 text-center text-sm">
-            <Link to="/forgot" className="text-muted-foreground hover:text-primary hover:underline">
-              Забыли пароль?
-            </Link>
-          </p>
+          <div className="mt-6 space-y-2 border-t border-border/60 pt-5 text-center text-sm">
+            <p className="text-muted-foreground">
+              Тренер без аккаунта?{" "}
+              <Link to="/register" className="font-medium text-primary hover:underline">
+                14 дней бесплатно
+              </Link>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Клиенту нужна ссылка-приглашение от тренера
+            </p>
+          </div>
         </CardContent>
       </Card>
     </AuthShell>

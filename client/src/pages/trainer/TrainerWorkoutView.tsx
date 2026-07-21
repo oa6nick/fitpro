@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, Check, Dumbbell, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync } from "@/components/common";
+import { PageHeader, Spinner, useAsync, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ export function TrainerWorkoutView() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return <Spinner />;
-  if (error || !data) return <p className="text-sm text-destructive">{error ?? "Не найдено"}</p>;
+  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} />;
 
   const { workout, items } = data;
   const reviewed = workout.reviewStatus === "reviewed";
@@ -48,7 +48,7 @@ export function TrainerWorkoutView() {
     <div>
       <Link
         to="/t"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-4 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> На главную
       </Link>

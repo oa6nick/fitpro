@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Dumbbell, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +46,7 @@ export function ExercisesPage() {
       <PageHeader
         eyebrow="Библиотека"
         title="Упражнения"
-        description="База упражнений тренера с техникой, ошибками и вариантами."
+        description="Библиотека с техникой, видео и мышцами — основа ваших программ."
         action={
           <Button onClick={() => setCreating(true)}>
             <Plus className="h-4 w-4" /> Упражнение
@@ -54,10 +54,10 @@ export function ExercisesPage() {
         }
       />
       {loading && <Spinner />}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <ErrorBanner message={error} />}
       {data &&
         (data.exercises.length === 0 ? (
-          <EmptyState text="Упражнений пока нет — добавьте первое." />
+          <EmptyState text="Упражнений пока нет" hint="Добавьте упражнение с техникой и видео — из них соберёте программы для клиентов." />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.exercises.map((ex) => (

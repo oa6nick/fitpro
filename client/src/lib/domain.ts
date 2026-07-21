@@ -57,6 +57,37 @@ export const FUNNEL_TONES: Record<FunnelStatus, FunnelTone> = {
   archived: "zinc",
 };
 
+/**
+ * Разрешённые переходы воронки (вперёд по пайплайну + ветки freeze/archive).
+ * Тренер может вернуться на шаг назад только в пределах «продажного» участка.
+ */
+export const FUNNEL_NEXT: Partial<Record<FunnelStatus, FunnelStatus[]>> = {
+  new: ["profile_filled", "call", "archived"],
+  profile_filled: ["call", "awaiting_payment", "archived"],
+  call: ["awaiting_payment", "active", "archived"],
+  awaiting_payment: ["active", "call", "archived"],
+  active: ["frozen", "ending", "archived"],
+  frozen: ["active", "ending", "archived"],
+  ending: ["active", "archived"],
+  archived: ["active", "new"],
+};
+
+/** Подсказка следующего шага для тренера. */
+export const FUNNEL_NEXT_HINT: Partial<Record<FunnelStatus, string>> = {
+  new: "Дождитесь анкеты или назначьте созвон",
+  profile_filled: "Проведите созвон или выставьте оплату",
+  call: "Переведите в оплату или активируйте",
+  awaiting_payment: "После оплаты — статус «Активный»",
+  active: "Ведите программу; при паузе — «Заморожен»",
+  frozen: "Верните в «Активный» или завершите",
+  ending: "Продлите или отправьте в архив",
+  archived: "Можно вернуть в работу при необходимости",
+};
+
+export function funnelAllowedTargets(from: FunnelStatus): FunnelStatus[] {
+  return FUNNEL_NEXT[from] ?? FUNNEL_ORDER.filter((s) => s !== from);
+}
+
 export const FEELING_LABELS: Record<string, string> = {
   easy: "Легко",
   moderate: "Умеренно",
