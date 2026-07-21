@@ -80,7 +80,7 @@ export function JoinPage() {
             </p>
           ) : invite ? (
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -92,7 +92,7 @@ export function JoinPage() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="password">Придумайте пароль</Label>
                 <Input
                   id="password"

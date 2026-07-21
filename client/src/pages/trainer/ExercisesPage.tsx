@@ -77,17 +77,7 @@ export function ExercisesPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                          await api.delete(`/exercises/${ex.id}`);
-                          reload();
-                        }}
-                        aria-label={`Удалить: ${ex.name}`}
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
+                      <DeleteExerciseButton exercise={ex} onDeleted={reload} />
                     </div>
                   </div>
                   {ex.muscles && (
@@ -120,6 +110,68 @@ export function ExercisesPage() {
         />
       )}
     </div>
+  );
+}
+
+/**
+ * Удаление упражнения идёт каскадом по БД: строки в шаблонах, в уже назначенных
+ * тренировках и записи клиентов в дневнике по нему тоже исчезают — поэтому спрашиваем.
+ */
+function DeleteExerciseButton({
+  exercise,
+  onDeleted,
+}: {
+  exercise: Exercise;
+  onDeleted: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/exercises/${exercise.id}`);
+      setOpen(false);
+      onDeleted();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить: ${exercise.name}`}
+        title="Удалить упражнение"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить упражнение?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Упражнение «{exercise.name}» пропадёт из библиотеки, из шаблонов и из уже
+              назначенных тренировок, а вместе с ним — записи клиентов в дневнике по этому
+              упражнению. Вернуть не получится.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

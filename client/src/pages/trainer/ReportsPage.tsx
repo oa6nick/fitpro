@@ -186,17 +186,7 @@ function Forms() {
                     <CardTitle className="flex items-center gap-2 text-base">
                       <FileText className="h-4 w-4 text-primary" /> {f.name}
                     </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={async () => {
-                        await api.delete(`/reports/forms/${f.id}`);
-                        reload();
-                      }}
-                      aria-label={`Удалить: ${f.name}`}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <DeleteFormButton form={f} onDeleted={reload} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -223,6 +213,62 @@ function Forms() {
         />
       )}
     </div>
+  );
+}
+
+/**
+ * Форма каскадом уносит свои поля и все заполнения клиентов с ответами —
+ * сданные отчёты НЕ переживают удаление формы, об этом и предупреждаем.
+ */
+function DeleteFormButton({ form, onDeleted }: { form: ReportForm; onDeleted: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/reports/forms/${form.id}`);
+      setOpen(false);
+      onDeleted();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить: ${form.name}`}
+        title="Удалить форму"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить форму?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Форма «{form.name}» будет удалена вместе со всеми полями и уже сданными по ней
+              отчётами клиентов — на вкладке «Заполнения» их больше не будет. Действие нельзя
+              отменить.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

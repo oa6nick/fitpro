@@ -24,23 +24,29 @@ export function PageHeader({
   description,
   eyebrow,
   action,
+  leading,
 }: {
   title: string;
   description?: string;
   /** Мелкая капс-надпись над заголовком (например, раздел). */
   eyebrow?: string;
   action?: React.ReactNode;
+  /** Слот слева от заголовка — аватар клиента на его карточке. */
+  leading?: React.ReactNode;
 }) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-      <div className="min-w-0">
-        {eyebrow && <p className="type-eyebrow mb-2">{eyebrow}</p>}
-        <h1 className="type-page-title text-balance">{title}</h1>
-        {description && (
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-            {description}
-          </p>
-        )}
+      <div className="flex min-w-0 items-start gap-3.5">
+        {leading}
+        <div className="min-w-0">
+          {eyebrow && <p className="type-eyebrow mb-2">{eyebrow}</p>}
+          <h1 className="type-page-title text-balance">{title}</h1>
+          {description && (
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
+              {description}
+            </p>
+          )}
+        </div>
       </div>
       {action && (
         <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>

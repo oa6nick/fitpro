@@ -6,7 +6,7 @@ export function ChartTooltip({ active, payload, label }: TooltipProps<number, st
   return (
     <div className="glass-elevated rounded-panel px-4 py-3 text-sm">
       {label !== undefined && (
-        <p className="type-caption mb-1.5 normal-case tracking-normal">{String(label)}</p>
+        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{String(label)}</p>
       )}
       {payload.map((p) => (
         <p key={String(p.dataKey)} className="flex items-center gap-2 tabular-nums">

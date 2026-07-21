@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "e2e": "node --test --test-concurrency=1 e2e/ui.e2e.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",

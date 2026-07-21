@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, BadgeCheck, Check, Dumbbell, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, ErrorBanner } from "@/components/common";
+import { PageHeader, Spinner, useAsync, ErrorBanner, EmptyState } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -69,40 +69,40 @@ export function TrainerWorkoutView() {
         }
       />
 
-      <Card className="mb-4">
-        <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 p-4 text-sm">
-          <span className="flex items-center gap-2">
-            <Dumbbell className="h-4 w-4 text-primary" />
-            <span className="text-muted-foreground">Тоннаж:</span>
-            <b className="tabular-nums">
-              {Math.round(workout.tonnage ?? 0).toLocaleString("ru-RU")} кг
-            </b>
-          </span>
-          {workout.clientFeeling && (
-            <span className="text-muted-foreground">
-              Самочувствие:{" "}
-              <b className="text-foreground">{FEELING_LABELS[workout.clientFeeling]}</b>
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 p-4 text-sm">
+            <span className="flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-primary" />
+              <span className="text-muted-foreground">Тоннаж:</span>
+              <b className="tabular-nums">
+                {Math.round(workout.tonnage ?? 0).toLocaleString("ru-RU")} кг
+              </b>
             </span>
-          )}
-        </CardContent>
-      </Card>
-
-      {workout.clientComment && (
-        <Card className="mb-4">
-          <CardContent className="p-4 text-sm">
-            <p className="type-caption mb-1">Комментарий клиента</p>
-            <p>{workout.clientComment}</p>
+            {workout.clientFeeling && (
+              <span className="text-muted-foreground">
+                Самочувствие:{" "}
+                <b className="text-foreground">{FEELING_LABELS[workout.clientFeeling]}</b>
+              </span>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      <div className="space-y-4">
+        {workout.clientComment && (
+          <Card>
+            <CardContent className="p-4 text-sm">
+              <p className="type-caption mb-1">Комментарий клиента</p>
+              <p>{workout.clientComment}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {items.map((item) => {
           const planned = item.sets ?? 0;
           const done = item.logs.length;
           return (
             <Card key={item.id}>
-              <CardHeader className="gap-1">
+              <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base">{item.exercise.name}</CardTitle>
                   <Badge variant={done >= planned && done > 0 ? "success" : "warning"}>
@@ -122,7 +122,7 @@ export function TrainerWorkoutView() {
                     <div
                       key={setNumber}
                       className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2 text-sm ${
-                        log ? "border-success/40 bg-success/5" : "border-dashed border-border"
+                        log ? "border-success/40 bg-success/8" : "border-dashed border-border"
                       }`}
                     >
                       {log ? (
@@ -150,39 +150,37 @@ export function TrainerWorkoutView() {
             </Card>
           );
         })}
-        {items.length === 0 && (
-          <p className="text-sm text-muted-foreground">В тренировке нет упражнений.</p>
-        )}
-      </div>
+        {items.length === 0 && <EmptyState icon={Dumbbell} text="В тренировке нет упражнений" />}
 
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">
-            {reviewed ? "Ваш комментарий" : "Проверка"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {reviewed ? (
-            <p className="text-sm">
-              {workout.trainerComment || (
-                <span className="text-muted-foreground">Без комментария</span>
-              )}
-            </p>
-          ) : (
-            <>
-              <Textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Комментарий клиенту: что получилось, что поправить…"
-                aria-label="Комментарий тренера"
-              />
-              <Button onClick={review} disabled={busy}>
-                <BadgeCheck className="h-4 w-4" /> {busy ? "Сохраняем…" : "Отметить проверенной"}
-              </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {reviewed ? "Ваш комментарий" : "Проверка"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {reviewed ? (
+              <p className="text-sm">
+                {workout.trainerComment || (
+                  <span className="text-muted-foreground">Без комментария</span>
+                )}
+              </p>
+            ) : (
+              <>
+                <Textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Комментарий клиенту: что получилось, что поправить…"
+                  aria-label="Комментарий тренера"
+                />
+                <Button onClick={review} disabled={busy}>
+                  <BadgeCheck className="h-4 w-4" /> {busy ? "Сохраняем…" : "Отметить проверенной"}
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

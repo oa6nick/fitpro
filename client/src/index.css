@@ -301,9 +301,15 @@
     opacity: 0.85;
   }
 
-  /* Page content enter */
+  /*
+   * Page content enter.
+   * fill-mode ТОЛЬКО backwards: с `both` на элементе навсегда остаётся
+   * transform из последнего кадра, а элемент с transform становится
+   * containing block для position:fixed внутри — липкие панели переставали
+   * быть липкими и уезжали в конец страницы.
+   */
   .page-enter {
-    animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   /* Subtle top highlight line on cards */
@@ -403,9 +409,9 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 
-  /* Stagger children on page enter */
+  /* Stagger children on page enter (fill-mode — см. комментарий у .page-enter) */
   .stagger-children > * {
-    animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
   .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
   .stagger-children > *:nth-child(2) { animation-delay: 40ms; }

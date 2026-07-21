@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Bell, Wallet } from "lucide-react";
+import { Plus, Bell, Wallet, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import {
   PageHeader,
@@ -8,6 +8,7 @@ import {
   useAsync,
   EmptyState,
   ErrorBanner,
+  FormError,
   TableScroll,
 } from "@/components/common";
 import { Button } from "@/components/ui/button";
@@ -35,9 +36,44 @@ interface FinanceData {
   totals: { paid: number; overdue: number };
 }
 
+/** Состояние отправки напоминания по конкретному платежу. */
+type RemindState =
+  | { status: "sending" }
+  | { status: "sent" }
+  | { status: "error"; message: string };
+
+/** Сколько держим подпись «Отправлено», прежде чем вернуть кнопку в обычный вид. */
+const SENT_LABEL_MS = 4000;
+
 export function FinancePage() {
   const { data, loading, error, reload } = useAsync<FinanceData>(() => api.get("/finance"));
   const [adding, setAdding] = useState(false);
+  // Ключ — id платежа: таблица и мобильный список рендерятся отдельно,
+  // но состояние у них общее, поэтому храним его здесь, а не внутри кнопки.
+  const [reminders, setReminders] = useState<Record<string, RemindState>>({});
+
+  async function sendReminder(payment: Payment) {
+    setReminders((s) => ({ ...s, [payment.id]: { status: "sending" } }));
+    try {
+      await api.post(`/finance/${payment.id}/remind`);
+      setReminders((s) => ({ ...s, [payment.id]: { status: "sent" } }));
+      setTimeout(() => {
+        setReminders((s) => {
+          const next = { ...s };
+          delete next[payment.id];
+          return next;
+        });
+      }, SENT_LABEL_MS);
+    } catch (e) {
+      setReminders((s) => ({
+        ...s,
+        [payment.id]: {
+          status: "error",
+          message: e instanceof Error ? e.message : "Не удалось отправить напоминание",
+        },
+      }));
+    }
+  }
 
   return (
     <div>
@@ -94,15 +130,11 @@ export function FinancePage() {
                         <Badge variant={p.status === "paid" ? "success" : "destructive"}>
                           {p.status === "paid" ? "Оплачено" : "Просрочено"}
                         </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={async () => {
-                            await api.post(`/finance/${p.id}/remind`);
-                          }}
-                        >
-                          <Bell className="h-4 w-4" /> Напомнить
-                        </Button>
+                        <RemindButton
+                          payment={p}
+                          state={reminders[p.id]}
+                          onSend={sendReminder}
+                        />
                       </div>
                     </li>
                   ))}
@@ -113,12 +145,14 @@ export function FinancePage() {
                 <table className="hidden w-full text-sm md:table">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
-                      <th className="p-3 font-medium">Клиент</th>
-                      <th className="p-3 font-medium">Сумма</th>
-                      <th className="p-3 font-medium">Дата</th>
-                      <th className="p-3 font-medium">Статус</th>
-                      <th className="p-3 font-medium">Продление</th>
-                      <th className="p-3"></th>
+                      <th scope="col" className="p-3 font-medium">Клиент</th>
+                      <th scope="col" className="p-3 font-medium">Сумма</th>
+                      <th scope="col" className="p-3 font-medium">Дата</th>
+                      <th scope="col" className="p-3 font-medium">Статус</th>
+                      <th scope="col" className="p-3 font-medium">Продление</th>
+                      <th scope="col" className="p-3">
+                        <span className="sr-only">Действия</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -134,15 +168,11 @@ export function FinancePage() {
                         </td>
                         <td className="p-3 text-muted-foreground">{p.nextRenewalDate ?? "—"}</td>
                         <td className="p-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              await api.post(`/finance/${p.id}/remind`);
-                            }}
-                          >
-                            <Bell className="h-4 w-4" /> Напомнить
-                          </Button>
+                          <RemindButton
+                            payment={p}
+                            state={reminders[p.id]}
+                            onSend={sendReminder}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -162,6 +192,43 @@ export function FinancePage() {
             reload();
           }}
         />
+      )}
+    </div>
+  );
+}
+
+function RemindButton({
+  payment,
+  state,
+  onSend,
+}: {
+  payment: Payment;
+  state?: RemindState;
+  onSend: (payment: Payment) => void;
+}) {
+  const status = state?.status;
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <Button
+        variant={status === "sent" ? "outline" : "ghost"}
+        size="sm"
+        onClick={() => onSend(payment)}
+        disabled={status === "sending" || status === "sent"}
+        aria-label={`Напомнить ${payment.clientName}`}
+      >
+        {status === "sent" ? (
+          <Check className="h-4 w-4 text-success" />
+        ) : (
+          <Bell className="h-4 w-4" />
+        )}
+        {/* role="status" — чтобы скринридер сам озвучил смену «Отправляем…» → «Отправлено». */}
+        <span role="status">
+          {status === "sending" ? "Отправляем…" : status === "sent" ? "Отправлено" : "Напомнить"}
+        </span>
+      </Button>
+      {state?.status === "error" && (
+        <FormError message={state.message} className="px-2 py-1 text-xs" />
       )}
     </div>
   );

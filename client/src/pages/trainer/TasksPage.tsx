@@ -9,6 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -85,23 +91,68 @@ function LibraryTab() {
                   <span className="flex items-center gap-2 text-sm font-medium">
                     <CheckSquare className="h-4 w-4 text-primary" /> {h.title}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={async () => {
-                      await api.delete(`/tasks/habits/${h.id}`);
-                      reload();
-                    }}
-                    aria-label={`Удалить: ${h.title}`}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  <DeleteHabitButton habit={h} onDeleted={reload} />
                 </CardContent>
               </Card>
             ))}
           </div>
         ))}
     </div>
+  );
+}
+
+/**
+ * Привычка каскадом уносит свои назначения и отметки выполнения,
+ * то есть % соблюдения за прошлые недели тоже пропадёт.
+ */
+function DeleteHabitButton({ habit, onDeleted }: { habit: HabitTask; onDeleted: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/tasks/habits/${habit.id}`);
+      setOpen(false);
+      onDeleted();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить: ${habit.title}`}
+        title="Удалить привычку"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить привычку?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Привычка «{habit.title}» исчезнет из библиотеки и снимется у всех клиентов, кому
+              она назначена. Отметки выполнения и % соблюдения по ней тоже пропадут.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

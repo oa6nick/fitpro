@@ -65,17 +65,7 @@ export function KnowledgePage() {
                         <Icon className="h-4 w-4 text-primary" />
                         <span className="font-medium">{it.title}</span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                          await api.delete(`/knowledge/${it.id}`);
-                          reload();
-                        }}
-                        aria-label={`Удалить: ${it.title}`}
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
+                      <DeleteKnowledgeButton item={it} onDeleted={reload} />
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Badge variant="secondary">
@@ -112,6 +102,64 @@ export function KnowledgePage() {
         />
       )}
     </div>
+  );
+}
+
+/** Удаление материала каскадом снимает и выданные клиентам доступы к нему. */
+function DeleteKnowledgeButton({
+  item,
+  onDeleted,
+}: {
+  item: KnowledgeItem;
+  onDeleted: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/knowledge/${item.id}`);
+      setOpen(false);
+      onDeleted();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить: ${item.title}`}
+        title="Удалить материал"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить материал?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Материал «{item.title}» будет удалён из базы знаний и пропадёт у клиентов,
+              которым он уже открылся. Загруженный файл придётся прикреплять заново.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

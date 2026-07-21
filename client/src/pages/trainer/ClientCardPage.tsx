@@ -15,6 +15,7 @@ import {
   Spinner,
   useAsync,
   EmptyState,
+  PageHeader,
   TableScroll,
   ErrorBanner,
   Avatar,
@@ -85,27 +86,23 @@ export function ClientCardPage() {
       >
         <ArrowLeft className="h-4 w-4" /> К списку клиентов
       </Link>
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3.5">
-          <Avatar name={client.name} size="lg" className="mt-0.5" />
-          <div className="min-w-0">
-            <p className="type-eyebrow mb-1.5">Карточка клиента</p>
-            <h1 className="type-page-title text-balance">{client.name}</h1>
-            {client.goal && (
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{client.goal}</p>
+      <PageHeader
+        eyebrow="Карточка клиента"
+        title={client.name}
+        description={client.goal ?? undefined}
+        leading={<Avatar name={client.name} size="lg" className="mt-0.5" />}
+        action={
+          <>
+            {client.isDemo && <Badge variant="info">Демо</Badge>}
+            {client.riskFlag && client.funnelStatus === "active" && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="h-3 w-3" /> Зона риска
+              </Badge>
             )}
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          {client.isDemo && <Badge variant="info">Демо</Badge>}
-          {client.riskFlag && client.funnelStatus === "active" && (
-            <Badge variant="destructive" className="gap-1">
-              <AlertTriangle className="h-3 w-3" /> Зона риска
-            </Badge>
-          )}
-          <DeleteClientButton clientId={client.id} name={client.name} />
-        </div>
-      </div>
+            <DeleteClientButton clientId={client.id} name={client.name} />
+          </>
+        }
+      />
 
       {!client.userId && <InviteBlock clientId={client.id} />}
 

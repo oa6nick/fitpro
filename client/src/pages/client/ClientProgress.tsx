@@ -240,11 +240,11 @@ export function ClientProgress() {
                       <table className="w-full min-w-[520px] text-sm">
                         <thead>
                           <tr className="border-b text-left text-muted-foreground">
-                            <th className="p-3 font-medium">Дата</th>
-                            <th className="p-3 font-medium">Вес</th>
-                            <th className="p-3 font-medium">Талия</th>
-                            <th className="p-3 font-medium">Бёдра</th>
-                            <th className="p-3 font-medium">Грудь</th>
+                            <th scope="col" className="p-3 font-medium">Дата</th>
+                            <th scope="col" className="p-3 font-medium">Вес</th>
+                            <th scope="col" className="p-3 font-medium">Талия</th>
+                            <th scope="col" className="p-3 font-medium">Бёдра</th>
+                            <th scope="col" className="p-3 font-medium">Грудь</th>
                           </tr>
                         </thead>
                         <tbody>

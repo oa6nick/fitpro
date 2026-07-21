@@ -60,7 +60,7 @@ export function ForgotPasswordPage() {
         <CardContent>
           {step === 1 ? (
             <form onSubmit={requestCode} className="space-y-4">
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -79,7 +79,7 @@ export function ForgotPasswordPage() {
             </form>
           ) : (
             <form onSubmit={confirmReset} className="space-y-4">
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="code">Код из письма</Label>
                 <Input
                   id="code"
@@ -92,7 +92,7 @@ export function ForgotPasswordPage() {
                   required
                 />
               </div>
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="password">Новый пароль</Label>
                 <Input
                   id="password"

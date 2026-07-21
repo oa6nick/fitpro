@@ -43,7 +43,7 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
+            <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -55,7 +55,7 @@ export function LoginPage() {
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div>
               <div className="flex items-center justify-between gap-2">
                 <Label htmlFor="password">Пароль</Label>
                 <Link

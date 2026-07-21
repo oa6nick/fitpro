@@ -119,7 +119,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
         </CardHeader>
         <CardContent className="space-y-4 pt-2">
           {FIELDS.map(({ key, label, hint }) => (
-            <div key={key} className="space-y-1.5">
+            <div key={key}>
               <Label htmlFor={key}>{label}</Label>
               {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
               <Textarea
@@ -131,7 +131,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
               />
             </div>
           ))}
-          <div className="max-w-xs space-y-1.5">
+          <div className="max-w-xs">
             <Label htmlFor="steps">Шагов в день (примерно)</Label>
             <Input
               id="steps"

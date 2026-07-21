@@ -259,9 +259,9 @@ export function WorkoutDiary() {
       {!done && (
         <div
           className="glass-header fixed inset-x-0 z-20 border-t border-border/60 px-4 py-3 md:bottom-0"
-          // Нижняя навигация занимает 4rem + вырез телефона; без этого запаса
-          // панель «Завершить» уезжает под таб-бар на iPhone.
-          style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}
+          // Нижняя навигация — 4.5rem вместе с подписями плюс вырез телефона;
+          // без этого запаса панель «Завершить» перекрывается таб-баром.
+          style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <div className="mx-auto flex max-w-6xl items-center gap-3">
             <div className="min-w-0 flex-1">

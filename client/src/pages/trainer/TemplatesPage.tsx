@@ -74,17 +74,7 @@ export function TemplatesPage() {
                     </div>
                     {t.goal && <p className="mt-1 text-xs text-muted-foreground">{t.goal}</p>}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={async () => {
-                      await api.delete(`/templates/${t.id}`);
-                      reload();
-                    }}
-                    aria-label={`Удалить: ${t.name}`}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  <DeleteTemplateButton template={t} onDeleted={reload} />
                 </CardContent>
               </Card>
             ))}
@@ -101,6 +91,65 @@ export function TemplatesPage() {
         />
       )}
     </div>
+  );
+}
+
+/** Тренировки, собранные из шаблона, хранятся отдельно (templateId просто обнуляется). */
+function DeleteTemplateButton({
+  template,
+  onDeleted,
+}: {
+  template: WorkoutTemplate;
+  onDeleted: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api.delete(`/templates/${template.id}`);
+      setOpen(false);
+      onDeleted();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label={`Удалить: ${template.name}`}
+        title="Удалить шаблон"
+      >
+        <Trash2 className="h-4 w-4 text-muted-foreground" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удалить программу?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Программа-шаблон «{template.name}» будет удалена, и собрать её заново придётся
+              вручную. Тренировки, уже назначенные клиентам по этому шаблону, останутся на
+              месте.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+                Отмена
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? "Удаляем…" : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

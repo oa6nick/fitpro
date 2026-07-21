@@ -62,7 +62,7 @@ export function RegisterPage() {
             ))}
           </ul>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
+            <div>
               <Label htmlFor="name">Имя</Label>
               <Input
                 id="name"
@@ -72,7 +72,7 @@ export function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -84,7 +84,7 @@ export function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div>
               <Label htmlFor="password">Пароль</Label>
               <Input
                 id="password"

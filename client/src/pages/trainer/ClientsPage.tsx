@@ -55,11 +55,14 @@ export function ClientsPage() {
         description="Воронка от заявки до архива. Зона риска подсвечена — не теряйте тех, кто затих."
         action={
           <div className="flex items-center gap-2">
-            <div className="flex rounded-full border border-border/70 bg-card/80 p-0.5 shadow-sm">
+            {/* Сегментированный переключатель вида — та же подложка, что у TabsList. */}
+            <div className="surface-subtle inline-flex items-center rounded-full p-1">
               <Button
                 variant={view === "board" ? "default" : "ghost"}
                 size="icon"
-                className="h-8 w-8"
+                className={`h-8 w-8 ${
+                  view === "board" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
                 onClick={() => setView("board")}
                 aria-label="Вид: доска"
                 aria-pressed={view === "board"}
@@ -69,7 +72,9 @@ export function ClientsPage() {
               <Button
                 variant={view === "list" ? "default" : "ghost"}
                 size="icon"
-                className="h-8 w-8"
+                className={`h-8 w-8 ${
+                  view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
                 onClick={() => setView("list")}
                 aria-label="Вид: список"
                 aria-pressed={view === "list"}
@@ -107,11 +112,11 @@ function Board({ clients }: { clients: Client[] }) {
         const list = clients.filter((c) => c.funnelStatus === status);
         return (
           <div key={status} className="w-[78vw] shrink-0 snap-start sm:w-64">
-            <div className="mb-2.5 flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-2.5 py-2">
-              <span className="type-caption !tracking-[0.12em]">{FUNNEL_LABELS[status]}</span>
+            <div className="surface-subtle mb-2.5 flex items-center justify-between gap-2 rounded-xl px-2.5 py-2">
+              <span className="type-caption">{FUNNEL_LABELS[status]}</span>
               <Badge variant={FUNNEL_TONES[status]}>{list.length}</Badge>
             </div>
-            <div className="min-h-[4.5rem] space-y-2 rounded-panel border border-dashed border-border/50 bg-muted/15 p-1.5">
+            <div className="surface-subtle min-h-[4.5rem] space-y-2 rounded-panel border-dashed p-1.5">
               {list.map((c) => (
                 <Link
                   key={c.id}

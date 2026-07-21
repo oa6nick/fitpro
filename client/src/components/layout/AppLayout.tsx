@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { EmailVerifyBanner } from "@/components/EmailVerifyBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -67,6 +67,24 @@ export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Мобильное меню — модальное: Escape закрывает, фокус уходит внутрь панели
+  // и не убегает на контент под ней, скролл страницы замораживается.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
   const isTrainer = user?.role === "trainer";
   const nav = isTrainer ? TRAINER_NAV : CLIENT_NAV;
   const bottomPaths = isTrainer ? TRAINER_BOTTOM : CLIENT_BOTTOM;
@@ -164,6 +182,7 @@ export function AppLayout() {
         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 animate-in fade-in-0 bg-black/50 backdrop-blur-sm duration-200" />
           <div
+            ref={drawerRef}
             role="dialog"
             aria-modal="true"
             aria-label="Меню навигации"
