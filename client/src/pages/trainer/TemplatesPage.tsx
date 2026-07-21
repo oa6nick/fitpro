@@ -58,7 +58,7 @@ export function TemplatesPage() {
         }
       />
       {loading && <Spinner />}
-      {error && <ErrorBanner message={error} />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.templates.length === 0 ? (
           <EmptyState text="Шаблонов пока нет" hint="Соберите первую программу из библиотеки — потом назначайте её клиентам за минуту." />
@@ -66,7 +66,7 @@ export function TemplatesPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.templates.map((t) => (
               <Card key={t.id}>
-                <CardContent className="flex items-start justify-between pt-6">
+                <CardContent className="flex items-start justify-between p-4 sm:p-5">
                   <div>
                     <div className="flex items-center gap-2">
                       <ClipboardList className="h-4 w-4 text-primary" />
@@ -81,7 +81,7 @@ export function TemplatesPage() {
                       await api.delete(`/templates/${t.id}`);
                       reload();
                     }}
-                    aria-label="Удалить"
+                    aria-label={`Удалить: ${t.name}`}
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
@@ -225,7 +225,7 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
             {rows.map((r, i) => (
               <div
                 key={i}
-                className={`flex items-center gap-2 rounded-lg border p-2 ${
+                className={`flex flex-wrap items-center gap-2 rounded-xl border p-2 ${
                   r.groupKey ? "border-primary/40 bg-primary/5" : ""
                 }`}
               >
@@ -239,7 +239,7 @@ function BuilderDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () 
                   className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
                 />
                 <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="w-40 shrink-0 truncate text-sm font-medium">
+                <span className="min-w-0 flex-1 basis-full truncate text-sm font-medium sm:w-40 sm:basis-auto">
                   {exMap.get(r.exerciseId)?.name ?? "?"}
                   {r.groupKey && (
                     <button

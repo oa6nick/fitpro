@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Plus, Trash2, CheckSquare } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -45,7 +46,9 @@ export function TasksPage() {
 }
 
 function LibraryTab() {
-  const { data, loading, reload } = useAsync<{ habits: HabitTask[] }>(() => api.get("/tasks/habits"));
+  const { data, loading, error, reload } = useAsync<{ habits: HabitTask[] }>(() =>
+    api.get("/tasks/habits"),
+  );
   const [title, setTitle] = useState("");
 
   async function add() {
@@ -58,7 +61,7 @@ function LibraryTab() {
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="flex gap-2 pt-6">
+        <CardContent className="flex gap-2 p-4 sm:p-5">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -70,6 +73,7 @@ function LibraryTab() {
         </CardContent>
       </Card>
       {loading && <Spinner />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.habits.length === 0 ? (
           <EmptyState text="Библиотека пуста" hint="Добавьте привычки (шаги, вода, сон), затем назначьте клиенту на неделю." />
@@ -88,7 +92,7 @@ function LibraryTab() {
                       await api.delete(`/tasks/habits/${h.id}`);
                       reload();
                     }}
-                    aria-label="Удалить"
+                    aria-label={`Удалить: ${h.title}`}
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
@@ -116,11 +120,11 @@ function AssignTab() {
 
   return (
     <Card>
-      <CardContent className="max-w-md space-y-3 pt-6">
+      <CardContent className="max-w-md space-y-3 p-4 sm:p-5">
         <div>
-          <label className="mb-1 block text-sm font-medium">Клиент</label>
+          <Label>Клиент</Label>
           <Select value={clientId} onValueChange={setClientId}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Клиент">
               <SelectValue placeholder="Выберите клиента" />
             </SelectTrigger>
             <SelectContent>
@@ -133,9 +137,9 @@ function AssignTab() {
           </Select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Привычка</label>
+          <Label>Привычка</Label>
           <Select value={habitId} onValueChange={setHabitId}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Привычка">
               <SelectValue placeholder="Выберите привычку" />
             </SelectTrigger>
             <SelectContent>
@@ -162,9 +166,9 @@ function ComplianceTab() {
 
   return (
     <div className="space-y-4">
-      <div className="w-56">
+      <div className="w-full sm:w-56">
         <Select value={clientId} onValueChange={setClientId}>
-          <SelectTrigger>
+          <SelectTrigger aria-label="Выбор клиента">
             <SelectValue placeholder="Выберите клиента" />
           </SelectTrigger>
           <SelectContent>
@@ -182,11 +186,12 @@ function ComplianceTab() {
 }
 
 function ComplianceList({ clientId }: { clientId: string }) {
-  const { data, loading } = useAsync<{ weekStart: string; tasks: TaskWeekItem[] }>(
+  const { data, loading, error, reload } = useAsync<{ weekStart: string; tasks: TaskWeekItem[] }>(
     () => api.get(`/tasks/compliance?clientId=${clientId}`),
     [clientId],
   );
   if (loading) return <Spinner />;
+  if (error) return <ErrorBanner message={error} onRetry={reload} />;
   if (!data || data.tasks.length === 0) return <EmptyState text="На эту неделю задач нет" hint="Назначьте привычки клиенту — % соблюдения появится здесь." />;
   return (
     <Card>

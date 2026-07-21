@@ -29,7 +29,7 @@ export function TrainerWorkoutView() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return <Spinner />;
-  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} />;
+  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} onRetry={reload} />;
 
   const { workout, items } = data;
   const reviewed = workout.reviewStatus === "reviewed";

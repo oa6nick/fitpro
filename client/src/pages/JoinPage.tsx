@@ -5,8 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthShell } from "@/components/AuthShell";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AuthCard, AuthShell } from "@/components/AuthShell";
+import { FormError } from "@/components/common";
 
 interface InviteInfo {
   trainerName: string;
@@ -53,17 +55,19 @@ export function JoinPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+      <AuthCard>
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-xl tracking-tight">
+          <CardTitle className="type-page-title">
             {invite ? `Привет, ${invite.clientName}!` : "Приглашение в FitPro"}
           </CardTitle>
           <CardDescription className="text-balance leading-relaxed">
-            {notFound
-              ? "Приглашение не найдено или устарело"
-              : invite
-                ? `Тренер ${invite.trainerName} приглашает вас в личный кабинет: тренировки, дневник и прогресс.`
-                : "Проверяем приглашение…"}
+            {notFound ? (
+              "Приглашение не найдено или устарело"
+            ) : invite ? (
+              `Тренер ${invite.trainerName} приглашает вас в личный кабинет: тренировки, дневник и прогресс.`
+            ) : (
+              <Skeleton className="mx-auto h-4 w-3/4" />
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,24 +105,32 @@ export function JoinPage() {
                   required
                 />
               </div>
-              {error && (
-                <p
-                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                  role="alert"
-                >
-                  {error}
-                </p>
-              )}
-              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
+              {error && <FormError message={error} />}
+              <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? "Создаём кабинет…" : "Открыть мой кабинет"}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 После входа вы увидите программу, дневник и материалы от тренера
               </p>
             </form>
-          ) : null}
+          ) : (
+            // Пока грузим инвайт — держим ту же высоту, что и форма
+            <div className="space-y-4" aria-hidden>
+              <Skeleton className="h-11 w-full rounded-control" />
+              <Skeleton className="h-11 w-full rounded-control" />
+              <Skeleton className="h-11 w-full rounded-control" />
+            </div>
+          )}
+          {!notFound && (
+            <p className="mt-6 border-t border-border/60 pt-5 text-center text-sm text-muted-foreground">
+              Уже есть аккаунт?{" "}
+              <Link to="/login" className="font-medium text-primary hover:underline">
+                Войти
+              </Link>
+            </p>
+          )}
         </CardContent>
-      </Card>
+      </AuthCard>
     </AuthShell>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Trash2, FileText, Video, ListChecks, Lock } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,7 @@ import {
 const TYPE_ICON = { pdf: FileText, video: Video, checklist: ListChecks };
 
 export function KnowledgePage() {
-  const { data, loading, reload } = useAsync<{ items: KnowledgeItem[] }>(() =>
+  const { data, loading, error, reload } = useAsync<{ items: KnowledgeItem[] }>(() =>
     api.get("/knowledge"),
   );
   const [creating, setCreating] = useState(false);
@@ -49,6 +49,7 @@ export function KnowledgePage() {
         }
       />
       {loading && <Spinner />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.items.length === 0 ? (
           <EmptyState text="Материалов пока нет" hint="Загрузите гайд, видео или чек-лист — клиент увидит его в кабинете." />
@@ -58,7 +59,7 @@ export function KnowledgePage() {
               const Icon = TYPE_ICON[it.type];
               return (
                 <Card key={it.id}>
-                  <CardContent className="pt-6">
+                  <CardContent className="p-4 sm:p-5">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <Icon className="h-4 w-4 text-primary" />
@@ -71,7 +72,7 @@ export function KnowledgePage() {
                           await api.delete(`/knowledge/${it.id}`);
                           reload();
                         }}
-                        aria-label="Удалить"
+                        aria-label={`Удалить: ${it.title}`}
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground" />
                       </Button>

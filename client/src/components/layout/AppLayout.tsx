@@ -50,12 +50,12 @@ const TRAINER_NAV: NavItem[] = [
 
 const CLIENT_NAV: NavItem[] = [
   { to: "/c", label: "Главная", short: "Главная", icon: Home, end: true },
-  { to: "/c/workouts", label: "Тренировки", short: "Тренировки", icon: Dumbbell },
+  { to: "/c/workouts", label: "Тренировки", short: "Трен.", icon: Dumbbell },
   { to: "/c/progress", label: "Прогресс", short: "Прогресс", icon: LineChart },
   { to: "/c/profile", label: "Анкета", short: "Анкета", icon: UserCircle },
   { to: "/c/reports", label: "Отчёты", short: "Отчёты", icon: NotebookPen },
-  { to: "/c/tasks", label: "Привычки", short: "Привычки", icon: CheckSquare },
-  { to: "/c/knowledge", label: "Материалы", short: "Материалы", icon: BookOpen },
+  { to: "/c/tasks", label: "Привычки", short: "Привыч.", icon: CheckSquare },
+  { to: "/c/knowledge", label: "Материалы", short: "Матер.", icon: BookOpen },
 ];
 
 /** Основные пункты нижней мобильной навигации (остальное — «Ещё»). */
@@ -198,7 +198,8 @@ export function AppLayout() {
           <NotificationsBell />
         </header>
 
-        <div className="page-enter mx-auto max-w-6xl p-4 pb-24 md:p-8 md:pb-10">
+        {/* Нижняя навигация = 4rem + вырез телефона: запас снизу считаем от него. */}
+        <div className="page-enter mx-auto max-w-6xl p-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:p-8 md:pb-10">
           <EmailVerifyBanner />
           <Outlet />
         </div>
@@ -217,7 +218,7 @@ export function AppLayout() {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors",
+                  "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive ? "text-primary" : "text-muted-foreground active:text-foreground",
                 )
               }
@@ -241,7 +242,7 @@ export function AppLayout() {
             type="button"
             onClick={() => setOpen(true)}
             className={cn(
-              "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors",
+              "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               moreActive ? "text-primary" : "text-muted-foreground active:text-foreground",
             )}
             aria-label="Открыть полное меню"

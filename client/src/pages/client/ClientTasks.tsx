@@ -61,8 +61,11 @@ export function ClientTasks() {
         title="Привычки недели"
         description="Отмечайте дни одним тапом — тренер видит % соблюдения в реальном времени."
       />
-      {loading && <Spinner />}
-      {error && <ErrorBanner message={error} onRetry={reload} />}
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <ErrorBanner message={error} onRetry={reload} />
+      ) : null}
       {data &&
         (data.tasks.length === 0 ? (
           <EmptyState
@@ -71,8 +74,8 @@ export function ClientTasks() {
             hint="Тренер назначит привычки (шаги, вода, сон) — они появятся здесь с отметками по дням."
           />
         ) : (
-          <div className="space-y-4">
-            <Card className="border-primary/15 bg-gradient-to-br from-primary/[0.06] to-transparent">
+          <div className="space-y-5">
+            <Card className="border-primary/20 bg-primary/[0.04]">
               <CardContent className="flex items-center gap-4 p-4 sm:p-5">
                 <ProgressRing value={avg} size={56} stroke={5}>
                   <span className="text-xs font-bold text-primary">{avg}%</span>
@@ -104,8 +107,9 @@ export function ClientTasks() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex gap-1.5">
+                    <CardContent className="p-4 sm:p-5">
+                      {/* Семь кнопок в ряд: на 375px flex+gap-1.5 давал ~38px на тап. */}
+                      <div className="grid grid-cols-7 gap-1">
                         {dates.map((date, i) => {
                           const done = t.doneDays.includes(date);
                           const isToday =

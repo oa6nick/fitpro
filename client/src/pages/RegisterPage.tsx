@@ -5,8 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthShell } from "@/components/AuthShell";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard, AuthShell } from "@/components/AuthShell";
+import { FormError } from "@/components/common";
 
 /** Саморегистрация — только для тренеров. Клиенты подключаются по приглашению (/join/:token). */
 export function RegisterPage() {
@@ -38,9 +39,9 @@ export function RegisterPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+      <AuthCard>
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-xl tracking-tight">Регистрация тренера</CardTitle>
+          <CardTitle className="type-page-title">Регистрация тренера</CardTitle>
           <CardDescription className="text-balance leading-relaxed">
             {plan
               ? "14 дней полного доступа. Карта не нужна — тариф выберете после пробного периода."
@@ -48,7 +49,7 @@ export function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="mb-5 space-y-1.5 rounded-xl border border-border bg-muted/40 px-3.5 py-3 text-sm text-muted-foreground">
+          <ul className="surface-subtle mb-5 space-y-1.5 rounded-panel px-3.5 py-3 text-sm text-muted-foreground">
             {[
               "До 10 клиентов в пробном периоде",
               "Клиенты входят по вашей ссылке",
@@ -96,26 +97,19 @@ export function RegisterPage() {
                 required
               />
             </div>
-            {error && (
-              <p
-                className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                role="alert"
-              >
-                {error}
-              </p>
-            )}
+            {error && <FormError message={error} />}
             <Button type="submit" className="w-full" disabled={busy}>
               {busy ? "Создаём кабинет…" : "Создать кабинет"}
             </Button>
           </form>
-          <p className="mt-5 text-center text-sm text-muted-foreground">
+          <p className="mt-6 border-t border-border/60 pt-5 text-center text-sm text-muted-foreground">
             Уже есть аккаунт?{" "}
             <Link to="/login" className="font-medium text-primary hover:underline">
               Войти
             </Link>
           </p>
         </CardContent>
-      </Card>
+      </AuthCard>
     </AuthShell>
   );
 }

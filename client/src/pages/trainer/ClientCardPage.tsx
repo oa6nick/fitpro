@@ -73,7 +73,7 @@ export function ClientCardPage() {
   );
 
   if (loading) return <Spinner />;
-  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} />;
+  if (error || !data) return <ErrorBanner message={error ?? "Не найдено"} onRetry={reload} />;
 
   const { client } = data;
 
@@ -240,7 +240,7 @@ function MainTab({ client, onChange }: { client: Client; onChange: () => void })
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-4 p-4 sm:p-5">
           <div>
             <Label>Статус воронки</Label>
             <p className="mb-2 text-xs text-muted-foreground">
@@ -339,7 +339,7 @@ function ProfileTab({
 
   return (
     <Card>
-      <CardContent className="space-y-3 pt-6">
+      <CardContent className="space-y-3 p-4 sm:p-5">
         {PROFILE_FIELDS.map(({ key, label }) => (
           <div key={key}>
             <Label>{label}</Label>
@@ -389,7 +389,7 @@ function NotesTab({
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="space-y-2 pt-6">
+        <CardContent className="space-y-2 p-4 sm:p-5">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -405,7 +405,7 @@ function NotesTab({
       ) : (
         notes.map((n) => (
           <Card key={n.id}>
-            <CardContent className="flex items-start justify-between gap-3 pt-6">
+            <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-5">
               <div>
                 <p className="whitespace-pre-wrap text-sm">{n.text}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -452,8 +452,8 @@ function WorkoutsTab({
             to={`/t/workouts/${w.id}`}
             className="block rounded-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Card className="transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:shadow-panel">
-              <CardContent className="flex flex-wrap items-center justify-between gap-2 pt-6">
+            <Card className="surface-interactive">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 sm:p-5">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{w.title ?? "Тренировка"}</p>
                   <p className="text-xs text-muted-foreground">

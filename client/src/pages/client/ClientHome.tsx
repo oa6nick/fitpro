@@ -27,8 +27,9 @@ import {
   SectionTitle,
 } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import type { Client, ClientProfile, Workout, Achievement } from "@/lib/domain";
 
 interface PaymentInfo {
@@ -64,6 +65,7 @@ export function ClientHome() {
 
   if (me.loading || workouts.loading) return <Spinner />;
   if (me.error) return <ErrorBanner message={me.error} onRetry={me.reload} />;
+  if (workouts.error) return <ErrorBanner message={workouts.error} onRetry={workouts.reload} />;
 
   const client = me.data?.client;
   const profileFilled = !!me.data?.profile;
@@ -101,7 +103,7 @@ export function ClientHome() {
       )}
 
       {/* Hero: next workout */}
-      <Card className="aura-panel overflow-hidden border-primary/20 pl-1">
+      <Card className="aura-panel overflow-hidden border-primary/20 bg-primary/[0.04] pl-1">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="text-base">Ближайшая тренировка</CardTitle>
@@ -119,7 +121,7 @@ export function ClientHome() {
               className="surface-interactive flex items-center justify-between gap-3 border-primary/20 bg-card/90 p-4 shadow-sm"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <div className="icon-well h-12 w-12 rounded-2xl shadow-glow">
+                <div className="icon-well h-12 w-12">
                   <Dumbbell className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
@@ -129,7 +131,8 @@ export function ClientHome() {
                   </p>
                 </div>
               </div>
-              <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">
+              {/* Не кнопка, а метка внутри ссылки — клик обрабатывает сама ссылка */}
+              <span className={cn(buttonVariants({ size: "sm" }), "pointer-events-none shrink-0")}>
                 Начать
                 <ChevronRight className="h-3.5 w-3.5" />
               </span>
@@ -168,22 +171,16 @@ export function ClientHome() {
 
       {(client?.goal || client?.supportEndDate) && (
         <div className="flex flex-wrap gap-2">
-          {client?.goal && (
-            <Badge variant="secondary" className="px-3 py-1">
-              Цель: {client.goal}
-            </Badge>
-          )}
+          {client?.goal && <span className="chip">Цель: {client.goal}</span>}
           {client?.supportEndDate && (
-            <Badge variant="outline" className="px-3 py-1">
-              Сопровождение до {client.supportEndDate}
-            </Badge>
+            <span className="chip">Сопровождение до {client.supportEndDate}</span>
           )}
         </div>
       )}
 
       <div>
         <SectionTitle title="Быстрый доступ" description="Всё важное — в один тап" />
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {QUICK_LINKS.map((q) => (
             <Link
               key={q.to}

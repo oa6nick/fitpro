@@ -6,6 +6,7 @@ import {
   Spinner,
   useAsync,
   ErrorBanner,
+  FormError,
   Callout,
 } from "@/components/common";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
   }
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         eyebrow="О себе"
         title="Анкета"
@@ -102,12 +103,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
       />
 
       {isNew && (
-        <Callout
-          tone="info"
-          icon={UserCircle}
-          title="Первый шаг — рассказать о себе"
-          className="mb-5"
-        >
+        <Callout tone="info" icon={UserCircle} title="Первый шаг — рассказать о себе">
           Анкета видна только вашему тренеру. Можно заполнять постепенно и сохранять.
         </Callout>
       )}
@@ -146,11 +142,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
             />
           </div>
 
-          {saveError && (
-            <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {saveError}
-            </p>
-          )}
+          {saveError && <FormError message={saveError} />}
           {saved && (
             <Callout tone="success" title="Анкета сохранена">
               Тренер увидит обновления в вашей карточке.
@@ -158,7 +150,7 @@ function ProfileForm({ profile }: { profile: ClientProfile | null }) {
           )}
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Button onClick={save} disabled={busy} className="min-w-[10rem]">
+            <Button onClick={save} disabled={busy} className="w-full sm:w-auto sm:min-w-[10rem]">
               {busy ? "Сохраняем…" : saved ? (
                 <>
                   <Check className="h-4 w-4" /> Сохранено

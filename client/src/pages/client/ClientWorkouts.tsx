@@ -32,7 +32,7 @@ export function ClientWorkouts() {
   const done = data?.workouts.filter((w) => w.status !== "assigned") ?? [];
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         eyebrow="Программа"
         title="Мои тренировки"
@@ -93,11 +93,11 @@ function WorkoutRow({ workout: w, primary }: { workout: Workout; primary?: boole
     <Link to={`/c/workouts/${w.id}`} className="block">
       <Card
         className={cn(
-          "transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-panel",
-          primary && "border-primary/25 bg-primary/[0.04] shadow-sm",
+          "surface-interactive",
+          primary && "border-primary/20 bg-primary/[0.04] shadow-sm",
         )}
       >
-        <CardContent className="flex items-center justify-between gap-3 p-4">
+        <CardContent className="flex items-center justify-between gap-3 p-4 sm:p-5">
           <div className="flex min-w-0 items-center gap-3">
             <div
               className={cn(
@@ -113,7 +113,7 @@ function WorkoutRow({ workout: w, primary }: { workout: Workout; primary?: boole
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CalendarDays className="h-3 w-3 shrink-0" />
                 {w.date ?? "без даты"}
-                <span className="text-border">·</span>
+                <span className="text-muted-foreground/50">·</span>
                 <span>{st.hint}</span>
               </p>
             </div>

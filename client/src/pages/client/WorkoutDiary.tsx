@@ -6,6 +6,7 @@ import {
   Check,
   CheckCheck,
   Dumbbell,
+  Lightbulb,
   PlayCircle,
   Plus,
   Repeat,
@@ -39,6 +40,7 @@ import {
   type Workout,
   type WorkoutExerciseRow,
 } from "@/lib/domain";
+import { cn } from "@/lib/utils";
 
 interface DiaryData {
   workout: Workout;
@@ -101,7 +103,7 @@ export function WorkoutDiary() {
     totalPlanned > 0 ? Math.min(100, Math.round((totalDone / totalPlanned) * 100)) : 0;
 
   return (
-    <div className={done ? undefined : "pb-24"}>
+    <div className={done ? undefined : "pb-20 md:pb-24"}>
       <Link
         to="/c/workouts"
         className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -206,7 +208,7 @@ export function WorkoutDiary() {
           group.groupKey ? (
             <div
               key={group.groupKey}
-              className="rounded-hero border-2 border-dashed border-primary/30 bg-primary/[0.03] p-3 sm:p-4"
+              className="rounded-panel border-2 border-dashed border-primary/30 bg-primary/[0.04] p-3 sm:p-4"
             >
               <p className="type-caption mb-3 text-primary">
                 {GROUP_LABELS[group.groupType ?? "superset"]} · по кругу, без отдыха между
@@ -255,14 +257,19 @@ export function WorkoutDiary() {
 
       {/* Sticky bar for gym phone use */}
       {!done && (
-        <div className="fixed inset-x-0 bottom-16 z-20 border-t border-border bg-card/95 px-4 py-3 backdrop-blur-md md:bottom-0">
+        <div
+          className="glass-header fixed inset-x-0 z-20 border-t border-border/60 px-4 py-3 md:bottom-0"
+          // Нижняя навигация занимает 4rem + вырез телефона; без этого запаса
+          // панель «Завершить» уезжает под таб-бар на iPhone.
+          style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}
+        >
           <div className="mx-auto flex max-w-6xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">
                 {progressPct}% · тоннаж {Math.round(liveTonnage).toLocaleString("ru-RU")} кг
                 {missing > 0 ? ` · ещё ${missing} подх.` : ""}
               </p>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
                 <div
                   className="h-full rounded-full bg-primary transition-all"
                   style={{ width: `${progressPct}%` }}
@@ -457,8 +464,9 @@ function ExerciseBlock({
       </CardHeader>
       <CardContent className="space-y-3">
         {item.exercise.keyHints && (
-          <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">
-            💡 {item.exercise.keyHints}
+          <p className="surface-subtle flex items-start gap-2 rounded-xl px-3 py-2 text-xs text-muted-foreground">
+            <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+            <span>{item.exercise.keyHints}</span>
           </p>
         )}
 
@@ -491,8 +499,8 @@ function ExerciseBlock({
             >
               <CheckCheck className="h-4 w-4" /> Отметить все
             </Button>
-            <div className="ml-auto">
-              <RestTimer rest={item.rest} storageKey={item.id} />
+            <div className="w-full sm:ml-auto sm:w-auto">
+              <RestTimer rest={item.rest} storageKey={item.id} compact />
             </div>
           </div>
         )}
@@ -596,11 +604,15 @@ function SlotRow({
 }) {
   return (
     <div
-      className={`grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-2 rounded-xl border p-2.5 transition-colors sm:flex sm:flex-wrap ${
-        slot.done ? "border-success/50 bg-success/10" : "border-border bg-card"
-      }`}
+      className={cn(
+        // На мобильном три колонки: номер + два РАВНЫХ поля. Знак «×» на этой ширине
+        // скрыт (display:none), поэтому в сетке его колонки быть не должно —
+        // иначе поле веса схлопывается в ноль.
+        "grid grid-cols-[auto_1fr_1fr] items-center gap-2 rounded-xl border p-2.5 transition-colors sm:flex sm:flex-wrap",
+        slot.done ? "border-success/50 bg-success/10" : "border-border bg-card",
+      )}
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold tabular-nums text-foreground sm:w-12">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-bold tabular-nums text-foreground sm:w-12">
         {slot.setNumber}
       </span>
       <div className="min-w-0 sm:w-24">
@@ -634,7 +646,7 @@ function SlotRow({
           className="h-11 text-base font-semibold tabular-nums"
         />
       </div>
-      <div className="col-span-5 flex items-end gap-2 sm:col-span-1 sm:ml-auto sm:w-auto">
+      <div className="col-span-3 flex items-end gap-2 sm:col-span-1 sm:ml-auto sm:w-auto">
         <div className="min-w-0 flex-1 sm:w-36 sm:flex-none">
           <label className="mb-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             ощущения

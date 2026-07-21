@@ -9,6 +9,7 @@ import {
   useIsMobile,
   ErrorBanner,
   EmptyState,
+  EmptyHint,
   Avatar,
 } from "@/components/common";
 import { Button } from "@/components/ui/button";
@@ -117,7 +118,7 @@ function Board({ clients }: { clients: Client[] }) {
                   to={`/t/clients/${c.id}`}
                   className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Card className="rounded-xl border-border/60 transition-all duration-200 ease-spring hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-panel">
+                  <Card className="surface-interactive rounded-xl">
                     <CardContent className="p-3">
                       <div className="flex items-center gap-2.5">
                         <Avatar name={c.name} size="sm" />
@@ -140,9 +141,7 @@ function Board({ clients }: { clients: Client[] }) {
                   </Card>
                 </Link>
               ))}
-              {list.length === 0 && (
-                <p className="px-2 py-6 text-center text-xs text-muted-foreground">Пусто</p>
-              )}
+              {list.length === 0 && <EmptyHint className="text-xs">Пусто</EmptyHint>}
             </div>
           </div>
         );

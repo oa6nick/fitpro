@@ -54,7 +54,7 @@ export function ExercisesPage() {
         }
       />
       {loading && <Spinner />}
-      {error && <ErrorBanner message={error} />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.exercises.length === 0 ? (
           <EmptyState text="Упражнений пока нет" hint="Добавьте упражнение с техникой и видео — из них соберёте программы для клиентов." />
@@ -62,7 +62,7 @@ export function ExercisesPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.exercises.map((ex) => (
               <Card key={ex.id}>
-                <CardContent className="pt-6">
+                <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <Dumbbell className="h-4 w-4 text-primary" />
@@ -84,7 +84,7 @@ export function ExercisesPage() {
                           await api.delete(`/exercises/${ex.id}`);
                           reload();
                         }}
-                        aria-label="Удалить"
+                        aria-label={`Удалить: ${ex.name}`}
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground" />
                       </Button>

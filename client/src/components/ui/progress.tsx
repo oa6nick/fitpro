@@ -22,7 +22,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_0_12px_hsl(var(--primary)/0.35)] transition-all duration-500 ease-spring"
+          className="h-full rounded-full bg-primary transition-all duration-500 ease-spring"
           style={{ width: `${clamped}%` }}
         />
       </div>

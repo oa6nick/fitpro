@@ -4,8 +4,9 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthShell } from "@/components/AuthShell";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard, AuthShell } from "@/components/AuthShell";
+import { FormError } from "@/components/common";
 
 /** Восстановление пароля: шаг 1 — код на почту, шаг 2 — код + новый пароль. */
 export function ForgotPasswordPage() {
@@ -47,9 +48,9 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthShell>
-      <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
+      <AuthCard>
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-xl tracking-tight">Восстановление пароля</CardTitle>
+          <CardTitle className="type-page-title">Восстановление пароля</CardTitle>
           <CardDescription className="text-balance leading-relaxed">
             {step === 1
               ? "Укажите email аккаунта — если он есть, пришлём код для смены пароля."
@@ -71,15 +72,8 @@ export function ForgotPasswordPage() {
                   required
                 />
               </div>
-              {error && (
-                <p
-                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                  role="alert"
-                >
-                  {error}
-                </p>
-              )}
-              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
+              {error && <FormError message={error} />}
+              <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? "Отправляем…" : "Получить код"}
               </Button>
             </form>
@@ -90,6 +84,7 @@ export function ForgotPasswordPage() {
                 <Input
                   id="code"
                   inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={6}
                   placeholder="6 цифр"
                   value={code}
@@ -110,15 +105,8 @@ export function ForgotPasswordPage() {
                   required
                 />
               </div>
-              {error && (
-                <p
-                  className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-                  role="alert"
-                >
-                  {error}
-                </p>
-              )}
-              <Button type="submit" className="w-full shadow-glow" disabled={busy}>
+              {error && <FormError message={error} />}
+              <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? "Сохраняем…" : "Сменить пароль"}
               </Button>
               <Button
@@ -132,14 +120,14 @@ export function ForgotPasswordPage() {
               </Button>
             </form>
           )}
-          <p className="mt-5 border-t border-border/60 pt-5 text-center text-sm text-muted-foreground">
+          <p className="mt-6 border-t border-border/60 pt-5 text-center text-sm text-muted-foreground">
             Вспомнили пароль?{" "}
             <Link to="/login" className="font-medium text-primary hover:underline">
               Войти
             </Link>
           </p>
         </CardContent>
-      </Card>
+      </AuthCard>
     </AuthShell>
   );
 }

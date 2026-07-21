@@ -146,7 +146,7 @@ export function RestTimer({
   const pct = total > 0 ? Math.min(100, ((total - remaining) / total) * 100) : 0;
 
   return (
-    <div className={cn("space-y-2", compact ? "" : "rounded-xl border border-border/70 bg-muted/30 p-3")}>
+    <div className={cn("space-y-2", !compact && "surface-subtle rounded-panel p-3")}>
       <div className="flex flex-wrap items-center gap-2">
         <div
           className={cn(
@@ -192,27 +192,35 @@ export function RestTimer({
           <RotateCcw className="h-4 w-4" />
         </Button>
         <div className="flex gap-1">
-          <Button type="button" size="sm" variant="outline" className="h-8 px-2 text-xs" onClick={() => nudge(-15)}>
+          <Button type="button" size="sm" variant="outline" className="px-2.5" onClick={() => nudge(-15)}>
             −15
           </Button>
-          <Button type="button" size="sm" variant="outline" className="h-8 px-2 text-xs" onClick={() => nudge(15)}>
+          <Button type="button" size="sm" variant="outline" className="px-2.5" onClick={() => nudge(15)}>
             +15
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Пресеты отдыха">
+      {/* На телефоне все пресеты — одной строкой равной ширины, иначе переносятся. */}
+      <div
+        className="grid grid-cols-6 gap-1 sm:flex sm:flex-wrap sm:gap-1.5"
+        role="group"
+        aria-label="Пресеты отдыха"
+      >
         {REST_PRESETS.map((p) => (
           <button
             key={p.sec}
             type="button"
             onClick={() => applyPreset(p.sec)}
             title={p.hint}
+            aria-label={`Отдых ${p.label} — ${p.hint}`}
+            aria-pressed={total === p.sec && !running}
+            // h-9: пресеты жмут потной рукой между подходами — 24px было мало.
             className={cn(
-              "rounded-md border px-2 py-1 text-[11px] font-semibold tabular-nums transition-colors",
+              "chip h-9 justify-center px-1 text-xs font-semibold tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3",
               total === p.sec && !running
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border/80 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                ? "border-primary bg-primary text-primary-foreground hover:text-primary-foreground"
+                : "hover:border-primary/40 hover:text-foreground",
             )}
           >
             {p.label}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, BellOff, BellRing } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   currentSubscription,
   pushSupported,
@@ -40,8 +41,15 @@ export function NotificationsBell() {
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   async function openPanel() {
@@ -59,20 +67,24 @@ export function NotificationsBell() {
 
   return (
     <div className="relative" ref={ref}>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={openPanel}
-        className="relative rounded-lg p-2 hover:bg-accent"
-        aria-label="Уведомления"
+        className="relative"
+        aria-label={unread ? `Уведомления, непрочитанных: ${unread}` : "Уведомления"}
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+          <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
             {unread}
           </span>
         )}
-      </button>
+      </Button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-panel border bg-popover shadow-panel">
+        <div className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-panel border bg-popover shadow-panel">
           <div className="border-b px-3 py-2 text-sm font-semibold">Уведомления</div>
           <PushToggle />
           <div className="max-h-80 overflow-y-auto">
@@ -106,6 +118,7 @@ export function NotificationsBell() {
 function PushToggle() {
   const [state, setState] = useState<"loading" | "off" | "on" | "unavailable">("loading");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -127,6 +140,7 @@ function PushToggle() {
 
   async function toggle() {
     setBusy(true);
+    setError(null);
     try {
       if (state === "on") {
         await unsubscribeFromPush();
@@ -134,7 +148,7 @@ function PushToggle() {
       } else {
         const r = await subscribeToPush();
         setState(r.ok ? "on" : "off");
-        if (!r.ok && r.reason) alert(r.reason);
+        if (!r.ok && r.reason) setError(r.reason);
       }
     } finally {
       setBusy(false);
@@ -142,22 +156,29 @@ function PushToggle() {
   }
 
   return (
-    <button
-      onClick={toggle}
-      disabled={busy}
-      className="flex w-full items-center gap-2 border-b px-3 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
-    >
-      {state === "on" ? (
-        <>
-          <BellRing className="h-3.5 w-3.5 text-primary" />
-          Push-уведомления включены — отключить
-        </>
-      ) : (
-        <>
-          <BellOff className="h-3.5 w-3.5" />
-          Включить push-уведомления
-        </>
+    <div className="border-b">
+      <button
+        onClick={toggle}
+        disabled={busy}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+      >
+        {state === "on" ? (
+          <>
+            <BellRing className="h-3.5 w-3.5 text-primary" />
+            Push-уведомления включены — отключить
+          </>
+        ) : (
+          <>
+            <BellOff className="h-3.5 w-3.5" />
+            Включить push-уведомления
+          </>
+        )}
+      </button>
+      {error && (
+        <p className="px-3 pb-2 text-xs text-destructive" role="alert">
+          {error}
+        </p>
       )}
-    </button>
+    </div>
   );
 }

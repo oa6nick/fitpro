@@ -19,6 +19,7 @@ import {
   StatCard,
   useAsync,
   EmptyState,
+  EmptyHint,
   ErrorBanner,
   SectionTitle,
 } from "@/components/common";
@@ -47,7 +48,11 @@ interface Analytics {
 }
 
 export function AnalyticsPage() {
-  const { data: clientsData } = useAsync<{ clients: Client[] }>(() => api.get("/clients"), []);
+  const {
+    data: clientsData,
+    error: clientsError,
+    reload: reloadClients,
+  } = useAsync<{ clients: Client[] }>(() => api.get("/clients"), []);
   const [clientId, setClientId] = useState<string>("");
   const active = (clientsData?.clients ?? []).filter((c) => c.funnelStatus === "active");
   const list = active.length ? active : (clientsData?.clients ?? []);
@@ -59,7 +64,7 @@ export function AnalyticsPage() {
         title="Прогресс клиента"
         description="Тоннаж, рабочие веса, оценка 1ПМ и посещаемость — чтобы корректировать план по фактам, а не по ощущениям."
         action={
-          <div className="w-56">
+          <div className="w-full sm:w-56">
             <Select value={clientId} onValueChange={setClientId}>
               <SelectTrigger aria-label="Выбор клиента">
                 <SelectValue placeholder="Выберите клиента" />
@@ -75,6 +80,9 @@ export function AnalyticsPage() {
           </div>
         }
       />
+      {clientsError && (
+        <ErrorBanner message={clientsError} onRetry={reloadClients} className="mb-4" />
+      )}
       {!clientId ? (
         <EmptyState
           icon={Activity}
@@ -90,12 +98,15 @@ export function AnalyticsPage() {
 
 function AnalyticsBody({ clientId }: { clientId: string }) {
   const colors = useChartColors();
-  const { data, loading, error } = useAsync<Analytics>(
+  const { data, loading, error, reload } = useAsync<Analytics>(
     () => api.get(`/analytics/client/${clientId}`),
     [clientId],
   );
   if (loading) return <Spinner />;
-  if (error || !data) return <ErrorBanner message={error ?? "Не удалось загрузить аналитику"} />;
+  if (error || !data)
+    return (
+      <ErrorBanner message={error ?? "Не удалось загрузить аналитику"} onRetry={reload} />
+    );
 
   const seriesColors = [colors.primary, colors.info, colors.warning, colors.destructive];
   const trend = data.summary?.volumeTrendPct;
@@ -105,7 +116,7 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
     .slice(0, 6);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Тренировок всего" value={data.attendance.total} icon={Dumbbell} />
         <StatCard
@@ -154,7 +165,7 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
             title="Движение рабочих весов"
             description="Сравнение первого и последнего зафиксированного максимума"
           />
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.prDeltas!.map((p) => (
               <Card key={p.exercise}>
                 <CardContent className="flex items-center justify-between gap-3 p-4">
@@ -185,7 +196,7 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
           </CardHeader>
           <CardContent>
             {!data.tonnageByWeek?.length ? (
-              <p className="text-sm text-muted-foreground">Нет данных дневника.</p>
+              <EmptyHint>Нет данных дневника.</EmptyHint>
             ) : (
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -198,8 +209,19 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
                       {...CHART_AXIS}
                     />
                     <YAxis tick={{ fill: colors.mutedFg, fontSize: 11 }} {...CHART_AXIS} />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="kg" name="кг" fill={colors.primary} radius={[4, 4, 0, 0]} />
+                    {/* cursor по умолчанию — плотная серая заливка поверх столбца;
+                        maxBarSize не даёт одной неделе растянуться на всю ширину. */}
+                    <Tooltip
+                      content={<ChartTooltip />}
+                      cursor={{ fill: colors.border, opacity: 0.35 }}
+                    />
+                    <Bar
+                      dataKey="kg"
+                      name="кг"
+                      fill={colors.primary}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={56}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -216,7 +238,7 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
           </CardHeader>
           <CardContent className="space-y-2">
             {!data.topLifts?.length ? (
-              <p className="text-sm text-muted-foreground">Нужны логи с весом и повторами.</p>
+              <EmptyHint>Нужны логи с весом и повторами.</EmptyHint>
             ) : (
               data.topLifts.map((l) => (
                 <div
@@ -248,7 +270,7 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
         </CardHeader>
         <CardContent>
           {mainLifts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Нет данных дневника.</p>
+            <EmptyHint>Нет данных дневника.</EmptyHint>
           ) : (
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -289,14 +311,14 @@ function AnalyticsBody({ clientId }: { clientId: string }) {
           hint="1 легко · 4 очень тяжело. Рост тяжести при падении объёма — возможное недовосстановление."
         >
           {data.heaviness.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Нет отметок feeling в дневнике.</p>
+            <EmptyHint>Нет отметок feeling в дневнике.</EmptyHint>
           ) : (
             <SimpleChart data={data.heaviness} dataKey="avg" color={colors.info} domain={[0, 4]} />
           )}
         </ChartCard>
         <ChartCard title="Вес тела (замеры)" hint="Из раздела прогресса / замеров клиента.">
           {data.measurements.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Замеров пока нет.</p>
+            <EmptyHint>Замеров пока нет.</EmptyHint>
           ) : (
             <SimpleChart data={data.measurements} dataKey="weight" color={colors.primary} />
           )}

@@ -16,6 +16,7 @@ import {
   StatCard,
   useAsync,
   ErrorBanner,
+  EmptyHint,
   Avatar,
   SectionTitle,
   greetingByTime,
@@ -81,7 +82,7 @@ export function TrainerDashboard() {
       {data && (
         <div className="stagger-children space-y-6">
           <div className="aura-panel -mx-1 rounded-hero px-1 pb-1 pt-0.5">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
             {WIDGETS.map((w) => (
               <StatCard
                 key={w.key}
@@ -136,9 +137,9 @@ export function TrainerDashboard() {
                     <li key={s.n}>
                       <Link
                         to={s.to}
-                        className="flex items-start gap-3 rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-accent/40"
+                        className="surface-interactive flex items-start gap-3 p-3"
                       >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
                           {s.n}
                         </span>
                         <span>
@@ -293,9 +294,7 @@ function ListCard({
         {hasItems ? (
           children
         ) : (
-          <p className="rounded-xl bg-muted/40 px-3 py-4 text-center text-sm text-muted-foreground">
-            {empty}
-          </p>
+          <EmptyHint className="py-4">{empty}</EmptyHint>
         )}
       </CardContent>
     </Card>

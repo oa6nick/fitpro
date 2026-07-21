@@ -19,6 +19,7 @@ import {
   EmptyState,
   TableScroll,
   ErrorBanner,
+  FormError,
   StatCard,
   SectionTitle,
 } from "@/components/common";
@@ -59,7 +60,7 @@ export function ClientProgress() {
   const analytics = useAsync<Analytics>(() => api.get("/analytics/mine"));
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         eyebrow="Динамика"
         title="Мой прогресс"
@@ -76,7 +77,7 @@ export function ClientProgress() {
       )}
 
       {analytics.data && (
-        <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="недель серии"
             value={analytics.data.summary.streakWeeks}
@@ -145,10 +146,10 @@ export function ClientProgress() {
               {(analytics.data.prDeltas?.length ?? 0) > 0 && (
                 <div>
                   <SectionTitle title="Рост рабочих весов" description="Первый зафиксированный макс → последний" />
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {analytics.data.prDeltas.map((p) => (
                       <Card key={p.exercise}>
-                        <CardContent className="flex items-center justify-between gap-3 p-4">
+                        <CardContent className="flex items-center justify-between gap-3 p-4 sm:p-5">
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold">{p.exercise}</p>
                             <p className="text-xs text-muted-foreground">
@@ -186,7 +187,7 @@ export function ClientProgress() {
                     {analytics.data.topLifts.slice(0, 6).map((l) => (
                       <div
                         key={l.exercise}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+                        className="surface-interactive flex items-center justify-between gap-2 px-3 py-2.5"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{l.exercise}</p>
@@ -282,8 +283,16 @@ function TonnageChart({ data }: { data: { week: string; kg: number }[] }) {
           {...CHART_AXIS}
         />
         <YAxis tick={{ fill: colors.mutedFg, fontSize: 11 }} {...CHART_AXIS} />
-        <Tooltip content={<ChartTooltip />} />
-        <Bar dataKey="kg" name="кг" fill={colors.primary} radius={[4, 4, 0, 0]} />
+        {/* cursor по умолчанию — плотная серая заливка поверх столбца; maxBarSize
+            не даёт единственной неделе растянуться на всю ширину блока. */}
+        <Tooltip content={<ChartTooltip />} cursor={{ fill: colors.border, opacity: 0.35 }} />
+        <Bar
+          dataKey="kg"
+          name="кг"
+          fill={colors.primary}
+          radius={[4, 4, 0, 0]}
+          maxBarSize={56}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -317,7 +326,7 @@ function PhotoTimeline({ measurements }: { measurements: Measurement[] }) {
         <CardTitle className="text-base">Фото «до / после»</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className="scroll-rail flex gap-4 overflow-x-auto pb-2">
           {withPhotos.map((m) => (
             <div key={m.id} className="shrink-0 text-center">
               <p className="mb-1 text-xs text-muted-foreground">{m.date}</p>
@@ -353,6 +362,7 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
   const [photoBeforeUrl, setBefore] = useState("");
   const [photoAfterUrl, setAfter] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fields: [string, string][] = [
     ["weight", "Вес, кг"],
@@ -364,12 +374,18 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
   async function uploadPhoto(e: React.ChangeEvent<HTMLInputElement>, set: (u: string) => void) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const { url } = await api.upload(file);
-    set(url);
+    setError(null);
+    try {
+      const { url } = await api.upload(file);
+      set(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось загрузить фото");
+    }
   }
 
   async function save() {
     setBusy(true);
+    setError(null);
     try {
       const payload: Record<string, unknown> = { date: form.date };
       for (const [k] of fields) if (form[k]) payload[k] = Number(form[k]);
@@ -381,6 +397,8 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
       setBefore("");
       setAfter("");
       onAdded();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось сохранить замер");
     } finally {
       setBusy(false);
     }
@@ -424,7 +442,13 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Фото «до»</Label>
-              <Input type="file" accept="image/*" onChange={(e) => uploadPhoto(e, setBefore)} />
+              {/* нативный file-контрол не влезает в оболочку поля фиксированной высоты */}
+              <Input
+                type="file"
+                accept="image/*"
+                className="h-auto py-2"
+                onChange={(e) => uploadPhoto(e, setBefore)}
+              />
               {photoBeforeUrl && (
                 <p className="text-xs text-success" role="status">
                   Загружено ✓
@@ -433,7 +457,12 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
             </div>
             <div>
               <Label>Фото «после»</Label>
-              <Input type="file" accept="image/*" onChange={(e) => uploadPhoto(e, setAfter)} />
+              <Input
+                type="file"
+                accept="image/*"
+                className="h-auto py-2"
+                onChange={(e) => uploadPhoto(e, setAfter)}
+              />
               {photoAfterUrl && (
                 <p className="text-xs text-success" role="status">
                   Загружено ✓
@@ -441,6 +470,7 @@ function AddMeasurement({ onAdded }: { onAdded: () => void }) {
               )}
             </div>
           </div>
+          {error && <FormError message={error} />}
           <Button className="w-full" onClick={save} disabled={busy}>
             {busy ? "Сохраняем…" : "Сохранить"}
           </Button>

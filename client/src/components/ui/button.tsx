@@ -19,10 +19,12 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // Высоты совпадают с полями ввода (Input/Select = h-11), чтобы кнопка
+      // и поле в одной строке формы были одного роста.
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 px-3 text-xs",
-        lg: "h-11 px-6",
+        default: "h-11 px-4 py-2",
+        sm: "h-9 px-3 text-xs",
+        lg: "h-12 px-6 text-base",
         icon: "h-10 w-10",
       },
     },

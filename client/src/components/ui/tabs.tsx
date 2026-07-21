@@ -12,7 +12,8 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       // На узких экранах табы скроллятся горизонтально, а не ломают вёрстку.
-      "glass-card inline-flex max-w-full items-center justify-start gap-0.5 overflow-x-auto rounded-full p-1 text-muted-foreground sm:flex-wrap sm:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+      // surface-subtle: табы живут внутри карточек — вторая тень поверх тени карточки не нужна.
+      "surface-subtle inline-flex max-w-full items-center justify-start gap-0.5 overflow-x-auto rounded-full p-1 text-muted-foreground sm:flex-wrap sm:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       className,
     )}
     {...props}

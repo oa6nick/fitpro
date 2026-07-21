@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { Plus, Bell, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, StatCard, useAsync, EmptyState } from "@/components/common";
+import {
+  PageHeader,
+  Spinner,
+  StatCard,
+  useAsync,
+  EmptyState,
+  ErrorBanner,
+  TableScroll,
+} from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +36,7 @@ interface FinanceData {
 }
 
 export function FinancePage() {
-  const { data, loading, reload } = useAsync<FinanceData>(() => api.get("/finance"));
+  const { data, loading, error, reload } = useAsync<FinanceData>(() => api.get("/finance"));
   const [adding, setAdding] = useState(false);
 
   return (
@@ -44,6 +52,7 @@ export function FinancePage() {
         }
       />
       {loading && <Spinner />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data && (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md">
@@ -100,6 +109,7 @@ export function FinancePage() {
                 </ul>
 
                 {/* Десктоп */}
+                <TableScroll>
                 <table className="hidden w-full text-sm md:table">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
@@ -138,6 +148,7 @@ export function FinancePage() {
                     ))}
                   </tbody>
                 </table>
+                </TableScroll>
               </CardContent>
             </Card>
           )}

@@ -1,41 +1,28 @@
+import * as React from "react";
 import { Link } from "react-router-dom";
 import { Dumbbell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 /**
- * Оболочка auth-страниц: mesh-фон, ambient blobs, бренд сверху.
+ * Оболочка auth-страниц: чистый фон (--body-gradient с body) + бренд сверху.
+ * Без mesh и блобов — вход должен выглядеть тем же продуктом, что и кабинет.
  */
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-4">
-      {/* Mesh + blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-mesh" aria-hidden />
+      {/* Одно очень слабое свечение в тонах primary — как на лендинге */}
       <div
-        className="pointer-events-none absolute -left-28 top-0 h-80 w-80 rounded-full bg-primary/20 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-info/15 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-        aria-hidden
-      />
-
-      {/* Soft grid */}
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 opacity-30 dark:opacity-10"
+        className="pointer-events-none absolute inset-0 -z-10"
         style={{
           backgroundImage:
-            "linear-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.035) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent)",
+            "radial-gradient(ellipse 70% 50% at 50% -10%, hsl(var(--primary) / 0.10), transparent 60%)",
         }}
         aria-hidden
       />
 
-      <div className="absolute right-4 top-4 z-10">
+      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10">
         <ThemeToggle />
       </div>
 
@@ -58,3 +45,15 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+/** Карточка auth-страниц: вид задан здесь, страницы её только наполняют. */
+export const AuthCard = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <Card
+      ref={ref}
+      className={cn("glass-elevated w-full border-border/50 shadow-panel", className)}
+      {...props}
+    />
+  ),
+);
+AuthCard.displayName = "AuthCard";

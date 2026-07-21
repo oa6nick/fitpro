@@ -7,6 +7,7 @@ import {
   useAsync,
   EmptyState,
   ErrorBanner,
+  FormError,
   SectionTitle,
   Callout,
 } from "@/components/common";
@@ -63,7 +64,7 @@ export function ClientReports() {
   }
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
         eyebrow="Обратная связь"
         title="Отчёты"
@@ -80,7 +81,7 @@ export function ClientReports() {
           hint="Тренер создаст еженедельную форму — после этого вы сможете отправлять отчёты прямо отсюда."
         />
       ) : (
-        <Card className="mb-6 border-primary/15">
+        <Card className="border-primary/20 bg-primary/[0.04]">
           <CardHeader>
             <div className="flex items-start gap-3">
               <span className="icon-well h-10 w-10">
@@ -117,11 +118,7 @@ export function ClientReports() {
                 )}
               </div>
             ))}
-            {submitError && (
-              <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {submitError}
-              </p>
-            )}
+            {submitError && <FormError message={submitError} />}
             {done && (
               <Callout tone="success" title="Отчёт отправлен">
                 Тренер получит уведомление и проверит его.
@@ -135,48 +132,52 @@ export function ClientReports() {
         </Card>
       )}
 
-      <SectionTitle
-        title="История отчётов"
-        description="Статусы: ожидает проверки, проверен, пропущен"
-      />
-      {history.loading ? (
-        <Spinner />
-      ) : history.data && history.data.submissions.length > 0 ? (
-        <div className="space-y-2">
-          {history.data.submissions.map((s) => (
-            <Card key={s.id} className="transition-colors hover:border-border">
-              <CardContent className="flex items-center justify-between gap-3 p-4">
-                <div className="flex items-center gap-3">
-                  <span className="icon-well h-9 w-9">
-                    <History className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium">Неделя с {s.weekStart}</p>
-                    <p className="text-xs text-muted-foreground">Еженедельный отчёт</p>
-                  </div>
-                </div>
-                <Badge
-                  variant={
-                    s.status === "reviewed"
-                      ? "success"
-                      : s.status === "missed"
-                        ? "destructive"
-                        : "warning"
-                  }
-                >
-                  {REPORT_STATUS_LABELS[s.status]}
-                </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={History}
-          text="Вы ещё не отправляли отчёты"
-          hint="После первой отправки здесь появится история со статусами проверки."
+      <div>
+        <SectionTitle
+          title="История отчётов"
+          description="Статусы: ожидает проверки, проверен, пропущен"
         />
-      )}
+        {history.error ? (
+          <ErrorBanner message={history.error} onRetry={history.reload} />
+        ) : history.loading ? (
+          <Spinner />
+        ) : history.data && history.data.submissions.length > 0 ? (
+          <div className="space-y-2">
+            {history.data.submissions.map((s) => (
+              <Card key={s.id} className="surface-interactive">
+                <CardContent className="flex items-center justify-between gap-3 p-4 sm:p-5">
+                  <div className="flex items-center gap-3">
+                    <span className="icon-well h-9 w-9">
+                      <History className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium">Неделя с {s.weekStart}</p>
+                      <p className="text-xs text-muted-foreground">Еженедельный отчёт</p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={
+                      s.status === "reviewed"
+                        ? "success"
+                        : s.status === "missed"
+                          ? "destructive"
+                          : "warning"
+                    }
+                  >
+                    {REPORT_STATUS_LABELS[s.status]}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={History}
+            text="Вы ещё не отправляли отчёты"
+            hint="После первой отправки здесь появится история со статусами проверки."
+          />
+        )}
+      </div>
     </div>
   );
 }

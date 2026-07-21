@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** Приветствие по времени суток — дружелюбный тон кабинетов. */
@@ -96,7 +97,7 @@ export function Stub({ title }: { title: string }) {
 /** Скелетная загрузка (сигнатура прежнего текстового Spinner сохранена). */
 export function Spinner({ label = "Загрузка…" }: { label?: string }) {
   return (
-    <div className="space-y-3 py-6" role="status" aria-label={label}>
+    <div className="space-y-3 py-6" role="status" aria-live="polite" aria-label={label}>
       <Skeleton className="h-9 w-1/3 rounded-xl" />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Skeleton className="h-28 w-full rounded-panel" />
@@ -121,8 +122,8 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="glass-card flex flex-col items-center gap-3 rounded-hero border-dashed px-6 py-12 text-center sm:py-16">
-      <div className="icon-well h-14 w-14 rounded-2xl">
+    <div className="glass-card flex flex-col items-center gap-3 rounded-panel border-dashed px-6 py-12 text-center sm:py-16">
+      <div className="icon-well h-14 w-14">
         <Icon className="h-6 w-6" />
       </div>
       <p className="max-w-sm text-sm font-medium text-foreground/90">{text}</p>
@@ -164,15 +165,54 @@ export function ErrorBanner({
         </div>
       </div>
       {onRetry && (
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onRetry}
-          className="shrink-0 rounded-full border border-destructive/20 bg-card px-3.5 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+          className="shrink-0 border-destructive/25 text-destructive hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
         >
           Повторить
-        </button>
+        </Button>
       )}
     </div>
+  );
+}
+
+/**
+ * Компактная пустота ВНУТРИ карточки/секции — там, где полноразмерный EmptyState
+ * выглядел бы тяжелее содержимого (блоки аналитики, колонки канбана, списки на главной).
+ */
+export function EmptyHint({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <p
+      className={cn(
+        "surface-subtle rounded-xl px-3 py-6 text-center text-sm text-muted-foreground",
+        className,
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+/** Ошибка внутри формы — единый вид для всех страниц входа и диалогов. */
+export function FormError({ message, className }: { message: string; className?: string }) {
+  return (
+    <p
+      role="alert"
+      className={cn(
+        "rounded-control border border-destructive/25 bg-destructive/8 px-3.5 py-2.5 text-sm text-destructive",
+        className,
+      )}
+    >
+      {message}
+    </p>
   );
 }
 
@@ -378,7 +418,7 @@ export function StatCard({
         {Icon && (
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-black/5 dark:ring-white/5 sm:h-11 sm:w-11",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-border/60 sm:h-11 sm:w-11",
               STAT_TONES[tone],
             )}
           >
@@ -448,7 +488,9 @@ export function useIsMobile() {
 
 /** Горизонтальный скролл для таблиц — вместо обрезания колонок на узких экранах. */
 export function TableScroll({ children }: { children: React.ReactNode }) {
-  return <div className="w-full overflow-x-auto rounded-panel">{children}</div>;
+  return (
+    <div className="w-full overflow-x-auto overscroll-x-contain rounded-panel">{children}</div>
+  );
 }
 
 /** Простой загрузчик данных с состояниями. */

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Plus, Trash2, FileText, Check } from "lucide-react";
 import { api } from "@/lib/api";
-import { PageHeader, Spinner, useAsync, EmptyState } from "@/components/common";
+import { PageHeader, Spinner, useAsync, EmptyState, ErrorBanner } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -57,7 +58,7 @@ export function ReportsPage() {
 
 function Submissions() {
   const [status, setStatus] = useState<string>("all");
-  const { data, loading, reload } = useAsync<{ submissions: ReportSubmission[] }>(
+  const { data, loading, error, reload } = useAsync<{ submissions: ReportSubmission[] }>(
     () => api.get(`/reports/submissions${status === "all" ? "" : `?status=${status}`}`),
     [status],
   );
@@ -65,7 +66,7 @@ function Submissions() {
 
   return (
     <div className="space-y-4">
-      <div className="w-56">
+      <div className="w-full sm:w-56">
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger>
             <SelectValue />
@@ -79,6 +80,7 @@ function Submissions() {
         </Select>
       </div>
       {loading && <Spinner />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.submissions.length === 0 ? (
           <EmptyState text="Заполнений пока нет" hint="Когда клиенты отправят отчёты, они появятся здесь со статусами." />
@@ -86,7 +88,7 @@ function Submissions() {
           <div className="space-y-2">
             {data.submissions.map((s) => (
               <Card key={s.id}>
-                <CardContent className="flex items-center justify-between pt-6">
+                <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 sm:p-5">
                   <button className="text-left" onClick={() => setView(s.id)}>
                     <p className="font-medium hover:underline">{s.clientName}</p>
                     <p className="text-xs text-muted-foreground">Неделя с {s.weekStart}</p>
@@ -138,7 +140,7 @@ function SubmissionDialog({ id, onClose }: { id: string; onClose: () => void }) 
         <DialogHeader>
           <DialogTitle>Отчёт клиента</DialogTitle>
         </DialogHeader>
-        {loading && <Spinner />}
+        {loading && <Skeleton className="h-24 w-full rounded-panel" />}
         {data && (
           <div className="space-y-3">
             {data.fields.map((f) => {
@@ -158,7 +160,7 @@ function SubmissionDialog({ id, onClose }: { id: string; onClose: () => void }) 
 }
 
 function Forms() {
-  const { data, loading, reload } = useAsync<{ forms: ReportForm[] }>(() =>
+  const { data, loading, error, reload } = useAsync<{ forms: ReportForm[] }>(() =>
     api.get("/reports/forms"),
   );
   const [creating, setCreating] = useState(false);
@@ -171,9 +173,10 @@ function Forms() {
         </Button>
       </div>
       {loading && <Spinner />}
+      {error && <ErrorBanner message={error} onRetry={reload} />}
       {data &&
         (data.forms.length === 0 ? (
-          <EmptyState text="Формы ещё нет" hint="Создайте еженедельную форму — клиенты будут заполнять её в своём кабинете." />
+          <EmptyState text="Форм пока нет" hint="Создайте еженедельную форму — клиенты будут заполнять её в своём кабинете." />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {data.forms.map((f) => (
@@ -190,7 +193,7 @@ function Forms() {
                         await api.delete(`/reports/forms/${f.id}`);
                         reload();
                       }}
-                      aria-label="Удалить"
+                      aria-label={`Удалить: ${f.name}`}
                     >
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
