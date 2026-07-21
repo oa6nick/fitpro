@@ -22,6 +22,10 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_CFBundleDisplayName: Coachly
+        # Приложение ходит только по HTTPS — стандартное исключение экспортного
+        # контроля. Без этого ключа каждая загрузка висит в TestFlight со
+        # статусом «Missing Compliance» и не раздаётся тестировщикам.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         # Geist подключается после добавления TTF в FitPro/Resources/Fonts (см. README).
         # INFOPLIST_KEY_UIAppFonts: ...

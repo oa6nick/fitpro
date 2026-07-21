@@ -545,6 +545,9 @@ export function LandingPage() {
             <a href="#faq" className="transition-colors hover:text-foreground">
               FAQ
             </a>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">
+              Конфиденциальность
+            </Link>
           </div>
           <p className="text-xs">© 2026 Coachly · для тренеров и их клиентов</p>
         </div>

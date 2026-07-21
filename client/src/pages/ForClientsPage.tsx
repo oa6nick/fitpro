@@ -485,6 +485,9 @@ export function ForClientsPage() {
             <a href="#faq" className="transition-colors hover:text-foreground">
               FAQ
             </a>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">
+              Конфиденциальность
+            </Link>
           </div>
           <p className="text-xs">© 2026 Coachly · для спортсменов и тренеров</p>
         </div>
