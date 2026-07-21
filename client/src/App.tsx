@@ -8,6 +8,7 @@ import { Spinner } from "@/components/common";
 // Публичные страницы — статически: лендинг и вход открываются без ожидания чанков.
 import { LandingPage } from "@/pages/LandingPage";
 import { ForClientsPage } from "@/pages/ForClientsPage";
+import { PrivacyPage } from "@/pages/PrivacyPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
@@ -87,6 +88,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<RootRoute />} />
         <Route path="/for-clients" element={<ForClientsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot" element={<ForgotPasswordPage />} />
