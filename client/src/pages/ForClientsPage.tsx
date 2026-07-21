@@ -28,50 +28,50 @@ import { cn } from "@/lib/utils";
 const CLIENT_FEATURES = [
   {
     icon: Dumbbell,
-    title: "Программа всегда с собой",
-    text: "Упражнения с техникой и видео, суперсеты и замены — без скриншотов в переписке.",
+    title: "Программа в телефоне",
+    text: "Упражнения с подсказками и видео, суперсеты и замены. Не нужно листать скриншоты в чате.",
     wide: true,
   },
   {
     icon: Timer,
-    title: "Дневник в два тапа",
-    text: "Вес, повторы и ощущения между подходами. Таймер отдыха и «отметить все».",
+    title: "Дневник между подходами",
+    text: "Записали вес и повторы — готово. Есть таймер отдыха и кнопка «отметить всё по плану».",
     wide: false,
   },
   {
     icon: LineChart,
-    title: "Прогресс на графиках",
-    text: "Тоннаж, оценка 1ПМ, серия недель и замеры — видно, что работает.",
+    title: "Видно, что получается",
+    text: "Серия недель, тоннаж, рабочие веса и замеры на графиках — даже когда зеркало «врёт».",
     wide: false,
   },
   {
     icon: CheckSquare,
-    title: "Привычки недели",
-    text: "Шаги, вода, сон — отметки по дням, % соблюдения считается сам.",
+    title: "Привычки на неделю",
+    text: "Шаги, вода, сон — отмечаете дни, процент считается сам.",
     wide: false,
   },
   {
     icon: FileText,
-    title: "Отчёты без нервов",
-    text: "Короткая форма раз в неделю вместо длинного сообщения тренеру.",
+    title: "Короткий отчёт тренеру",
+    text: "Раз в неделю — простая форма вместо длинного сообщения.",
     wide: false,
   },
   {
     icon: BookOpen,
-    title: "Материалы по этапам",
-    text: "Гайды открываются по неделям — ровно когда нужны.",
+    title: "Материалы вовремя",
+    text: "Гайды открываются по ходу ведения — когда они реально нужны.",
     wide: false,
   },
   {
     icon: Award,
-    title: "Стрики и бейджи",
-    text: "Серия недель и маленькие победы держат мотивацию.",
+    title: "Серии и награды",
+    text: "Недели без пропусков и бейджи за регулярность — приятный стимул не сходить с дистанции.",
     wide: false,
   },
   {
     icon: Bell,
-    title: "Ничего не забудете",
-    text: "Напоминания о тренировке, отчёте и продлении — в кабинете.",
+    title: "Напоминания",
+    text: "О тренировке, отчёте и продлении — в кабинете, ничего не утонет в ленте.",
     wide: false,
   },
 ];
@@ -79,43 +79,43 @@ const CLIENT_FEATURES = [
 const BENEFITS = [
   {
     icon: MessageCircle,
-    title: "Тренер реагирует вовремя",
-    text: "Дневник и динамика видны сразу — план корректируется, пока это важно.",
+    title: "Тренер в курсе",
+    text: "Дневник виден сразу, а не «в конце месяца» — план правят, пока это важно.",
   },
   {
     icon: LineChart,
-    title: "Прогресс видно глазами",
-    text: "Графики показывают результат, даже когда кажется, что «ничего не меняется».",
+    title: "Цифры, а не ощущения",
+    text: "Графики показывают движение, даже если кажется, что прогресса нет.",
   },
   {
     icon: Timer,
-    title: "2 минуты в день",
-    text: "Отметки по ходу тренировки и короткая форма раз в неделю.",
+    title: "Минимум времени",
+    text: "Отметки во время тренировки и короткая форма раз в неделю — всё.",
   },
   {
     icon: Smartphone,
-    title: "Ничего не теряется",
-    text: "Программа, замеры и оплата — в одном кабинете, не в чатах.",
+    title: "Всё в одном месте",
+    text: "Программа, веса, замеры и отчёты — не размазаны по чатам и заметкам.",
   },
 ];
 
 const STEPS = [
   {
     n: "1",
-    title: "Тренер присылает ссылку",
-    text: "Кабинет создаёт ваш тренер. Попросите у него приглашение.",
-    detail: "1 минута",
+    title: "Получите ссылку от тренера",
+    text: "Кабинет создаёт тренер. Попросите у него приглашение — без него войти нельзя.",
+    detail: "От тренера",
   },
   {
     n: "2",
-    title: "Придумываете пароль",
-    text: "Вход по ссылке — и анкета с программой уже на месте.",
-    detail: "Без карты",
+    title: "Задайте пароль",
+    text: "Откройте ссылку, придумайте пароль. Анкета и программа уже будут на месте.",
+    detail: "Минута",
   },
   {
     n: "3",
-    title: "Тренируетесь и отмечаете",
-    text: "Дневник и замеры с телефона. Тренер видит прогресс и ведёт к цели.",
+    title: "Тренируйтесь и отмечайте",
+    text: "Ведите дневник и сдавайте замеры с телефона. Тренер видит прогресс и ведёт вас дальше.",
     detail: "В зале",
   },
 ];
@@ -124,22 +124,22 @@ const CLIENT_SCREENS = [
   {
     src: "/screens/m-client-home.png",
     title: "Главная",
-    text: "Ближайшая тренировка и быстрый доступ",
+    text: "Ближайшая тренировка под рукой",
   },
   {
     src: "/screens/m-client-workouts.png",
     title: "Тренировки",
-    text: "План и история со статусами",
+    text: "Что в плане и что уже сделано",
   },
   {
     src: "/screens/m-client-diary.png",
-    title: "Дневник в зале",
-    text: "Крупные подходы, таймер, завершить",
+    title: "Дневник",
+    text: "Подходы, таймер, завершение",
   },
   {
     src: "/screens/m-client-progress.png",
     title: "Прогресс",
-    text: "Тоннаж, 1ПМ, серия и замеры",
+    text: "Серия, тоннаж и замеры",
   },
   {
     src: "/screens/m-client-habits.png",
@@ -152,55 +152,55 @@ const PLUS_FEATURES = [
   {
     icon: LineChart,
     title: "Расширенная аналитика",
-    text: "1ПМ, тоннаж по неделям и сравнение периодов «до/после».",
+    text: "Сравнение периодов, тоннаж по неделям и оценка силовых показателей.",
   },
   {
     icon: Camera,
-    title: "PDF-книга прогресса",
-    text: "Отчёт с фото и графиками — сохранить или показать.",
+    title: "Красивый отчёт с фото",
+    text: "Собрать прогресс в PDF — себе или чтобы показать результат.",
   },
   {
     icon: Activity,
-    title: "Apple Health и Garmin",
-    text: "Шаги и сон подтягиваются сами.",
+    title: "Связка с часами и Health",
+    text: "Шаги и сон подтянутся сами — меньше ручных отметок.",
   },
   {
     icon: Sparkles,
-    title: "AI-разбор техники",
-    text: "Видео упражнения → разбор, который видит и тренер.",
+    title: "Разбор техники",
+    text: "Загрузите видео — получите комментарии, которые увидит и тренер.",
   },
   {
     icon: Snowflake,
-    title: "Заморозка стрика",
-    text: "Отпуск не обнулит серию — стрик на паузу.",
+    title: "Пауза серии",
+    text: "Отпуск или болезнь не сотрут вашу серию недель.",
   },
   {
     icon: Archive,
-    title: "Архив после сопровождения",
-    text: "История тренировок остаётся с вами.",
+    title: "История после ведения",
+    text: "Тренировки и замеры останутся доступны, даже когда сопровождение закончится.",
   },
 ];
 
 const FAQ = [
   {
-    q: "Сколько это стоит для меня?",
-    a: "Кабинет клиента бесплатный — платформу оплачивает ваш тренер. FitPro+ появится позже и будет по желанию.",
+    q: "Сколько это стоит?",
+    a: "Для вас — бесплатно. Платформу оплачивает тренер. Дополнительные опции FitPro+ появятся позже и будут по желанию.",
   },
   {
-    q: "Как получить доступ?",
-    a: "Только через тренера: ссылка-приглашение → пароль → кабинет готов.",
+    q: "Как попасть в кабинет?",
+    a: "Только по ссылке от тренера. Открываете приглашение, задаёте пароль — и можно пользоваться.",
   },
   {
-    q: "Нужно ли ставить приложение?",
-    a: "Нет — веб в браузере телефона. Нативные приложения — в RuStore и скоро в App Store / Google Play.",
+    q: "Нужно ставить приложение?",
+    a: "Не обязательно: всё работает в браузере телефона. Отдельные приложения появятся в магазинах позже.",
   },
   {
-    q: "Кто видит мои данные и фото?",
-    a: "Только ваш тренер. Доступ по защищённой сессии.",
+    q: "Кто видит мои данные?",
+    a: "Только ваш тренер. Фото и замеры не попадают в общий доступ.",
   },
   {
-    q: "Мой тренер ещё не в FitPro?",
-    a: "Отправьте ему fitpro.oasixlab.com — 14 дней бесплатно для тренера.",
+    q: "Тренер ещё не в FitPro. Что делать?",
+    a: "Отправьте ему ссылку fitpro.oasixlab.com — у тренеров есть 14 дней бесплатного доступа.",
   },
 ];
 
@@ -271,33 +271,34 @@ export function ForClientsPage() {
           <div className="text-center md:text-left">
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-surface">
               <Smartphone className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                Кабинет клиента
+              <span className="text-xs font-semibold tracking-wide text-primary">
+                Кабинет для клиента
               </span>
             </div>
             <h1 className="type-display mx-auto max-w-xl text-balance md:mx-0">
-              Тренируйтесь по плану —{" "}
-              <span className="text-primary">без хаоса в чатах</span>
+              Ваш план и прогресс —{" "}
+              <span className="text-primary">не в переписке</span>
+              {" "}с тренером
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg md:mx-0">
-              Программа, дневник, замеры и отчёты — в телефоне. Вы отмечаете подходы, тренер
-              видит прогресс и вовремя правит план.
+              Программа, дневник, замеры и короткие отчёты — в одном месте на телефоне.
+              Вы отмечаете тренировки, тренер видит результат и вовремя корректирует план.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
               <Button size="lg" className="h-12 px-8" asChild>
                 <Link to="/login">
-                  Войти по приглашению <ArrowRight className="h-4 w-4" />
+                  Войти по ссылке тренера <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
                 <Link to="/">Я тренер</Link>
               </Button>
             </div>
-            <ul className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground md:justify-start">
-              {["Для клиента бесплатно", "Доступ по ссылке тренера", "Работает в браузере"].map(
+            <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground md:justify-start">
+              {["Для вас бесплатно", "Вход только по приглашению", "Удобно с телефона"].map(
                 (t) => (
                   <li key={t} className="inline-flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-primary" />
+                    <Check className="h-4 w-4 text-primary" />
                     {t}
                   </li>
                 ),
@@ -351,10 +352,10 @@ export function ForClientsPage() {
       <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <div className="mb-12 text-center">
           <p className="type-eyebrow mb-3">Что внутри</p>
-          <h2 className="type-section-title">Всё для результата — без хаоса</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Инструменты, которые заменяют скриншоты программ, заметки с весами и длинные отчёты в
-            мессенджере.
+          <h2 className="type-section-title text-balance">Всё нужное для тренировок — под рукой</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+            Больше не нужно искать программу в чате, веса — в заметках, а отчёт писать длинным
+            сообщением.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -382,10 +383,10 @@ export function ForClientsPage() {
       <section id="app" className="scroll-mt-20 border-y border-border/60 bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
           <div className="mb-10 text-center">
-            <p className="type-eyebrow mb-3">В телефоне</p>
-            <h2 className="type-section-title">Нажмите — откроется крупно</h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Пять живых экранов кабинета. Клик по телефону — полноэкранный просмотр.
+            <p className="type-eyebrow mb-3">Как выглядит</p>
+            <h2 className="type-section-title text-balance">Пять экранов — откройте любой крупно</h2>
+            <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">
+              Нажмите на телефон: можно рассмотреть интерфейс без прищуривания.
             </p>
           </div>
           <ScreenshotGallery screens={CLIENT_SCREENS} />
@@ -396,27 +397,25 @@ export function ForClientsPage() {
       <section id="how" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <div className="mb-12 text-center">
           <p className="type-eyebrow mb-3">Как начать</p>
-          <h2 className="type-section-title">Три шага до первого дневника</h2>
+          <h2 className="type-section-title text-balance">Три простых шага</h2>
+          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+            Без самостоятельной регистрации: кабинет открывает тренер.
+          </p>
         </div>
         <ol className="mx-auto grid max-w-4xl gap-4 md:grid-cols-3">
-          {STEPS.map((s, i) => (
+          {STEPS.map((s) => (
             <li key={s.n} className="relative">
               <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-surface">
                 <div className="mb-4 flex items-center justify-between gap-2">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">
                     {s.n}
                   </span>
-                  <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
                     {s.detail}
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight">{s.title}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
-                {i < STEPS.length - 1 && (
-                  <p className="mt-4 hidden text-xs font-medium text-primary md:block">
-                    далее →
-                  </p>
-                )}
               </div>
             </li>
           ))}
@@ -433,33 +432,33 @@ export function ForClientsPage() {
       {/* FitPro+ */}
       <section id="plus" className="scroll-mt-20 border-y border-border/60">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <div className="relative overflow-hidden rounded-hero border border-primary/20 bg-gradient-to-br from-primary/[0.09] via-card to-card p-8 shadow-panel sm:p-10 md:p-12">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-card p-8 shadow-panel sm:p-10 md:p-12">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
             <div className="relative mb-10 max-w-2xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  FitPro+ · скоро
+                <span className="text-xs font-semibold tracking-wide text-primary">
+                  FitPro+ · в разработке
                 </span>
               </div>
-              <h2 className="type-section-title">Больше, чем дневник</h2>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
-                Необязательные возможности для тех, кто хочет выжать из данных максимум. Базовый
-                кабинет был и останется бесплатным.
+              <h2 className="type-section-title text-balance">Дополнительно — когда захотите больше</h2>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                Это необязательные возможности «на вырост». Обычный кабинет останется бесплатным
+                для клиента.
               </p>
             </div>
             <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {PLUS_FEATURES.map((f) => (
                 <div
                   key={f.title}
-                  className="rounded-2xl border border-border/80 bg-card/90 p-5 shadow-surface backdrop-blur-sm transition-colors hover:border-primary/30"
+                  className="rounded-2xl border border-border bg-card p-5 shadow-surface transition-colors hover:border-primary/30"
                 >
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
                       <f.icon className="h-5 w-5" />
                     </div>
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                      скоро
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                      Скоро
                     </span>
                   </div>
                   <h3 className="font-semibold tracking-tight">{f.title}</h3>
@@ -474,8 +473,8 @@ export function ForClientsPage() {
       {/* FAQ */}
       <section id="faq" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
         <div className="mb-10 text-center">
-          <p className="type-eyebrow mb-3">FAQ</p>
-          <h2 className="type-section-title">Частые вопросы</h2>
+          <p className="type-eyebrow mb-3">Вопросы</p>
+          <h2 className="type-section-title">Коротко и по делу</h2>
         </div>
         <div className="space-y-3">
           {FAQ.map((item) => (
@@ -510,21 +509,23 @@ export function ForClientsPage() {
           />
           <div className="relative flex flex-col items-start justify-between gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-14">
             <div className="max-w-xl">
-              <p className="type-eyebrow mb-3">Начните сегодня</p>
-              <h2 className="type-section-title">Попросите тренера про FitPro</h2>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
-                Есть ссылка — входите. Нет — отправьте тренеру fitpro.oasixlab.com: 14 дней
-                бесплатно ему, нормальный кабинет — вам.
+              <p className="type-eyebrow mb-3">Готовы начать</p>
+              <h2 className="type-section-title text-balance">
+                Попросите тренера перейти в FitPro
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                Если ссылка уже есть — входите. Если нет — отправьте тренеру fitpro.oasixlab.com:
+                у него 14 дней бесплатно, у вас — удобный кабинет.
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
               <Button size="lg" className="h-12 px-8" asChild>
                 <Link to="/login">
-                  Войти в кабинет <ArrowRight className="h-4 w-4" />
+                  Войти <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
-                <Link to="/">Показать тренеру</Link>
+                <Link to="/">Страница для тренера</Link>
               </Button>
             </div>
           </div>

@@ -97,7 +97,7 @@ export function ScreenshotGallery({
                   onClick={() => show(i)}
                   className="mt-1.5 text-[11px] font-medium text-primary hover:underline"
                 >
-                  Открыть крупно
+                  Открыть
                 </button>
               </figcaption>
             </figure>

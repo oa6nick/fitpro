@@ -166,41 +166,42 @@
 
 @layer components {
   .type-eyebrow {
-    font-size: 0.7rem;
-    font-weight: 650;
-    line-height: 1;
-    letter-spacing: 0.22em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: hsl(var(--primary) / 0.85);
+    color: hsl(var(--primary));
   }
 
   .type-caption {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: 0.18em;
+    line-height: 1.25;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: hsl(var(--muted-foreground) / 0.85);
+    color: hsl(var(--muted-foreground));
   }
 
   .type-display {
-    font-size: clamp(2.5rem, 6.5vw, 4.4rem);
-    font-weight: 550;
-    line-height: 0.98;
-    letter-spacing: -0.03em;
+    font-size: clamp(2.35rem, 5.5vw, 3.75rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: hsl(var(--foreground));
   }
 
   .type-page-title {
-    font-size: clamp(1.55rem, 2.8vw, 2rem);
-    font-weight: 550;
-    line-height: 1.12;
+    font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+    font-weight: 600;
+    line-height: 1.15;
     letter-spacing: -0.02em;
   }
 
   .type-section-title {
-    font-size: clamp(1.65rem, 3vw, 2.5rem);
-    font-weight: 550;
-    line-height: 1.08;
+    font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+    font-weight: 600;
+    line-height: 1.15;
     letter-spacing: -0.02em;
   }
 

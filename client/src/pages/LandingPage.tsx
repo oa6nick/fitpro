@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Zap,
   Sparkles,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,50 +26,50 @@ import { cn } from "@/lib/utils";
 const FEATURES = [
   {
     icon: Users,
-    title: "CRM и воронка",
-    text: "Канбан: заявка → анкета → созвон → оплата → активный. Авто-метка «зона риска» при 7+ днях без активности.",
+    title: "Клиенты и воронка",
+    text: "От заявки до активного сопровождения — на одной доске. Если человек пропал на неделю, система сама подсветит его в «зоне риска».",
     span: "lg:col-span-2",
   },
   {
     icon: ClipboardList,
-    title: "Конструктор программ",
-    text: "Библиотека с техникой и видео. Суперсеты, отдых 30с–5м, назначение в один клик.",
+    title: "Программы тренировок",
+    text: "Соберите план из своей библиотеки упражнений, задайте подходы и отдых — и отправьте клиенту одним нажатием.",
     span: "",
   },
   {
     icon: Dumbbell,
-    title: "Дневник в зале",
-    text: "Клиент вводит подходы, вес и ощущения с телефона. Таймер отдыха и sticky «Завершить».",
+    title: "Дневник в телефоне",
+    text: "Клиент отмечает вес и повторы прямо в зале. Есть таймер отдыха и кнопка «завершить тренировку».",
     span: "",
   },
   {
     icon: LineChart,
-    title: "Аналитика",
-    text: "Тоннаж, оценка 1ПМ, рост рабочих весов, посещаемость и замеры — для тренера и клиента.",
+    title: "Прогресс на цифрах",
+    text: "Тоннаж, рабочие веса, посещаемость и замеры. Видно, кто растёт, а кому пора поправить план.",
     span: "lg:col-span-2",
   },
   {
     icon: FileText,
-    title: "Отчёты",
-    text: "Своя форма недели. Статусы проверки — ничего не теряется в чатах.",
+    title: "Еженедельные отчёты",
+    text: "Своя короткая форма вместо переписок. Статусы «ожидает» и «проверен» — ничего не теряется.",
     span: "",
   },
   {
     icon: CheckSquare,
     title: "Привычки",
-    text: "Шаги, вода, сон — отметки по дням и % соблюдения автоматически.",
+    text: "Шаги, вода, сон — клиент отмечает дни, процент соблюдения считается сам.",
     span: "",
   },
   {
     icon: BookOpen,
-    title: "База знаний",
-    text: "Материалы с поэтапным открытием по неделям сопровождения.",
+    title: "Материалы",
+    text: "Гайды и видео открываются по неделям ведения — когда они действительно нужны.",
     span: "",
   },
   {
     icon: Wallet,
-    title: "Финансы",
-    text: "Оплаты, продления и напоминания — без сторонних таблиц.",
+    title: "Оплаты",
+    text: "История платежей и даты продления. Напоминание клиенту — без Excel и личных сообщений.",
     span: "",
   },
 ];
@@ -78,31 +77,31 @@ const FEATURES = [
 const STEPS = [
   {
     n: "01",
-    title: "Заводите клиента",
-    text: "Карточка + ссылка-приглашение. Клиент заполняет анкету сам.",
-    tip: "2 минуты",
+    title: "Добавьте клиента",
+    text: "Создайте карточку и отправьте ссылку. Анкету человек заполнит сам.",
+    tip: "Пара минут",
   },
   {
     n: "02",
-    title: "Собираете программу",
-    text: "Из библиотеки упражнений — шаблон и назначение в один клик.",
+    title: "Соберите программу",
+    text: "Из упражнений и шаблонов — назначьте на нужную дату.",
     tip: "Конструктор",
   },
   {
     n: "03",
     title: "Клиент тренируется",
-    text: "Дневник, замеры и отчёты со смартфона. Вы видите логи сразу.",
+    text: "Ведёт дневник, сдаёт замеры и отчёты с телефона. Вы видите это сразу.",
     tip: "В зале",
   },
   {
     n: "04",
-    title: "Корректируете план",
-    text: "Графики, зона риска и проверка тренировок — на одном экране.",
+    title: "Смотрите результат",
+    text: "Графики, риски и проверка тренировок — всё на одном экране.",
     tip: "Аналитика",
   },
 ];
 
-// Цифры синхронизированы с серверным прайсом (server/src/services/plans.ts).
+// Цифры синхронизированы с server/src/services/plans.ts
 const PRICING = [
   { id: "basic", name: "Старт", price: "990", clients: "до 10 клиентов", popular: false },
   { id: "pro", name: "Практик", price: "2 490", clients: "до 50 клиентов", popular: true },
@@ -112,87 +111,86 @@ const PRICING = [
 const AUDIENCE = [
   {
     icon: Dumbbell,
-    title: "Онлайн-тренер",
-    text: "Ведёте 10–50 клиентов удалённо: программы, дневники и отчёты вместо переписок и таблиц.",
+    title: "Онлайн-тренеру",
+    text: "Ведете 10–50 человек удалённо: программы, дневники и отчёты вместо чатов и таблиц.",
   },
   {
     icon: Users,
-    title: "Тренер в зале с ведением",
-    text: "Очные тренировки + сопровождение между ними: задачи, привычки, замеры — всё под контролем.",
+    title: "Тренеру в зале",
+    text: "Очные сессии плюс сопровождение между ними: задачи, привычки и замеры под контролем.",
   },
   {
     icon: ClipboardList,
-    title: "Нутрициолог / куратор",
-    text: "Анкеты, еженедельные отчёты, база знаний с поэтапным доступом и метка «зона риска».",
+    title: "Нутрициологу и куратору",
+    text: "Анкеты, еженедельные отчёты, материалы по этапам и сигнал, если клиент «пропал».",
   },
 ];
 
-// 5 лучших мобильных экранов + lightbox.
 const APP_SCREENS = [
   {
     src: "/screens/m-trainer-home.png",
     role: "Тренер",
-    title: "Дашборд",
-    text: "Зона риска и задачи на сегодня",
+    title: "Главная",
+    text: "Кто в зоне риска и что проверить сегодня",
   },
   {
     src: "/screens/m-trainer-clients.png",
     role: "Тренер",
-    title: "CRM",
-    text: "Воронка клиентов в кармане",
+    title: "Клиенты",
+    text: "Воронка от заявки до активного",
   },
   {
     src: "/screens/m-trainer-analytics.png",
     role: "Тренер",
     title: "Аналитика",
-    text: "Тоннаж, 1ПМ, динамика весов",
+    text: "Веса, тоннаж и динамика по человеку",
   },
   {
     src: "/screens/m-client-diary.png",
     role: "Клиент",
     title: "Дневник",
-    text: "Подходы и таймер — прямо в зале",
+    text: "Подходы и таймер прямо в зале",
   },
   {
     src: "/screens/m-client-progress.png",
     role: "Клиент",
     title: "Прогресс",
-    text: "Тоннаж, серия и замеры",
+    text: "Серия недель, тоннаж и замеры",
   },
 ];
 
 const FAQ = [
   {
-    q: "Как клиент попадает в свой кабинет?",
-    a: "Вы создаёте карточку клиента и отправляете ему ссылку-приглашение (или письмо). Клиент придумывает пароль — и сразу видит свои тренировки, дневник и отчёты. Сам зарегистрироваться «мимо тренера» клиент не может.",
+    q: "Как клиент попадает в кабинет?",
+    a: "Вы создаёте карточку и отправляете ссылку-приглашение. Человек задаёт пароль и сразу видит тренировки, дневник и отчёты. Самостоятельно зарегистрироваться «мимо тренера» нельзя.",
   },
   {
-    q: "Что входит в бесплатный период?",
-    a: "14 дней полного функционала и до 10 клиентов. Банковская карта не нужна.",
+    q: "Что входит в 14 бесплатных дней?",
+    a: "Весь функционал и до 10 клиентов. Карта не нужна — можно просто попробовать.",
   },
   {
-    q: "Как оплачивать после пробного периода?",
-    a: "Онлайн-оплата сейчас подключается. До её запуска тариф активируется вручную — напишите нам, это занимает пару минут.",
+    q: "Как платить после пробного периода?",
+    a: "Онлайн-оплата подключается. Пока её нет, тариф включаем вручную — напишите нам, это быстро.",
   },
   {
-    q: "Клиенту нужно ставить приложение?",
-    a: "Нет. FitPro работает в браузере и полностью адаптирован под телефон — кабинет клиента открывается по ссылке.",
+    q: "Клиенту нужно приложение?",
+    a: "Нет. Кабинет открывается в браузере телефона по ссылке. Отдельные приложения появятся в магазинах позже.",
   },
   {
-    q: "Что с моими данными и данными клиентов?",
-    a: "Данные хранятся в изолированной базе, доступ к клиенту есть только у его тренера. Пароли хранятся в виде хэшей, доступ к кабинету — по защищённой сессии.",
+    q: "Где хранятся данные?",
+    a: "В отдельной базе. К карточке клиента имеет доступ только его тренер. Пароли хранятся в зашифрованном виде.",
   },
   {
-    q: "Можно ли перенести клиентов из таблиц?",
-    a: "Да: карточки клиентов заводятся быстро, а анкету каждый клиент заполняет сам при первом входе — вам не придётся перепечатывать данные.",
+    q: "Можно перенести людей из таблиц?",
+    a: "Да. Карточки заводятся быстро, а анкету каждый заполняет сам при первом входе — перепечатывать всё не нужно.",
   },
 ];
 
 const STATS = [
-  { icon: Zap, label: "Назначение программы", value: "в 1 клик" },
+  { icon: Zap, label: "Назначить программу", value: "за минуту" },
   { icon: Smartphone, label: "Кабинет клиента", value: "с телефона" },
-  { icon: Bell, label: "Зона риска", value: "автоматически" },
-  { icon: ShieldCheck, label: "Две роли", value: "тренер и клиент" },
+  { icon: Bell, label: "Кто «пропал»", value: "видно сразу" },
+  { icon: ShieldCheck, label: "Роли", value: "тренер и клиент" },
 ];
 
 function LogoMark({ size = "md" }: { size?: "sm" | "md" }) {
@@ -222,13 +220,13 @@ function SectionHeading({
   align?: "center" | "left";
 }) {
   return (
-    <div className={cn("mb-12", align === "center" ? "text-center" : "text-left")}>
-      <p className="type-eyebrow mb-3 text-primary/80">{eyebrow}</p>
-      <h2 className="type-section-title">{title}</h2>
+    <div className={cn("mb-10 md:mb-12", align === "center" ? "text-center" : "text-left")}>
+      <p className="type-eyebrow mb-3">{eyebrow}</p>
+      <h2 className="type-section-title text-balance">{title}</h2>
       {subtitle && (
         <p
           className={cn(
-            "mt-3 max-w-2xl leading-relaxed text-muted-foreground",
+            "mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-[1.05rem]",
             align === "center" && "mx-auto",
           )}
         >
@@ -260,14 +258,14 @@ export function LandingPage() {
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
+                className="rounded-lg px-3 py-1.5 transition-colors hover:bg-accent hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
             <Link
               to="/for-clients"
-              className="rounded-full px-3 py-1.5 transition-colors hover:bg-accent/60 hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:bg-accent hover:text-foreground"
             >
               Клиентам
             </Link>
@@ -279,54 +277,44 @@ export function LandingPage() {
             </Button>
             <Button size="sm" asChild>
               <Link to="/register">
-                Начать <ArrowRight className="h-3.5 w-3.5" />
+                Попробовать <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero — split layout */}
+      {/* Hero */}
       <section className="relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              "radial-gradient(ellipse 70% 50% at 85% 10%, hsl(var(--primary) / 0.16), transparent 55%), radial-gradient(ellipse 50% 40% at 10% 30%, hsl(var(--info) / 0.10), transparent 50%), radial-gradient(ellipse 40% 30% at 50% 90%, hsl(var(--primary) / 0.06), transparent 60%)",
-          }}
-          aria-hidden
-        />
-        {/* soft grid */}
-        <div
-          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.35] dark:opacity-[0.12]"
-          style={{
-            backgroundImage:
-              "linear-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-            maskImage: "radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent)",
+              "radial-gradient(ellipse 60% 45% at 90% 0%, hsl(var(--primary) / 0.12), transparent 55%), radial-gradient(ellipse 45% 40% at 0% 20%, hsl(var(--primary) / 0.06), transparent 50%)",
           }}
           aria-hidden
         />
 
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pt-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pt-24">
           <div className="animate-slide-up text-center lg:text-left">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-surface">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-surface">
               <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/15">
                 <Sparkles className="h-3 w-3 text-primary" />
               </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                Для онлайн-тренеров
+              <span className="text-xs font-semibold tracking-wide text-primary">
+                Платформа для онлайн-тренеров
               </span>
             </div>
 
-            <h1 className="type-display mx-auto max-w-2xl lg:mx-0">
-              Клиенты, программы и прогресс —{" "}
-              <span className="text-primary">без хаоса в чатах</span>
+            <h1 className="type-display mx-auto max-w-2xl text-balance lg:mx-0">
+              Ведение клиентов{" "}
+              <span className="text-primary">без хаоса</span>
+              {" "}в чатах и таблицах
             </h1>
 
-            <p className="mx-auto mt-6 max-w-xl text-base leading-[1.75] text-muted-foreground sm:text-lg lg:mx-0">
-              CRM, дневник в зале, тоннаж и 1ПМ, отчёты и зона риска. Всё, что Fitness Form
-              и таблицы не закрывают вместе — в одном кабинете на русском.
+            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
+              Программы, дневник тренировок, отчёты, прогресс и оплаты — в одном кабинете.
+              Вы видите, кто тренируется, а кто пропал. Клиент — свой план с телефона.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
@@ -343,15 +331,15 @@ export function LandingPage() {
               </Button>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground lg:justify-start">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
               <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-primary" /> без карты
+                <Check className="h-4 w-4 text-primary" /> Без привязки карты
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-primary" /> до 10 клиентов на старте
+                <Check className="h-4 w-4 text-primary" /> До 10 клиентов на старте
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-primary" /> кабинет с телефона
+                <Check className="h-4 w-4 text-primary" /> Работает с телефона
               </span>
             </div>
           </div>
@@ -391,7 +379,7 @@ export function LandingPage() {
           {STATS.map((s, i) => (
             <div
               key={s.label}
-              className="group relative overflow-hidden rounded-panel border border-border/60 bg-card/70 p-5 text-center shadow-surface backdrop-blur-sm transition-all duration-300 ease-spring hover:-translate-y-1 hover:border-primary/25 hover:shadow-panel"
+              className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 text-center shadow-surface transition-colors hover:border-primary/30"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -409,8 +397,8 @@ export function LandingPage() {
       <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
           eyebrow="Возможности"
-          title="Один кабинет вместо десяти инструментов"
-          subtitle="CRM, программы, дневник, аналитика и финансы — на русском, без хаоса в Telegram и таблицах."
+          title="Всё ведение — в одном месте"
+          subtitle="Не нужно жонглировать мессенджером, таблицами и PDF. Клиенты, программы, дневники и деньги — в FitPro."
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, i) => (
@@ -444,8 +432,8 @@ export function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
           <SectionHeading
             eyebrow="Как это работает"
-            title="От заявки до прогресса — четыре шага"
-            subtitle="Сквозной сценарий тренер ↔ клиент без переключений между сервисами."
+            title="От заявки до результата — четыре шага"
+            subtitle="Простой цикл: пригласили человека, выдали программу, он тренируется — вы правите план по фактам."
           />
           <ol className="grid gap-4 md:grid-cols-4 md:gap-0">
             {STEPS.map((s, i) => (
@@ -477,13 +465,13 @@ export function LandingPage() {
       {/* Приложение — 5 mobile + lightbox */}
       <section id="app" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
-          eyebrow="В телефоне"
-          title="Нажмите на экран — откроется крупно"
-          subtitle="Пять живых мобильных кадров. Клик или «Открыть крупно» — полноэкранный просмотр."
+          eyebrow="Как выглядит"
+          title="Откройте экраны крупно"
+          subtitle="Пять реальных кадров с телефона. Нажмите на любой — откроется на весь экран."
         />
         <ScreenshotGallery screens={APP_SCREENS} />
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Веб уже работает с телефона · нативные приложения — в блоке «Скачать»
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Кабинет уже открывается в браузере телефона. Приложения — в блоке ниже.
         </p>
       </section>
 
@@ -491,82 +479,85 @@ export function LandingPage() {
       <section id="pricing" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
           eyebrow="Тарифы"
-          title="Простые тарифы"
-          subtitle="Платите за объём клиентов. Все функции — в каждом тарифе."
+          title="Платите за число клиентов"
+          subtitle="Набор функций одинаковый на всех тарифах. Меняется только лимит человек в ведении."
         />
         <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-3 sm:items-stretch">
           {PRICING.map((p) => (
             <div
               key={p.id}
               className={cn(
-                "relative flex flex-col rounded-hero border bg-card p-6 shadow-surface transition-all duration-300 ease-spring hover:-translate-y-1.5",
+                "relative flex flex-col rounded-2xl border bg-card p-6 shadow-surface transition-colors hover:border-primary/30",
                 p.popular
-                  ? "z-10 border-primary/40 shadow-glow ring-1 ring-primary/30 sm:scale-[1.03]"
-                  : "border-border/70 hover:shadow-panel",
+                  ? "z-10 border-primary/40 shadow-panel ring-1 ring-primary/25 sm:scale-[1.02]"
+                  : "border-border",
               )}
             >
               {p.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-3.5 py-1 text-xs font-semibold text-primary-foreground shadow-glow">
-                  Популярный
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                  Выбирают чаще
                 </span>
               )}
-              <h3 className="text-lg font-semibold">{p.name}</h3>
+              <h3 className="text-lg font-semibold tracking-tight">{p.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
                 <span className="text-4xl font-semibold tracking-tight tabular-nums">{p.price}</span>
-                <span className="text-sm text-muted-foreground">₽/мес</span>
+                <span className="text-sm text-muted-foreground">₽ в месяц</span>
               </div>
               <p className="mt-1.5 text-sm text-muted-foreground">{p.clients}</p>
-              <div className="my-5 h-px bg-border/70" />
+              <div className="my-5 h-px bg-border" />
               <ul className="flex-1 space-y-2.5 text-sm">
-                {["CRM и воронка", "Программы и дневник", "Отчёты и аналитика", "База знаний и финансы"].map(
-                  (li) => (
-                    <li key={li} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-primary/12">
-                        <Check className="h-3 w-3 text-primary" />
-                      </span>
-                      {li}
-                    </li>
-                  ),
-                )}
+                {[
+                  "Клиенты и воронка",
+                  "Программы и дневник",
+                  "Отчёты и аналитика",
+                  "Материалы и оплаты",
+                ].map((li) => (
+                  <li key={li} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/12">
+                      <Check className="h-3 w-3 text-primary" />
+                    </span>
+                    {li}
+                  </li>
+                ))}
               </ul>
               <Button
-                className={cn("mt-7 w-full", p.popular && "shadow-glow")}
+                className="mt-7 w-full"
                 variant={p.popular ? "default" : "outline"}
                 asChild
               >
                 <Link to={`/register?plan=${p.id}`}>
-                  Начать бесплатно
+                  Попробовать 14 дней
                   {p.popular && <ArrowRight className="h-4 w-4" />}
                 </Link>
               </Button>
             </div>
           ))}
         </div>
-        <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
-          Каждый тариф начинается с 14 дней бесплатно. Онлайн-оплата подключается — до её запуска
-          тариф активируется вручную.
+        <p className="mt-8 text-center text-sm leading-relaxed text-muted-foreground">
+          На любом тарифе сначала 14 дней бесплатно. Онлайн-оплату подключаем — до этого тариф
+          включаем вручную по запросу.
         </p>
       </section>
 
       {/* Для кого */}
-      <section className="border-y border-border/50 bg-muted/30">
+      <section className="border-y border-border/60 bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <SectionHeading eyebrow="Для кого" title="Кому подходит FitPro" />
+          <SectionHeading
+            eyebrow="Кому подойдёт"
+            title="Если ведёте людей, а не только «чат»"
+            subtitle="FitPro для тех, у кого клиенты и сопровождение — основная работа, а не хобби в переписке."
+          />
           <div className="grid gap-4 md:grid-cols-3">
             {AUDIENCE.map((a) => (
               <div
                 key={a.title}
-                className="group glass-card relative overflow-hidden rounded-panel p-6 transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-panel"
+                className="rounded-2xl border border-border bg-card p-6 shadow-surface transition-colors hover:border-primary/30"
               >
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/10 transition-colors group-hover:bg-primary/15">
-                  <a.icon className="h-5 w-5 text-primary" />
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                  <a.icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-lg font-semibold">{a.title}</h3>
+                <h3 className="text-lg font-semibold tracking-tight">{a.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{a.text}</p>
-                <p className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                  Подходит вам <ChevronRight className="h-3.5 w-3.5" />
-                </p>
               </div>
             ))}
           </div>
@@ -575,20 +566,20 @@ export function LandingPage() {
 
       {/* FAQ */}
       <section id="faq" className="scroll-mt-20 mx-auto max-w-3xl px-4 py-20 md:py-24">
-        <SectionHeading eyebrow="FAQ" title="Частые вопросы" />
+        <SectionHeading eyebrow="Вопросы" title="Коротко по делу" />
         <div className="space-y-3">
           {FAQ.map((item) => (
             <details
               key={item.q}
-              className="group glass-card rounded-panel px-5 py-4 transition-shadow open:shadow-panel"
+              className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-surface open:shadow-panel"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden">
-                <span className="pr-2">{item.q}</span>
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground transition-all duration-200 group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium tracking-tight [&::-webkit-details-marker]:hidden">
+                <span className="pr-2 text-left">{item.q}</span>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all group-open:rotate-45 group-open:border-primary/30 group-open:bg-primary/10 group-open:text-primary">
                   +
                 </span>
               </summary>
-              <p className="mt-3 border-t border-border/50 pt-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">
                 {item.a}
               </p>
             </details>
@@ -597,32 +588,34 @@ export function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-4 pb-20 md:pb-24">
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-hero border border-border/60 bg-card shadow-panel">
+      <section className="px-4 pb-16 md:pb-20">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse 60% 80% at 0% 50%, hsl(var(--primary) / 0.14), transparent 55%), radial-gradient(ellipse 50% 70% at 100% 50%, hsl(var(--info) / 0.10), transparent 50%)",
+                "radial-gradient(ellipse 55% 80% at 0% 50%, hsl(var(--primary) / 0.1), transparent 55%)",
             }}
             aria-hidden
           />
           <div className="relative flex flex-col items-start justify-between gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-14">
             <div className="max-w-xl">
-              <p className="type-eyebrow mb-3 text-primary/80">Начните сегодня</p>
-              <h2 className="type-section-title">Соберите своё пространство тренера</h2>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
-                Зарегистрируйтесь и пригласите первого клиента за пару минут. 14 дней бесплатно.
+              <p className="type-eyebrow mb-3">Попробуйте</p>
+              <h2 className="type-section-title text-balance">
+                Заведите кабинет и пригласите первого клиента
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                Регистрация занимает минуту. 14 дней — полный доступ, карта не нужна.
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
-              <Button size="lg" className="h-12 px-8 shadow-glow" asChild>
+              <Button size="lg" className="h-12 px-8" asChild>
                 <Link to="/register">
-                  Создать аккаунт тренера <ArrowRight className="h-4 w-4" />
+                  Создать кабинет тренера <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
-                <Link to="/login">Войти</Link>
+                <Link to="/login">Уже есть аккаунт</Link>
               </Button>
             </div>
           </div>
@@ -630,26 +623,28 @@ export function LandingPage() {
       </section>
 
       {/* Сторы */}
-      <section className="border-t border-border/50 bg-muted/25">
+      <section className="border-t border-border/60 bg-muted/25">
         <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
           <div className="flex flex-col items-center gap-6 text-center">
             <div>
-              <p className="type-eyebrow mb-2">Скачать</p>
+              <p className="type-eyebrow mb-2">Приложения</p>
               <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                FitPro в магазинах приложений
+                Скоро в магазинах
               </h2>
-              <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
-                Веб-кабинет работает уже сейчас. Нативные приложения — в RuStore и скоро в App Store
-                и Google Play.
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                Веб-кабинет уже можно открыть с телефона. Отдельные приложения появятся в RuStore,
+                App Store и Google Play.
               </p>
             </div>
             <StoreBadges />
             <p className="text-xs text-muted-foreground">
-              Пока нет приложения — откройте{" "}
-              <a href="https://fitpro.oasixlab.com" className="font-medium text-primary hover:underline">
+              Сейчас удобнее всего зайти на{" "}
+              <a
+                href="https://fitpro.oasixlab.com"
+                className="font-medium text-primary hover:underline"
+              >
                 fitpro.oasixlab.com
-              </a>{" "}
-              в браузере телефона
+              </a>
             </p>
           </div>
         </div>
@@ -676,7 +671,7 @@ export function LandingPage() {
               Экраны
             </a>
           </div>
-          <p className="text-xs">© 2026 FitPro · ОС для онлайн-тренера</p>
+          <p className="text-xs">© 2026 FitPro · для тренеров и их клиентов</p>
         </div>
       </footer>
     </div>

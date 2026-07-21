@@ -35,9 +35,9 @@ export function LoginPage() {
     <AuthShell>
       <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-xl tracking-tight">С возвращением</CardTitle>
+          <CardTitle className="text-xl tracking-tight">Вход в FitPro</CardTitle>
           <CardDescription className="text-balance leading-relaxed">
-            Войдите в кабинет тренера или спортсмена — всё на своих местах.
+            Кабинет тренера или клиента — в зависимости от вашего аккаунта.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -48,7 +48,7 @@ export function LoginPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="you@email.com"
+                placeholder="email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -82,15 +82,15 @@ export function LoginPage() {
                 {error}
               </p>
             )}
-            <Button type="submit" className="w-full shadow-glow" disabled={busy}>
-              {busy ? "Входим…" : "Войти в кабинет"}
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Входим…" : "Войти"}
             </Button>
           </form>
-          <div className="mt-6 space-y-2 border-t border-border/60 pt-5 text-center text-sm">
+          <div className="mt-6 space-y-2 border-t border-border pt-5 text-center text-sm">
             <p className="text-muted-foreground">
               Тренер без аккаунта?{" "}
               <Link to="/register" className="font-medium text-primary hover:underline">
-                14 дней бесплатно
+                Попробовать 14 дней
               </Link>
             </p>
             <p className="text-xs text-muted-foreground">

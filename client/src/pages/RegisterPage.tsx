@@ -40,17 +40,17 @@ export function RegisterPage() {
     <AuthShell>
       <Card className="glass-elevated w-full rounded-hero border-border/50 shadow-panel">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-xl tracking-tight">Кабинет тренера</CardTitle>
+          <CardTitle className="text-xl tracking-tight">Регистрация тренера</CardTitle>
           <CardDescription className="text-balance leading-relaxed">
             {plan
-              ? "14 дней полного доступа. Тариф подключите после пробного периода — карта не нужна."
-              : "CRM, программы, дневники клиентов и аналитика — в одном месте. 14 дней бесплатно."}
+              ? "14 дней полного доступа. Карта не нужна — тариф выберете после пробного периода."
+              : "Клиенты, программы, дневники и аналитика в одном кабинете. 14 дней бесплатно."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="mb-5 space-y-1.5 rounded-panel border border-border/60 bg-muted/30 px-3.5 py-3 text-xs text-muted-foreground">
+          <ul className="mb-5 space-y-1.5 rounded-xl border border-border bg-muted/40 px-3.5 py-3 text-sm text-muted-foreground">
             {[
-              "До 10 клиентов на пробном периоде",
+              "До 10 клиентов в пробном периоде",
               "Клиенты входят по вашей ссылке",
               "Карта для старта не нужна",
             ].map((t) => (
@@ -62,12 +62,12 @@ export function RegisterPage() {
           </ul>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="name">Как к вам обращаться</Label>
+              <Label htmlFor="name">Имя</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Имя или бренд"
+                placeholder="Как к вам обращаться"
                 required
               />
             </div>
@@ -77,7 +77,7 @@ export function RegisterPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="you@email.com"
+                placeholder="email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -89,7 +89,7 @@ export function RegisterPage() {
                 id="password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="Минимум 6 символов"
+                placeholder="Не меньше 6 символов"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength={6}
@@ -104,8 +104,8 @@ export function RegisterPage() {
                 {error}
               </p>
             )}
-            <Button type="submit" className="w-full shadow-glow" disabled={busy}>
-              {busy ? "Создаём кабинет…" : "Начать бесплатно"}
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Создаём кабинет…" : "Создать кабинет"}
             </Button>
           </form>
           <p className="mt-5 text-center text-sm text-muted-foreground">
