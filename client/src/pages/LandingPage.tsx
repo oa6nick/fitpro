@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { StoreBadges } from "@/components/StoreBadges";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
@@ -97,61 +98,61 @@ const AUDIENCE = [
   },
 ];
 
-// Живые экраны веб-кабинета (client/public/screens/, свежие снимки UI).
+// Только мобильные экраны (390×844) — галерея в phone-frame.
 const APP_SCREENS = [
   {
-    src: "/screens/trainer-dashboard.png",
+    src: "/screens/m-trainer-home.png",
     role: "Тренер",
     title: "Дашборд",
-    text: "Зона риска, заявки и проверки — за 10 секунд",
+    text: "Зона риска и задачи на сегодня",
   },
   {
-    src: "/screens/trainer-clients.png",
+    src: "/screens/m-trainer-clients.png",
     role: "Тренер",
-    title: "CRM-воронка",
-    text: "От заявки до активного — статусы под контролем",
+    title: "Клиенты",
+    text: "CRM и статусы воронки",
   },
   {
-    src: "/screens/trainer-client-card.png",
+    src: "/screens/m-trainer-client.png",
     role: "Тренер",
-    title: "Карточка клиента",
-    text: "Анкета, программа, прогресс и следующий шаг воронки",
+    title: "Карточка",
+    text: "Клиент, шаги воронки, программа",
   },
   {
-    src: "/screens/trainer-analytics.png",
+    src: "/screens/m-trainer-analytics.png",
     role: "Тренер",
     title: "Аналитика",
-    text: "Тоннаж, оценка 1ПМ и рост рабочих весов",
+    text: "Тоннаж, 1ПМ, динамика весов",
   },
   {
-    src: "/screens/trainer-studio.png",
+    src: "/screens/m-trainer-templates.png",
     role: "Тренер",
-    title: "Конструктор",
-    text: "Программы с отдыхом 30с–5м и суперсетами",
+    title: "Программы",
+    text: "Конструктор с отдыхом и суперсетами",
   },
   {
-    src: "/screens/client-home.png",
+    src: "/screens/m-client-home.png",
     role: "Клиент",
-    title: "Кабинет спортсмена",
-    text: "Ближайшая тренировка и быстрый доступ",
+    title: "Главная",
+    text: "Ближайшая тренировка под рукой",
   },
   {
-    src: "/screens/client-workout-log.png",
+    src: "/screens/m-client-workouts.png",
     role: "Клиент",
-    title: "Дневник в зале",
-    text: "Крупные подходы, таймер отдыха, sticky «Завершить»",
+    title: "Тренировки",
+    text: "План и история со статусами",
   },
   {
-    src: "/screens/client-progress.png",
+    src: "/screens/m-client-diary.png",
+    role: "Клиент",
+    title: "Дневник",
+    text: "Подходы, таймер, завершить",
+  },
+  {
+    src: "/screens/m-client-progress.png",
     role: "Клиент",
     title: "Прогресс",
-    text: "Тоннаж, 1ПМ, серия недель и замеры",
-  },
-  {
-    src: "/screens/client-home-mobile.png",
-    role: "Клиент",
-    title: "С телефона",
-    text: "Нижняя навигация — всё под рукой в зале",
+    text: "Тоннаж, серия, замеры",
   },
 ];
 
@@ -456,35 +457,34 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Приложение */}
+      {/* Приложение — только mobile screens */}
       <section id="app" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
-          eyebrow="Живой продукт"
-          title="Как выглядит FitPro изнутри"
-          subtitle="Реальные экраны кабинета тренера и клиента. Веб уже работает с телефона; нативное iOS/Android — в разработке."
+          eyebrow="В телефоне"
+          title="FitPro в зале — с экрана смартфона"
+          subtitle="Живые мобильные экраны кабинета тренера и клиента. Листайте вбок."
         />
-        <div className="-mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:thin]">
+        <div className="scroll-rail -mx-4 overflow-x-auto px-4 pb-3">
           <div className="flex snap-x snap-mandatory gap-5 md:gap-6">
             {APP_SCREENS.map((s) => (
-              <figure key={s.src} className="w-[210px] shrink-0 snap-center sm:w-[230px]">
-                <div className="group relative mx-auto w-full overflow-hidden rounded-[1.75rem] border border-border/80 bg-card p-1.5 shadow-panel transition-transform duration-300 ease-spring hover:-translate-y-1">
-                  {/* phone notch bar */}
+              <figure key={s.src} className="w-[200px] shrink-0 snap-center sm:w-[220px]">
+                <div className="group relative mx-auto w-full overflow-hidden rounded-[1.85rem] border border-border bg-card p-1.5 shadow-panel ring-1 ring-black/5 transition-transform duration-300 hover:-translate-y-1 dark:ring-white/5">
                   <div className="absolute inset-x-0 top-0 z-10 flex justify-center pt-2.5">
-                    <div className="h-1.5 w-16 rounded-full bg-foreground/15" />
+                    <div className="h-1.5 w-16 rounded-full bg-foreground/12" />
                   </div>
-                  <div className="overflow-hidden rounded-[1.35rem] bg-muted/40">
+                  <div className="overflow-hidden rounded-[1.4rem] bg-muted/30">
                     <img
                       src={s.src}
-                      alt={`${s.title} — экран iOS-приложения FitPro`}
+                      alt={`${s.title} — мобильный экран FitPro`}
                       loading="lazy"
-                      width={1179}
-                      height={2556}
-                      className="block w-full transition-transform duration-500 ease-spring group-hover:scale-[1.02]"
+                      width={780}
+                      height={1688}
+                      className="block aspect-[9/19.5] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                     />
                   </div>
                 </div>
                 <figcaption className="mt-3.5 text-center">
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                  <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
                     {s.role}
                   </span>
                   <p className="mt-1.5 text-sm font-semibold">{s.title}</p>
@@ -494,8 +494,8 @@ export function LandingPage() {
             ))}
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Листайте галерею — актуальные экраны веб-кабинета
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          Веб уже открывается с телефона · нативные приложения — ниже
         </p>
       </section>
 
@@ -641,9 +641,35 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Сторы */}
+      <section className="border-t border-border/50 bg-muted/25">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div>
+              <p className="type-eyebrow mb-2">Скачать</p>
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                FitPro в магазинах приложений
+              </h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
+                Веб-кабинет работает уже сейчас. Нативные приложения — в RuStore и скоро в App Store
+                и Google Play.
+              </p>
+            </div>
+            <StoreBadges />
+            <p className="text-xs text-muted-foreground">
+              Пока нет приложения — откройте{" "}
+              <a href="https://fitpro.oasixlab.com" className="font-medium text-primary hover:underline">
+                fitpro.oasixlab.com
+              </a>{" "}
+              в браузере телефона
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Футер */}
       <footer className="border-t border-border/50">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-muted-foreground md:flex-row">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 px-4 py-10 text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2.5">
             <LogoMark size="sm" />
             <span className="font-semibold text-foreground">FitPro Platform</span>
@@ -657,6 +683,9 @@ export function LandingPage() {
             </a>
             <a href="#faq" className="transition-colors hover:text-foreground">
               FAQ
+            </a>
+            <a href="#app" className="transition-colors hover:text-foreground">
+              Экраны
             </a>
           </div>
           <p className="text-xs">© 2026 FitPro · ОС для онлайн-тренера</p>

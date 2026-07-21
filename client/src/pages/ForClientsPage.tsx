@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { StoreBadges } from "@/components/StoreBadges";
 
 const CLIENT_FEATURES = [
   {
@@ -106,32 +107,32 @@ const STEPS = [
   },
 ];
 
-// Свежие скрины клиентского кабинета (client/public/screens/).
+// Только мобильные экраны кабинета клиента.
 const CLIENT_SCREENS = [
   {
-    src: "/screens/client-home.png",
+    src: "/screens/m-client-home.png",
     title: "Главная",
     text: "Ближайшая тренировка и быстрый доступ",
   },
   {
-    src: "/screens/client-workouts.png",
+    src: "/screens/m-client-workouts.png",
     title: "Тренировки",
-    text: "Программа со статусами — в плане и история",
+    text: "План и история со статусами",
   },
   {
-    src: "/screens/client-workout-log.png",
+    src: "/screens/m-client-diary.png",
     title: "Дневник в зале",
-    text: "Крупные подходы, таймер, завершение в один тап",
+    text: "Крупные подходы, таймер, завершить",
   },
   {
-    src: "/screens/client-progress.png",
+    src: "/screens/m-client-progress.png",
     title: "Прогресс",
-    text: "Тоннаж, 1ПМ, серия недель и замеры",
+    text: "Тоннаж, 1ПМ, серия и замеры",
   },
   {
-    src: "/screens/client-home-mobile.png",
-    title: "С телефона",
-    text: "Нижнее меню — удобно между подходами",
+    src: "/screens/m-client-habits.png",
+    title: "Привычки",
+    text: "Отметки по дням недели",
   },
 ];
 
@@ -332,29 +333,29 @@ export function ForClientsPage() {
       <section className="border-y border-border/50 bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
           <div className="mb-12 text-center">
-            <p className="type-eyebrow mb-3">Мобильное приложение</p>
+            <p className="type-eyebrow mb-3">В телефоне</p>
             <h2 className="type-section-title">Кабинет, который приятно открывать</h2>
             <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-              Живые экраны iOS-приложения. Скоро в App Store — а веб-версия полностью
-              работает с телефона уже сейчас.
+              Живые мобильные экраны. Веб уже работает с телефона; приложения — в RuStore и
+              скоро в App Store / Google Play.
             </p>
           </div>
-          <div className="-mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:thin]">
+          <div className="scroll-rail -mx-4 overflow-x-auto px-4 pb-3">
             <div className="flex snap-x snap-mandatory gap-5 md:justify-center md:gap-6">
               {CLIENT_SCREENS.map((s) => (
                 <figure key={s.src} className="w-[200px] shrink-0 snap-center sm:w-[210px]">
-                  <div className="group relative overflow-hidden rounded-[1.75rem] border border-border/80 bg-card p-1.5 shadow-panel transition-transform duration-300 ease-spring hover:-translate-y-1">
+                  <div className="group relative overflow-hidden rounded-[1.85rem] border border-border bg-card p-1.5 shadow-panel ring-1 ring-black/5 transition-transform duration-300 hover:-translate-y-1 dark:ring-white/5">
                     <div className="absolute inset-x-0 top-0 z-10 flex justify-center pt-2.5">
-                      <div className="h-1.5 w-16 rounded-full bg-foreground/15" />
+                      <div className="h-1.5 w-16 rounded-full bg-foreground/12" />
                     </div>
-                    <div className="overflow-hidden rounded-[1.35rem] bg-muted/40">
+                    <div className="overflow-hidden rounded-[1.4rem] bg-muted/30">
                       <img
                         src={s.src}
-                        alt={`${s.title} — экран приложения FitPro для клиента`}
+                        alt={`${s.title} — мобильный экран FitPro`}
                         loading="lazy"
-                        width={1179}
-                        height={2556}
-                        className="block w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                        width={780}
+                        height={1688}
+                        className="block aspect-[9/19.5] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                       />
                     </div>
                   </div>
@@ -481,6 +482,17 @@ export function ForClientsPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Сторы */}
+      <section className="border-t border-border/50 bg-muted/25">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
+          <div>
+            <p className="type-eyebrow mb-2">Скачать</p>
+            <h2 className="text-xl font-semibold tracking-tight">FitPro в магазинах</h2>
+          </div>
+          <StoreBadges />
         </div>
       </section>
 
