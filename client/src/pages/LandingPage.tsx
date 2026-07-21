@@ -28,49 +28,41 @@ const FEATURES = [
     icon: Users,
     title: "Клиенты и воронка",
     text: "От заявки до активного сопровождения — на одной доске. Если человек пропал на неделю, система сама подсветит его в «зоне риска».",
-    span: "lg:col-span-2",
   },
   {
     icon: ClipboardList,
     title: "Программы тренировок",
     text: "Соберите план из своей библиотеки упражнений, задайте подходы и отдых — и отправьте клиенту одним нажатием.",
-    span: "",
   },
   {
     icon: Dumbbell,
     title: "Дневник в телефоне",
     text: "Клиент отмечает вес и повторы прямо в зале. Есть таймер отдыха и кнопка «завершить тренировку».",
-    span: "",
   },
   {
     icon: LineChart,
     title: "Прогресс на цифрах",
     text: "Тоннаж, рабочие веса, посещаемость и замеры. Видно, кто растёт, а кому пора поправить план.",
-    span: "lg:col-span-2",
   },
   {
     icon: FileText,
     title: "Еженедельные отчёты",
     text: "Своя короткая форма вместо переписок. Статусы «ожидает» и «проверен» — ничего не теряется.",
-    span: "",
   },
   {
     icon: CheckSquare,
     title: "Привычки",
     text: "Шаги, вода, сон — клиент отмечает дни, процент соблюдения считается сам.",
-    span: "",
   },
   {
     icon: BookOpen,
     title: "Материалы",
     text: "Гайды и видео открываются по неделям ведения — когда они действительно нужны.",
-    span: "",
   },
   {
     icon: Wallet,
     title: "Оплаты",
     text: "История платежей и даты продления. Напоминание клиенту — без Excel и личных сообщений.",
-    span: "",
   },
 ];
 
@@ -393,68 +385,77 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Возможности — bento */}
+      {/* Возможности — editorial list, не «иконка в карточке» */}
       <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-20 md:py-24">
-        <SectionHeading
-          eyebrow="Возможности"
-          title="Всё ведение — в одном месте"
-          subtitle="Не нужно жонглировать мессенджером, таблицами и PDF. Клиенты, программы, дневники и деньги — в FitPro."
-        />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f, i) => (
-            <div
-              key={f.title}
-              className={cn(
-                "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-surface transition-all duration-200 hover:border-primary/35 hover:shadow-panel",
-                f.span,
-                i === 0 && "bg-gradient-to-br from-primary/[0.07] via-card to-card",
-                i === 3 && "bg-gradient-to-br from-card via-card to-primary/[0.06]",
-              )}
-            >
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/12 text-primary ring-1 ring-primary/10">
-                  <f.icon className="h-5 w-5" />
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <p className="type-eyebrow mb-3">Возможности</p>
+            <h2 className="type-section-title text-balance">
+              Всё, чем вы сейчас ведёте клиентов — в одном кабинете
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
+              Не мессенджер, не Excel и не папка с PDF. Клиенты, программы, дневники, отчёты и
+              оплаты — там, где вы реально работаете.
+            </p>
+            <Button className="mt-8 hidden lg:inline-flex" asChild>
+              <Link to="/register">
+                Попробовать 14 дней <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <ul className="divide-y divide-border border-y border-border">
+            {FEATURES.map((f) => (
+              <li
+                key={f.title}
+                className="flex gap-4 py-5 first:pt-0 last:pb-0 sm:gap-6 sm:py-6"
+              >
+                <f.icon
+                  className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+                <div className="min-w-0">
+                  <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">
+                    {f.title}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.95rem]">
+                    {f.text}
+                  </p>
                 </div>
-                <span className="text-[11px] font-bold tabular-nums text-muted-foreground/50">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h3 className="text-base font-semibold tracking-tight">{f.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
-              <div className="mt-4 h-0.5 w-8 rounded-full bg-primary/40 transition-all group-hover:w-14 group-hover:bg-primary" />
-            </div>
-          ))}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* Как это работает */}
-      <section id="how" className="scroll-mt-20 border-y border-border/60 bg-muted/35">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-          <SectionHeading
-            eyebrow="Как это работает"
-            title="От заявки до результата — четыре шага"
-            subtitle="Простой цикл: пригласили человека, выдали программу, он тренируется — вы правите план по фактам."
-          />
-          <ol className="grid gap-4 md:grid-cols-4 md:gap-0">
+      {/* Как это работает — вертикальная лента, не 4 одинаковые плитки */}
+      <section id="how" className="scroll-mt-20 border-y border-border/60 bg-muted/30">
+        <div className="mx-auto max-w-3xl px-4 py-20 md:py-24">
+          <div className="mb-12 text-center">
+            <p className="type-eyebrow mb-3">Как это работает</p>
+            <h2 className="type-section-title text-balance">
+              От первого клиента до понятного прогресса
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
+              Короткий цикл без лишних сервисов. Ниже — то, что происходит на практике.
+            </p>
+          </div>
+          <ol className="relative space-y-0">
+            <span
+              className="absolute bottom-3 left-[0.95rem] top-3 w-px bg-border md:left-[1.05rem]"
+              aria-hidden
+            />
             {STEPS.map((s, i) => (
-              <li key={s.n} className="relative flex md:block">
-                {i < STEPS.length - 1 && (
-                  <span
-                    className="absolute left-6 top-14 hidden h-[calc(100%-2rem)] w-px bg-border md:left-auto md:right-0 md:top-8 md:h-px md:w-full md:bg-gradient-to-r md:from-primary/40 md:to-primary/10"
-                    aria-hidden
-                  />
-                )}
-                <div className="relative z-[1] flex w-full flex-col rounded-2xl border border-border bg-card p-5 shadow-surface md:mx-1.5 md:min-h-[220px]">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-                      {s.n}
-                    </span>
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {s.tip}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-semibold tracking-tight">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
+              <li key={s.n} className="relative flex gap-5 pb-10 last:pb-0 md:gap-7">
+                <span className="relative z-[1] flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-xs font-bold text-primary md:h-9 md:w-9">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-xs font-medium text-muted-foreground">{s.tip}</p>
+                  <h3 className="mt-1 text-lg font-semibold tracking-tight">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {s.text}
+                  </p>
                 </div>
               </li>
             ))}
