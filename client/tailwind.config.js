@@ -11,7 +11,8 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          '"Geist Variable"',
+          '"Montserrat Variable"',
+          "Montserrat",
           "system-ui",
           "-apple-system",
           '"Segoe UI"',

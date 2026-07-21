@@ -11,94 +11,94 @@
  */
 
 @layer base {
+  /*
+   * Палитра oasixai (oasixai.com), перенесённая генератором design-forge.
+   * Тёмная тема — значения сайта один в один (#161616 фон, #202020 карточки,
+   * #20d795 бренд); светлая выведена из того же тона с проверкой контраста —
+   * у сайта светлой темы нет, а тренеру она нужна днём.
+   * Вторичный текст сайта (#646464, 3.4:1) подтянут до 4.5:1: лендинг это
+   * прощает, плотный интерфейс с таблицами — нет.
+   * Значения — тройки HSL без функции: так Tailwind подмешивает альфу.
+   */
   :root {
-    --background: 40 32% 95%;
-    --foreground: 225 20% 8%;
-    --card: 40 40% 99%;
-    --card-foreground: 225 20% 8%;
-    --popover: 40 40% 99.5%;
-    --popover-foreground: 225 20% 8%;
-    --primary: 152 72% 28%;
-    --primary-foreground: 42 40% 97%;
-    --secondary: 40 22% 90%;
-    --secondary-foreground: 225 18% 12%;
-    --muted: 40 18% 90%;
-    --muted-foreground: 225 10% 36%;
-    --accent: 152 28% 90%;
-    --accent-foreground: 152 70% 16%;
-    --destructive: 0 72% 42%;
-    --destructive-foreground: 42 40% 97%;
-    --destructive-soft: 0 72% 42%;
-    --success: 152 72% 28%;
-    --success-foreground: 42 40% 97%;
-    --warning: 32 92% 40%;
-    --warning-foreground: 42 40% 97%;
-    --info: 215 68% 40%;
-    --info-foreground: 42 40% 97%;
-    --border: 40 14% 84%;
-    --input: 40 18% 88%;
-    --ring: 152 72% 28%;
-    --radius: 1rem;
+    --background: 0 0% 97%;
+    --foreground: 0 15% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 15% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 15% 11%;
+    --primary: 158 74.1% 36.4%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 15% 11%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 10% 42%;
+    --accent: 158 74.1% 90%;
+    --accent-foreground: 158 74.1% 22%;
+    --destructive: 345 86% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 345 86% 42%;
+    --success: 158 74.1% 28%;
+    --success-foreground: 0 0% 100%;
+    --warning: 37 91.3% 31%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91.2% 42%;
+    --info-foreground: 0 0% 100%;
+    --border: 0 0% 86%;
+    --input: 0 0% 78%;
+    --ring: 158 74.1% 36.4%;
+    --radius: 0.5rem;
 
-    --surface-glass: rgba(255, 255, 255, 0.92);
-    --surface-glass-strong: rgba(255, 255, 255, 0.97);
-    --surface-glass-elevated: #ffffff;
-    --header-glass: rgba(244, 241, 235, 0.92);
-    --sidebar-glass: rgba(250, 248, 244, 0.98);
-    --shadow-surface: 0 1px 2px rgba(17, 20, 27, 0.04), 0 4px 16px rgba(17, 20, 27, 0.04);
-    --shadow-panel: 0 2px 4px rgba(17, 20, 27, 0.04), 0 12px 28px rgba(17, 20, 27, 0.07);
-    --shadow-glow: 0 0 0 1px rgba(18, 128, 74, 0.14), 0 6px 18px rgba(18, 128, 74, 0.12);
-    --shadow-inset: inset 0 1px 2px rgba(17, 20, 27, 0.04);
-    /* Чистый «зал», без mesh-blobs */
-    --body-gradient: linear-gradient(180deg, #f4f1eb 0%, #efebe3 100%);
+    --surface-glass: hsl(0 0% 100% / 0.92);
+    --surface-glass-strong: hsl(0 0% 100% / 0.97);
+    --surface-glass-elevated: hsl(0 0% 100%);
+    --header-glass: hsl(0 0% 97% / 0.92);
+    --sidebar-glass: hsl(0 0% 98% / 0.98);
+    --shadow-surface: 0 1px 2px hsl(0 0% 0% / 0.04), 0 4px 16px hsl(0 0% 0% / 0.04);
+    --shadow-panel: 0 2px 4px hsl(0 0% 0% / 0.04), 0 12px 28px hsl(0 0% 0% / 0.07);
+    --shadow-glow: 0 0 0 1px hsl(158 74.1% 36.4% / 0.14), 0 6px 18px hsl(158 74.1% 36.4% / 0.12);
+    --shadow-inset: inset 0 1px 2px hsl(0 0% 0% / 0.04);
+    --body-gradient: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(0 0% 95%) 100%);
   }
 
-  /*
-   * Dark «Athletic Night»
-   * — deep cool-ink base (not flat #121212)
-   * — solid elevated cards (less muddy translucent glass)
-   * — soft emerald aura, not neon mint flood
-   * — readable secondary text (~62% L)
-   */
   .dark {
-    --background: 165 12% 5.5%;
-    --foreground: 140 12% 96%;
-    --card: 165 10% 9%;
-    --card-foreground: 140 12% 96%;
-    --popover: 165 11% 8%;
-    --popover-foreground: 140 12% 96%;
-    --primary: 152 58% 46%;
-    --primary-foreground: 165 25% 6%;
-    --secondary: 165 8% 13.5%;
-    --secondary-foreground: 140 10% 94%;
-    --muted: 165 8% 12.5%;
-    --muted-foreground: 155 8% 64%;
-    --accent: 152 22% 12%;
-    --accent-foreground: 152 55% 72%;
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 0 0% 98%;
-    --destructive-soft: 0 85% 72%;
-    --success: 152 58% 46%;
-    --success-foreground: 165 25% 6%;
-    --warning: 36 90% 52%;
-    --warning-foreground: 30 30% 8%;
-    --info: 205 70% 58%;
-    --info-foreground: 210 30% 8%;
-    --border: 160 8% 16%;
-    --input: 165 9% 12%;
-    --ring: 152 58% 46%;
+    --background: 0 0% 8.6%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 12.5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 12.5%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 158 74.1% 48.4%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 25.5%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 62%;
+    --accent: 158 74.1% 16%;
+    --accent-foreground: 158 74.1% 72%;
+    --destructive: 345 86% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 345 86% 66%;
+    --success: 158 74.1% 48.4%;
+    --success-foreground: 0 0% 4%;
+    --warning: 37 91.3% 55.1%;
+    --warning-foreground: 0 0% 4%;
+    --info: 217 91.2% 59.8%;
+    --info-foreground: 0 0% 4%;
+    --border: 0 0% 40%;
+    --input: 0 0% 32%;
+    --ring: 158 74.1% 48.4%;
 
-    /* Opaque locker surfaces — no frosted mud */
-    --surface-glass: hsl(165 10% 9%);
-    --surface-glass-strong: hsl(165 10% 10.5%);
-    --surface-glass-elevated: hsl(165 10% 11.5%);
-    --header-glass: hsl(165 12% 6% / 0.94);
-    --sidebar-glass: hsl(165 12% 5.5%);
-    --shadow-surface: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
-    --shadow-panel: 0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 14px 36px rgba(0, 0, 0, 0.45);
-    --shadow-glow: 0 0 0 1px hsl(152 58% 46% / 0.28), 0 6px 16px hsl(152 50% 30% / 0.2);
-    --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --body-gradient: linear-gradient(180deg, hsl(165 12% 6%) 0%, hsl(165 14% 4.5%) 100%);
+    --surface-glass: hsl(0 0% 12.5%);
+    --surface-glass-strong: hsl(0 0% 14%);
+    --surface-glass-elevated: hsl(0 0% 16%);
+    --header-glass: hsl(0 0% 8.6% / 0.94);
+    --sidebar-glass: hsl(0 0% 8.6%);
+    --shadow-surface: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 8px 24px hsl(0 0% 0% / 0.35);
+    --shadow-panel: 0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 14px 36px hsl(0 0% 0% / 0.45);
+    --shadow-glow: 0 0 0 1px hsl(158 74.1% 48.4% / 0.28), 0 6px 16px hsl(158 74.1% 30% / 0.2);
+    --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.05);
+    --body-gradient: linear-gradient(180deg, hsl(0 0% 9%) 0%, hsl(0 0% 7%) 100%);
   }
 
   * {
