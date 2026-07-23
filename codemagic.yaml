@@ -41,14 +41,18 @@ workflows:
     artifacts:
       - mobile/ios/FitPro.app.zip
 
-  # Релизная сборка в TestFlight. Требует в Codemagic UI интеграцию
-  # App Store Connect API с именем РОВНО `appstore_key`
-  # (Settings → Integrations → Developer Portal).
+  # Релизная сборка в TestFlight. Требует в Codemagic UI интеграцию App Store
+  # Connect API с именем РОВНО `appstore_key` (Settings → Team integrations →
+  # Developer Portal) и сохранённый distribution-сертификат в Team → Code
+  # signing identities (у нас «coachly-dist»).
   #
-  # Подпись собираем скриптом, а не блоком `ios_signing`: автоматический режим
-  # умеет только ИСКАТЬ готовый profile и падает с «No matching profiles found»,
-  # если App ID ещё не заведён. `fetch-signing-files --create` создаёт в Apple
-  # и App ID, и сертификат, и профиль — руками в Developer Portal лезть не нужно.
+  # Подпись — АВТОМАТИЧЕСКАЯ (блок ios_signing): Codemagic сам берёт сохранённый
+  # distribution-сертификат команды и через интеграцию создаёт/тянет provisioning
+  # profile под bundle id, ставит их в keychain, а `use-profiles` прописывает в
+  # проект. Сертификат ПЕРЕИСПОЛЬЗУЕТСЯ каждый билд → новые НЕ плодятся, лимит
+  # Apple не грозит, ручной отзыв не нужен. (Раньше был `fetch-signing-files
+  # --create` без стабильного ключа: выпускал новый сертификат каждый раз и
+  # упирался в 409 «You already have a current Distribution certificate».)
   ios-release:
     name: Coachly iOS TestFlight
     instance_type: mac_mini_m2
@@ -56,6 +60,9 @@ workflows:
     integrations:
       app_store_connect: appstore_key
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.oasixlab.fitpro
       vars:
         BUNDLE_ID: "com.oasixlab.fitpro"
       xcode: latest
@@ -68,48 +75,6 @@ workflows:
           # повторную загрузку с тем же CURRENT_PROJECT_VERSION.
           sed -i '' "s/CURRENT_PROJECT_VERSION: \"1\"/CURRENT_PROJECT_VERSION: \"$BUILD_NUMBER\"/" project.yml
           xcodegen
-      # Сертификат распространения = публичная часть в Apple + приватный ключ у нас.
-      # Ключ хранится в переменной CERTIFICATE_PRIVATE_KEY (Codemagic UI → Environment
-      # variables, отметить Secure). Если её нет — генерируем разовый, но тогда КАЖДАЯ
-      # сборка выпускает НОВЫЙ сертификат, а у Apple лимит 2–3 на аккаунт.
-      - name: Fetch or create signing files
-        script: |
-          keychain initialize
-          # ── Освобождаем лимит сертификатов Apple ─────────────────────────────
-          # У аккаунта уже есть действующий Distribution-сертификат, приватного
-          # ключа от которого у нас нет (создан в другом месте), а Apple разрешает
-          # лишь один «current» → создать новый нельзя. Отзываем старые сертификаты
-          # распространения через тот же App Store Connect API-ключ (integration
-          # appstore_key прокидывает креды в app-store-connect автоматически).
-          # СОГЛАСОВАНО С ВЛАДЕЛЬЦЕМ: этим аккаунтом подписывается только Coachly;
-          # на уже опубликованные приложения отзыв не влияет.
-          echo "creds: issuer=${APP_STORE_CONNECT_ISSUER_ID:+set} key=${APP_STORE_CONNECT_KEY_IDENTIFIER:+set} pk=${APP_STORE_CONNECT_PRIVATE_KEY:+set}"
-          for T in DISTRIBUTION IOS_DISTRIBUTION; do
-            echo "── тип $T ──"
-            app-store-connect certificates list --certificate-type "$T" --json > /tmp/c.json 2> /tmp/c.err
-            echo "list rc=$? bytes=$(wc -c < /tmp/c.json)"
-            [ -s /tmp/c.err ] && { echo "list stderr:"; head -c 400 /tmp/c.err; echo; }
-            IDS=$(python3 -c "import json; d=json.load(open('/tmp/c.json')); d=d.get('data',d) if isinstance(d,dict) else d; print(' '.join(x['id'] for x in d if isinstance(x,dict) and x.get('id')))" 2>/tmp/p.err) || true
-            [ -s /tmp/p.err ] && { echo "parse stderr:"; head -c 300 /tmp/p.err; echo; }
-            echo "IDs: [$IDS]"
-            for CID in $IDS; do
-              echo "Отзываю $CID"
-              yes | app-store-connect certificates delete "$CID" --ignore-not-found 2>&1 | tail -3
-            done
-          done
-          # ── Свежий сертификат (слот теперь свободен) ─────────────────────────
-          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
-            printf '%s' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key.pem
-          else
-            echo "CERTIFICATE_PRIVATE_KEY не задана — выпускаю разовый сертификат."
-            openssl genrsa -out /tmp/cert_key.pem 2048
-          fi
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key=@file:/tmp/cert_key.pem \
-            --create
-          keychain add-certificates
-          rm -f /tmp/cert_key.pem
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
