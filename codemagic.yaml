@@ -75,11 +75,29 @@ workflows:
       - name: Fetch or create signing files
         script: |
           keychain initialize
+          # ── Освобождаем лимит сертификатов Apple ─────────────────────────────
+          # У аккаунта уже есть действующий Distribution-сертификат, приватного
+          # ключа от которого у нас нет (создан в другом месте), а Apple разрешает
+          # лишь один «current» → создать новый нельзя. Отзываем старые сертификаты
+          # распространения через тот же App Store Connect API-ключ (integration
+          # appstore_key прокидывает креды в app-store-connect автоматически).
+          # СОГЛАСОВАНО С ВЛАДЕЛЬЦЕМ: этим аккаунтом подписывается только Coachly;
+          # на уже опубликованные приложения отзыв не влияет.
+          for T in DISTRIBUTION IOS_DISTRIBUTION; do
+            IDS=$(app-store-connect certificates list --certificate-type "$T" --json 2>/dev/null \
+              | python3 -c "import sys,json; print('\n'.join(c.get('id','') for c in json.loads(sys.stdin.read() or '[]')))" 2>/dev/null || true)
+            for CID in $IDS; do
+              [ -z "$CID" ] && continue
+              echo "Отзываю сертификат $T: $CID"
+              app-store-connect certificates delete "$CID" --yes 2>/dev/null \
+                && echo "  ✔ отозван $CID" || echo "  ⚠ не удалось отозвать $CID"
+            done
+          done
+          # ── Свежий сертификат (слот теперь свободен) ─────────────────────────
           if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
             printf '%s' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key.pem
           else
-            echo "⚠️  CERTIFICATE_PRIVATE_KEY не задана — выпускаю разовый сертификат."
-            echo "⚠️  Добавьте переменную, иначе упрётесь в лимит сертификатов Apple."
+            echo "CERTIFICATE_PRIVATE_KEY не задана — выпускаю разовый сертификат."
             openssl genrsa -out /tmp/cert_key.pem 2048
           fi
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
