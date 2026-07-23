@@ -16,6 +16,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.oasixlab.fitpro
+        # Только iPhone. Иначе Apple требует все четыре ориентации ради
+        # iPad-мультитаскинга (ошибка 90474), а интерфейс у нас портретный.
+        TARGETED_DEVICE_FAMILY: "1"
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.10"
@@ -29,6 +32,9 @@ targets:
         # статусом «Missing Compliance» и не раздаётся тестировщикам.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        # Приложение открывает галерею (фото прогресса в замерах и фото в отчётах).
+        # Без пояснения Apple отклоняет загрузку: ITMS-90683 Missing Purpose String.
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Чтобы прикрепить фото прогресса к замерам и отчётам. Их видит только ваш тренер."
         # Тёмная тема принудительно (дизайн Coachly — dark-only, как на Android).
         INFOPLIST_KEY_UIUserInterfaceStyle: Dark
         # Шрифты Sora + Manrope (TTF в FitPro/Resources/Fonts, включены в sources).
