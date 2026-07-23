@@ -23,8 +23,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -55,8 +53,16 @@ import com.oasixlab.fitpro.data.api.CreateMeasurementRequest
 import com.oasixlab.fitpro.data.api.FitProApi
 import com.oasixlab.fitpro.data.api.Measurement
 import com.oasixlab.fitpro.data.api.apiCall
+import com.oasixlab.fitpro.ui.common.AppearOnce
+import com.oasixlab.fitpro.ui.common.ChartPoint
+import com.oasixlab.fitpro.ui.common.ChipTone
+import com.oasixlab.fitpro.ui.common.CoachlyChip
+import com.oasixlab.fitpro.ui.common.LineAreaChart
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
+import com.oasixlab.fitpro.ui.common.Stat
+import com.oasixlab.fitpro.ui.common.StatTiles
 import com.oasixlab.fitpro.ui.common.TabHeader
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
@@ -160,10 +166,13 @@ fun MeasurementsTab(viewModel: MeasurementsViewModel = hiltViewModel()) {
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(measurements, key = { it.id }) { m -> MeasurementCard(m) }
+                    item { AppearOnce { WeightHeaderCard(measurements) } }
+                    items(measurements, key = { it.id }) { m ->
+                        MeasurementCard(m, Modifier.animateItem())
+                    }
                 }
             }
         }
@@ -191,64 +200,95 @@ fun MeasurementsTab(viewModel: MeasurementsViewModel = hiltViewModel()) {
     }
 }
 
+/** Hero-карточка динамики веса: текущий вес + дельта + анимированный график. */
 @Composable
-private fun MeasurementCard(m: Measurement) {
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(formatDate(m.date), style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                MetricCell("Вес", m.weight, "кг")
-                MetricCell("Талия", m.waist, "см")
-                MetricCell("Бёдра", m.hips, "см")
-                MetricCell("Грудь", m.chest, "см")
-            }
-            m.keyLifts?.takeIf { it.isNotEmpty() }?.let { lifts ->
-                Spacer(Modifier.height(6.dp))
+private fun WeightHeaderCard(measurements: List<Measurement>) {
+    val withWeight = measurements.filter { it.weight != null }.sortedBy { it.date }
+    if (withWeight.isEmpty()) return
+    val points = withWeight.map { m ->
+        val d = m.date
+        val label = if (d.length >= 10) d.substring(8, 10) + "." + d.substring(5, 7) else d
+        ChartPoint(label, m.weight!!.toFloat())
+    }
+    val current = withWeight.last().weight!!
+    val delta = current - withWeight.first().weight!!
+
+    OasixCard(contentSpacing = 12.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    lifts.entries.joinToString { "${it.key}: ${it.value}" },
-                    style = MaterialTheme.typography.bodySmall,
+                    "Динамика веса",
+                    style = MaterialTheme.typography.labelSmall,
                     color = LocalExtraColors.current.mutedForeground,
                 )
+                Text(
+                    "${trim(current)} кг",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
-            val photos = listOfNotNull(m.photoBeforeUrl, m.photoAfterUrl)
-            if (photos.isNotEmpty()) {
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    photos.forEach { url ->
-                        AsyncImage(
-                            model = absoluteUrl(url),
-                            contentDescription = "Фото прогресса",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(96.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                        )
-                    }
+            if (points.size >= 2) {
+                val (tone, sign) = when {
+                    delta < 0 -> ChipTone.Success to ""
+                    delta > 0 -> ChipTone.Warning to "+"
+                    else -> ChipTone.Neutral to ""
+                }
+                CoachlyChip("$sign${trim(delta)} кг за период", tone)
+            }
+        }
+        LineAreaChart(points)
+    }
+}
+
+@Composable
+private fun MeasurementCard(m: Measurement, modifier: Modifier = Modifier) {
+    OasixCard(modifier = modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                formatDate(m.date),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            m.weight?.let { CoachlyChip("${trim(it)} кг", ChipTone.Success) }
+        }
+        Spacer(Modifier.height(12.dp))
+        StatTiles(
+            listOf(
+                Stat(metric(m.weight, "кг"), "Вес"),
+                Stat(metric(m.waist, "см"), "Талия"),
+                Stat(metric(m.hips, "см"), "Бёдра"),
+                Stat(metric(m.chest, "см"), "Грудь"),
+            ),
+        )
+        m.keyLifts?.takeIf { it.isNotEmpty() }?.let { lifts ->
+            Spacer(Modifier.height(10.dp))
+            Text(
+                lifts.entries.joinToString { "${it.key}: ${it.value}" },
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalExtraColors.current.mutedForeground,
+            )
+        }
+        val photos = listOfNotNull(m.photoBeforeUrl, m.photoAfterUrl)
+        if (photos.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                photos.forEach { url ->
+                    AsyncImage(
+                        model = absoluteUrl(url),
+                        contentDescription = "Фото прогресса",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(96.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                    )
                 }
             }
         }
     }
 }
 
-@Composable
-private fun MetricCell(label: String, value: Double?, unit: String) {
-    Column {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelSmall,
-            color = LocalExtraColors.current.mutedForeground,
-        )
-        Text(
-            value?.let { "${trim(it)} $unit" } ?: "—",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-}
+private fun metric(value: Double?, unit: String): String =
+    value?.let { "${trim(it)} $unit" } ?: "—"
 
 private fun trim(value: Double): String =
     if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()

@@ -20,8 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,8 +44,11 @@ import com.oasixlab.fitpro.data.api.ReportSubmission
 import com.oasixlab.fitpro.data.api.SubmitAnswer
 import com.oasixlab.fitpro.data.api.SubmitReportRequest
 import com.oasixlab.fitpro.data.api.apiCall
+import com.oasixlab.fitpro.ui.common.ChipTone
+import com.oasixlab.fitpro.ui.common.CoachlyChip
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -159,19 +160,13 @@ fun ReportSection(viewModel: ReportsViewModel = hiltViewModel()) {
         ) {
             item {
                 if (data.currentSubmitted) {
-                    Card(
-                        shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text("Отчёт за эту неделю отправлен ✓", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                "Тренер проверит и оставит комментарий",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = LocalExtraColors.current.mutedForeground,
-                            )
-                        }
+                    OasixCard(selected = true) {
+                        Text("Отчёт за эту неделю отправлен ✓", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Тренер проверит и оставит комментарий",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LocalExtraColors.current.mutedForeground,
+                        )
                     }
                 } else {
                     ReportForm(data, viewModel)
@@ -195,13 +190,8 @@ private fun ReportForm(data: ReportData, viewModel: ReportsViewModel) {
     val uploadingField by viewModel.uploadingField.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(data.form.form!!.name, style = MaterialTheme.typography.titleMedium)
+    OasixCard(contentSpacing = 10.dp) {
+        Text(data.form.form!!.name, style = MaterialTheme.typography.titleMedium)
             data.form.fields.sortedBy { it.order }.forEach { field ->
                 ReportFieldInput(
                     field = field,
@@ -224,7 +214,6 @@ private fun ReportForm(data: ReportData, viewModel: ReportsViewModel) {
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
             ) { Text("Отправить отчёт") }
-        }
     }
 }
 
@@ -277,27 +266,19 @@ private fun ReportFieldInput(
 
 @Composable
 private fun SubmissionRow(submission: ReportSubmission) {
-    val extra = LocalExtraColors.current
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp),
-        ) {
+    OasixCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 "Неделя с ${formatDate(submission.weekStart)}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
             )
-            val (label, color) = when (submission.status) {
-                "reviewed" -> "Проверен" to extra.success
-                "missed" -> "Пропущен" to extra.warning
-                else -> "На проверке" to extra.info
+            val (label, tone) = when (submission.status) {
+                "reviewed" -> "Проверен" to ChipTone.Success
+                "missed" -> "Пропущен" to ChipTone.Warning
+                else -> "На проверке" to ChipTone.Info
             }
-            Text(label, style = MaterialTheme.typography.labelMedium, color = color)
+            CoachlyChip(label, tone)
         }
     }
 }

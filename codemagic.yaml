@@ -102,3 +102,40 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+
+  # Android debug APK → Appetize (демо-стенд в браузере, как iOS-Simulator workflow).
+  # APPETIZE_TOKEN (Secret) берётся из тех же Environment variables Codemagic.
+  # После первой сборки Appetize вернёт publicKey — впишите его в APPETIZE_ANDROID_KEY,
+  # чтобы ссылка на приложение оставалась стабильной между сборками.
+  android-appetize:
+    name: Coachly Android → Appetize
+    instance_type: linux_x2
+    max_build_duration: 40
+    environment:
+      java: 17
+    scripts:
+      - name: Build debug APK
+        script: |
+          set -o pipefail
+          cd mobile/android
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug
+      - name: Upload to Appetize
+        script: |
+          APK=$(find mobile/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+          test -n "$APK"
+          if [ -n "$APPETIZE_TOKEN" ]; then
+            KEY="${APPETIZE_ANDROID_KEY:-}"
+            if [ -n "$KEY" ]; then
+              URL="https://api.appetize.io/v1/apps/$KEY"
+            else
+              URL="https://api.appetize.io/v1/apps"
+            fi
+            curl -sf -H "X-API-KEY: $APPETIZE_TOKEN" \
+              -F "file=@$APK" -F "platform=android" \
+              -F "note=Coachly Android Codemagic" "$URL"
+          else
+            echo "⚠️  APPETIZE_TOKEN не задан в Codemagic — загрузку в Appetize пропускаю."
+          fi
+    artifacts:
+      - mobile/android/app/build/outputs/apk/**/*.apk

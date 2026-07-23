@@ -52,6 +52,7 @@ import com.oasixlab.fitpro.data.api.TrainerSubscriptionResponse
 import com.oasixlab.fitpro.data.api.User
 import com.oasixlab.fitpro.data.api.apiCall
 import com.oasixlab.fitpro.ui.common.Loadable
+import com.oasixlab.fitpro.ui.common.OasixCard
 import com.oasixlab.fitpro.ui.common.TabHeader
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
@@ -275,20 +276,10 @@ fun TrainerProfileTab(
     }
 }
 
-/** Общая карточка секции профиля. */
+/** Общая карточка секции профиля — панель oasix. */
 @Composable
 private fun SectionCard(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            content = content,
-        )
-    }
+    OasixCard(contentSpacing = 6.dp, content = content)
 }
 
 @Composable
@@ -372,7 +363,7 @@ private fun PlansDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Тарифы FitPro") },
+        title = { Text("Тарифы Coachly") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 when (val p = plans) {

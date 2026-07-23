@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +36,7 @@ import com.oasixlab.fitpro.data.api.WeekTask
 import com.oasixlab.fitpro.data.api.apiCall
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
 import com.oasixlab.fitpro.ui.common.TabHeader
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -134,6 +133,7 @@ private fun HabitsSection(viewModel: TasksViewModel = hiltViewModel()) {
                     task = task,
                     weekStart = week.weekStart,
                     onToggle = { date, done -> viewModel.toggle(task, date, done) },
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -141,45 +141,52 @@ private fun HabitsSection(viewModel: TasksViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun TaskCard(task: WeekTask, weekStart: String, onToggle: (String, Boolean) -> Unit) {
+private fun TaskCard(
+    task: WeekTask,
+    weekStart: String,
+    onToggle: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val monday = runCatching { LocalDate.parse(weekStart.take(10)) }.getOrNull()
+    val done = task.compliance >= 100
+    val animatedProgress by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = task.compliance / 100f,
+        animationSpec = androidx.compose.animation.core.tween(700, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+        label = "taskProgress",
+    )
 
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(task.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(10.dp))
-            if (monday != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    DAY_LABELS.forEachIndexed { index, label ->
-                        val date = monday.plusDays(index.toLong()).toString()
-                        val done = date in task.doneDays
-                        FilterChip(
-                            selected = done,
-                            onClick = { onToggle(date, !done) },
-                            label = {
-                                Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
-                            },
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+    OasixCard(modifier = modifier, selected = done) {
+        Text(task.title, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(12.dp))
+        if (monday != null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                DAY_LABELS.forEachIndexed { index, label ->
+                    val date = monday.plusDays(index.toLong()).toString()
+                    val marked = date in task.doneDays
+                    FilterChip(
+                        selected = marked,
+                        onClick = { onToggle(date, !marked) },
+                        label = {
+                            Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-                Spacer(Modifier.height(10.dp))
             }
-            LinearProgressIndicator(
-                progress = { task.compliance / 100f },
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Соблюдение: ${task.compliance}%",
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalExtraColors.current.mutedForeground,
-            )
+            Spacer(Modifier.height(12.dp))
         }
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = LocalExtraColors.current.input,
+            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            modifier = Modifier.fillMaxWidth().height(6.dp),
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Соблюдение: ${task.compliance}%",
+            style = MaterialTheme.typography.bodySmall,
+            color = LocalExtraColors.current.mutedForeground,
+        )
     }
 }

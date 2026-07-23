@@ -9,18 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,19 +31,28 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.oasixlab.fitpro.R
 import com.oasixlab.fitpro.data.api.ClientProfile
 import com.oasixlab.fitpro.data.api.ClientSummaryResponse
 import com.oasixlab.fitpro.data.api.FitProApi
 import com.oasixlab.fitpro.data.api.NotificationsResponse
 import com.oasixlab.fitpro.data.api.User
 import com.oasixlab.fitpro.data.api.apiCall
+import com.oasixlab.fitpro.ui.common.AppearOnce
+import com.oasixlab.fitpro.ui.common.ChipTone
+import com.oasixlab.fitpro.ui.common.CoachlyChip
+import com.oasixlab.fitpro.ui.common.IconBadge
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
+import com.oasixlab.fitpro.ui.common.Stat
+import com.oasixlab.fitpro.ui.common.StatTiles
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -156,111 +164,107 @@ fun ClientProfileTab(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(summary.client.name, style = MaterialTheme.typography.headlineMedium)
-            Text(user.email, color = extra.mutedForeground)
-
-            Card(
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("Цель", summary.client.goal ?: "—")
-                    InfoRow("Уровень", summary.client.level ?: "—")
-                    InfoRow("Старт программы", formatDate(summary.client.startDate))
-                    InfoRow("Стрик", "${summary.client.streakWeeks} нед.")
-                }
-            }
-
-            summary.payment?.let { payment ->
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        InfoRow("Оплачено до", formatDate(payment.paidUntil))
-                        Row {
-                            Text(
-                                "Статус: ",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = extra.mutedForeground,
-                            )
-                            Text(
-                                if (payment.status == "paid") "оплачено" else "просрочено",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (payment.status == "paid") extra.success else extra.destructiveSoft,
-                            )
-                        }
+            // Шапка с аватаром-кружком
+            AppearOnce {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconBadge(
+                        icon = painterResource(R.drawable.ic_fit_gym),
+                        diameter = 56.dp,
+                    )
+                    Spacer(Modifier.width(14.dp))
+                    Column {
+                        Text(summary.client.name, style = MaterialTheme.typography.headlineMedium)
+                        Text(user.email, style = MaterialTheme.typography.bodySmall, color = extra.mutedForeground)
                     }
                 }
             }
 
-            Card(
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Анкета", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "Опыт, травмы, образ жизни — чтобы тренер подобрал программу",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = extra.mutedForeground,
+            // Ключевые метрики клиента в стат-плитках
+            StatTiles(
+                listOf(
+                    Stat("${summary.client.streakWeeks}", "Стрик, нед."),
+                    Stat(summary.client.level ?: "—", "Уровень"),
+                    Stat(formatDate(summary.client.startDate), "Старт"),
+                ),
+            )
+
+            OasixCard(contentSpacing = 6.dp) {
+                InfoRow("Цель", summary.client.goal ?: "—")
+                InfoRow("Уровень", summary.client.level ?: "—")
+                InfoRow("Старт программы", formatDate(summary.client.startDate))
+                InfoRow("Стрик", "${summary.client.streakWeeks} нед.")
+            }
+
+            summary.payment?.let { payment ->
+                OasixCard(contentSpacing = 6.dp) {
+                    InfoRow("Оплачено до", formatDate(payment.paidUntil))
+                    CoachlyChip(
+                        if (payment.status == "paid") "Оплачено" else "Просрочено",
+                        if (payment.status == "paid") ChipTone.Success else ChipTone.Danger,
                     )
-                    OutlinedButton(
-                        onClick = { showProfileForm = true },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Заполнить/Изменить") }
+                }
+            }
+
+            // Кликабельная строка-карточка: контент слева, действие справа (по левому краю, как всё).
+            OasixCard(onClick = { showProfileForm = true }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Анкета", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Опыт, травмы, образ жизни — чтобы тренер подобрал программу",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = extra.mutedForeground,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "Изменить",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
 
             if (summary.achievements.isNotEmpty()) {
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Достижения", style = MaterialTheme.typography.titleMedium)
-                        summary.achievements.forEach { achievement ->
-                            Text(
-                                "🏆 ${ACHIEVEMENT_LABELS[achievement.type] ?: achievement.type}",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
+                OasixCard(contentSpacing = 8.dp) {
+                    Text("Достижения", style = MaterialTheme.typography.titleMedium)
+                    summary.achievements.forEach { achievement ->
+                        CoachlyChip(
+                            "🏆 ${ACHIEVEMENT_LABELS[achievement.type] ?: achievement.type}",
+                            ChipTone.Success,
+                        )
                     }
                 }
             }
 
             val notifications by viewModel.notifications.collectAsState()
             notifications?.takeIf { it.notifications.isNotEmpty() }?.let { data ->
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                if (data.unread > 0) "Уведомления (${data.unread})" else "Уведомления",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.weight(1f),
-                            )
-                            if (data.unread > 0) {
-                                TextButton(onClick = viewModel::readAll) { Text("Прочитать все") }
-                            }
+                OasixCard(contentSpacing = 6.dp) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            if (data.unread > 0) "Уведомления (${data.unread})" else "Уведомления",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (data.unread > 0) {
+                            TextButton(onClick = viewModel::readAll) { Text("Прочитать все") }
                         }
-                        data.notifications.take(10).forEach { n ->
-                            Text(
-                                (if (n.read) "" else "● ") + n.text,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (n.read) extra.mutedForeground else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
+                    }
+                    data.notifications.take(10).forEach { n ->
+                        Text(
+                            (if (n.read) "" else "● ") + n.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (n.read) extra.mutedForeground else MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
             }

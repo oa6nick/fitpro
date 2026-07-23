@@ -51,12 +51,12 @@ fun <T> LoadableBox(
     }
 }
 
-/** Заголовок вкладки в стиле веб-страниц (.type-page-title + eyebrow). */
+/** Заголовок вкладки в стиле oasix: eyebrow-надпись + крупный Euclid-заголовок. */
 @Composable
-fun TabHeader(title: String) {
-    Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
+fun TabHeader(title: String, eyebrow: String = "COACHLY") {
+    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 6.dp)) {
         Text(
-            "FITPRO",
+            eyebrow,
             style = MaterialTheme.typography.labelSmall,
             color = LocalExtraColors.current.mutedForeground,
         )

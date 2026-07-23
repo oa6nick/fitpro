@@ -18,8 +18,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FilterChip
@@ -59,6 +57,7 @@ import com.oasixlab.fitpro.data.api.WorkoutStatusRequest
 import com.oasixlab.fitpro.data.api.apiCall
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -311,11 +310,8 @@ private fun ExerciseCard(
     }
     val restSeconds = parseRestSeconds(item.rest)
 
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Column(Modifier.padding(16.dp)) {
+    OasixCard {
+        Column(Modifier.fillMaxWidth()) {
             item.groupKey?.let {
                 Text(
                     when (item.groupType) {
@@ -324,7 +320,7 @@ private fun ExerciseCard(
                         else -> "Суперсет $it"
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = LocalExtraColors.current.mutedForeground,
                 )
                 Spacer(Modifier.height(4.dp))
             }

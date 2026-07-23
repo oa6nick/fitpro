@@ -218,7 +218,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         Column(Modifier.fillMaxSize().systemBarsPadding().padding(24.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "FITPRO",
+                    "COACHLY",
                     style = MaterialTheme.typography.labelSmall,
                     color = LocalExtraColors.current.mutedForeground,
                 )
@@ -313,7 +313,7 @@ private fun LandingScreen(onLogin: () -> Unit, onRegister: () -> Unit, onJoin: (
         ) {
             Spacer(Modifier.weight(1f))
             Text(
-                "FITPRO",
+                "COACHLY",
                 style = MaterialTheme.typography.labelSmall,
                 color = LocalExtraColors.current.mutedForeground,
             )
@@ -480,7 +480,7 @@ private fun AuthFormScaffold(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                "FITPRO",
+                "COACHLY",
                 style = MaterialTheme.typography.labelSmall,
                 color = LocalExtraColors.current.mutedForeground,
                 modifier = Modifier.align(Alignment.CenterHorizontally),

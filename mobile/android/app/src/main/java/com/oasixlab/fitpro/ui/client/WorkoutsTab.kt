@@ -1,21 +1,17 @@
 package com.oasixlab.fitpro.ui.client
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,15 +21,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.oasixlab.fitpro.R
 import com.oasixlab.fitpro.data.api.FitProApi
 import com.oasixlab.fitpro.data.api.Workout
 import com.oasixlab.fitpro.data.api.apiCall
+import com.oasixlab.fitpro.ui.common.AppearOnce
+import com.oasixlab.fitpro.ui.common.ChipTone
+import com.oasixlab.fitpro.ui.common.CoachlyChip
+import com.oasixlab.fitpro.ui.common.IconBadge
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.MetaRow
+import com.oasixlab.fitpro.ui.common.OasixCard
+import com.oasixlab.fitpro.ui.common.ProgressRing
 import com.oasixlab.fitpro.ui.common.TabHeader
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
@@ -89,45 +94,54 @@ fun WorkoutsTab(viewModel: WorkoutsViewModel = hiltViewModel()) {
             }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                item { AppearOnce { WorkoutsHeader(workouts) } }
                 items(workouts, key = { it.id }) { workout ->
-                    WorkoutCard(workout, onClick = { openedId = workout.id })
+                    WorkoutCard(
+                        workout,
+                        onClick = { openedId = workout.id },
+                        modifier = Modifier.animateItem(),
+                    )
                 }
             }
         }
     }
 }
 
+/** Hero прогресса недели: кольцо «выполнено/всего» + мотивация. */
 @Composable
-private fun WorkoutCard(workout: Workout, onClick: () -> Unit) {
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        workout.title ?: "Тренировка",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        formatDate(workout.date),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LocalExtraColors.current.mutedForeground,
-                    )
-                }
-                StatusChip(workout.status)
-            }
-            workout.tonnage?.let {
-                Spacer(Modifier.height(6.dp))
+private fun WorkoutsHeader(workouts: List<Workout>) {
+    val total = workouts.size
+    val done = workouts.count { it.status == "completed" }
+    val progress = if (total > 0) done / total.toFloat() else 0f
+    OasixCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ProgressRing(progress = progress, diameter = 78.dp) {
                 Text(
-                    "Тоннаж: ${it.toInt()} кг",
+                    "$done/$total",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "ПРОГРЕСС НЕДЕЛИ",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = LocalExtraColors.current.mutedForeground,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Выполнено $done из $total",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    if (total > 0 && done == total) "Все тренировки закрыты 🔥"
+                    else "Осталось ${total - done} — вперёд 💪",
                     style = MaterialTheme.typography.bodySmall,
                     color = LocalExtraColors.current.mutedForeground,
                 )
@@ -137,38 +151,65 @@ private fun WorkoutCard(workout: Workout, onClick: () -> Unit) {
 }
 
 @Composable
-fun StatusChip(status: String) {
-    val extra = LocalExtraColors.current
-    val (label, color) = when (status) {
-        "completed" -> "Выполнена" to extra.success
-        "skipped" -> "Пропущена" to extra.warning
-        else -> "Назначена" to extra.info
-    }
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = color.copy(alpha = 0.14f),
-        contentColor = color,
-    ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-        )
+private fun WorkoutCard(workout: Workout, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val completed = workout.status == "completed"
+    OasixCard(modifier = modifier, selected = completed, onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconBadge(icon = painterResource(R.drawable.ic_fit_gym))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    workout.title ?: "Тренировка",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(Modifier.height(2.dp))
+                MetaRow(icon = painterResource(R.drawable.ic_date), text = formatDate(workout.date))
+            }
+            StatusChip(workout.status)
+        }
+        workout.tonnage?.let {
+            Spacer(Modifier.height(10.dp))
+            MetaRow(
+                icon = painterResource(R.drawable.ic_fit_strength),
+                text = "Тоннаж: ${it.toInt()} кг",
+            )
+        }
     }
 }
 
 @Composable
+fun StatusChip(status: String) {
+    val (label, tone) = when (status) {
+        "completed" -> "Выполнена" to ChipTone.Success
+        "skipped" -> "Пропущена" to ChipTone.Warning
+        else -> "Назначена" to ChipTone.Info
+    }
+    CoachlyChip(label, tone)
+}
+
+@Composable
 fun EmptyTab(title: String, subtitle: String) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(
-            subtitle,
-            style = MaterialTheme.typography.bodySmall,
-            color = LocalExtraColors.current.mutedForeground,
-        )
+    AppearOnce {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            IconBadge(
+                icon = painterResource(R.drawable.ic_fit_gym),
+                diameter = 72.dp,
+            )
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalExtraColors.current.mutedForeground,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
     }
 }

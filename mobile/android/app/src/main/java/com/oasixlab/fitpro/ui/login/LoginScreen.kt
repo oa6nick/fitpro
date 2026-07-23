@@ -52,9 +52,9 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "FITPRO",
+                text = "COACHLY",
                 style = MaterialTheme.typography.labelSmall,
-                color = LocalExtraColors.current.mutedForeground,
+                color = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.height(8.dp))
             Text(

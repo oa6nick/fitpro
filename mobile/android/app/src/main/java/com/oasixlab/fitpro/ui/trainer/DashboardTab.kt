@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +25,7 @@ import com.oasixlab.fitpro.data.api.FitProApi
 import com.oasixlab.fitpro.data.api.apiCall
 import com.oasixlab.fitpro.ui.common.Loadable
 import com.oasixlab.fitpro.ui.common.LoadableBox
+import com.oasixlab.fitpro.ui.common.OasixCard
 import com.oasixlab.fitpro.ui.common.TabHeader
 import com.oasixlab.fitpro.ui.common.formatDate
 import com.oasixlab.fitpro.ui.theme.LocalExtraColors
@@ -137,25 +136,19 @@ val FUNNEL_LABELS = mapOf(
 
 @Composable
 private fun StatCard(label: String, value: Int, modifier: Modifier = Modifier, tone: Color? = null) {
-    Card(
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = modifier,
-    ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 14.dp)) {
-            Text(
-                "$value",
-                style = MaterialTheme.typography.headlineMedium,
-                color = tone ?: MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                label,
-                style = MaterialTheme.typography.labelMedium,
-                color = LocalExtraColors.current.mutedForeground,
-                maxLines = 1,
-            )
-        }
+    OasixCard(modifier = modifier) {
+        Text(
+            "$value",
+            style = MaterialTheme.typography.headlineMedium,
+            color = tone ?: MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = LocalExtraColors.current.mutedForeground,
+            maxLines = 1,
+        )
     }
 }
 
@@ -163,38 +156,22 @@ private fun StatCard(label: String, value: Int, modifier: Modifier = Modifier, t
 fun SectionTitle(text: String) {
     Text(
         text,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(top = 6.dp),
     )
 }
 
 @Composable
 fun ListCard(title: String, subtitle: String?, onClick: (() -> Unit)? = null) {
-    val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    val content: @Composable () -> Unit = {
-        Column(Modifier.padding(14.dp)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-            subtitle?.let {
-                Text(
-                    it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = LocalExtraColors.current.mutedForeground,
-                )
-            }
+    OasixCard(onClick = onClick, contentSpacing = 2.dp) {
+        Text(title, style = MaterialTheme.typography.titleSmall)
+        subtitle?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalExtraColors.current.mutedForeground,
+            )
         }
-    }
-    if (onClick != null) {
-        Card(
-            shape = MaterialTheme.shapes.medium,
-            colors = colors,
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-        ) { content() }
-    } else {
-        Card(
-            shape = MaterialTheme.shapes.medium,
-            colors = colors,
-            modifier = Modifier.fillMaxWidth(),
-        ) { content() }
     }
 }
