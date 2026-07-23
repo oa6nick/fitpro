@@ -83,14 +83,18 @@ workflows:
           # appstore_key прокидывает креды в app-store-connect автоматически).
           # СОГЛАСОВАНО С ВЛАДЕЛЬЦЕМ: этим аккаунтом подписывается только Coachly;
           # на уже опубликованные приложения отзыв не влияет.
+          echo "creds: issuer=${APP_STORE_CONNECT_ISSUER_ID:+set} key=${APP_STORE_CONNECT_KEY_IDENTIFIER:+set} pk=${APP_STORE_CONNECT_PRIVATE_KEY:+set}"
           for T in DISTRIBUTION IOS_DISTRIBUTION; do
-            IDS=$(app-store-connect certificates list --certificate-type "$T" --json 2>/dev/null \
-              | python3 -c "import sys,json; print('\n'.join(c.get('id','') for c in json.loads(sys.stdin.read() or '[]')))" 2>/dev/null || true)
+            echo "── тип $T ──"
+            app-store-connect certificates list --certificate-type "$T" --json > /tmp/c.json 2> /tmp/c.err
+            echo "list rc=$? bytes=$(wc -c < /tmp/c.json)"
+            [ -s /tmp/c.err ] && { echo "list stderr:"; head -c 400 /tmp/c.err; echo; }
+            IDS=$(python3 -c "import json; d=json.load(open('/tmp/c.json')); d=d.get('data',d) if isinstance(d,dict) else d; print(' '.join(x['id'] for x in d if isinstance(x,dict) and x.get('id')))" 2>/tmp/p.err) || true
+            [ -s /tmp/p.err ] && { echo "parse stderr:"; head -c 300 /tmp/p.err; echo; }
+            echo "IDs: [$IDS]"
             for CID in $IDS; do
-              [ -z "$CID" ] && continue
-              echo "Отзываю сертификат $T: $CID"
-              app-store-connect certificates delete "$CID" --yes 2>/dev/null \
-                && echo "  ✔ отозван $CID" || echo "  ⚠ не удалось отозвать $CID"
+              echo "Отзываю $CID"
+              yes | app-store-connect certificates delete "$CID" --ignore-not-found 2>&1 | tail -3
             done
           done
           # ── Свежий сертификат (слот теперь свободен) ─────────────────────────
