@@ -108,8 +108,10 @@ workflows:
   # После первой сборки Appetize вернёт publicKey — впишите его в APPETIZE_ANDROID_KEY,
   # чтобы ссылка на приложение оставалась стабильной между сборками.
   android-appetize:
+    # macOS-инстанс: на бесплатном тарифе Codemagic доступны только Mac M-минуты
+    # (linux_x2 плану недоступен). Android нормально собирается и на macOS.
     name: Coachly Android → Appetize
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     max_build_duration: 40
     environment:
       java: 17
