@@ -27,5 +27,7 @@ targets:
         # статусом «Missing Compliance» и не раздаётся тестировщикам.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        # Geist подключается после добавления TTF в FitPro/Resources/Fonts (см. README).
-        # INFOPLIST_KEY_UIAppFonts: ...
+        # Тёмная тема принудительно (дизайн Coachly — dark-only, как на Android).
+        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        # Шрифты Sora + Manrope (TTF в FitPro/Resources/Fonts, включены в sources).
+        INFOPLIST_KEY_UIAppFonts: [sora.ttf, manrope.ttf]
